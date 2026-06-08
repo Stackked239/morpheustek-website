@@ -1,0 +1,510 @@
+@import "tailwindcss";
+
+/* Theme is toggled by a class on <html>; bind dark:/sensor: variants to it. */
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant sensor (&:where(.sensor-view, .sensor-view *));
+
+/* =============================================================================
+   MorpheusTEK Design System — three themes (light / dark / sensor-view)
+   Tokens per docs/01_brand_design_system.md. Author against semantic tokens,
+   never raw hex. Themes swap by a class on <html>: (default=light) .dark .sensor-view
+   ========================================================================== */
+
+/* ---------- LIGHT (default) ---------- */
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f5f7fa;
+  --bg-muted: #eceff3;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+
+  --text: #0a2540;
+  --text-strong: #061626;
+  --text-muted: #51607a;
+  --text-subtle: #8190a6;
+  --text-inverse: #ffffff;
+
+  --accent: #ffcb05;
+  --accent-text: #0a2540;
+  --accent-hover: #e6a700;
+  --accent-press: #cc9400;
+
+  --brand-blue: #0057b8;
+  --brand-blue-hover: #004a9e;
+  --eye: #e2231a;
+  --eye-warm: #f05a28;
+
+  --border: #d5dbe3;
+  --border-strong: #0057b8;
+  --ring: #0057b8;
+
+  --success: #1e874b;
+  --success-soft: #e3f3ea;
+  --warning: #b7791f;
+  --warning-soft: #fbf0da;
+  --danger: #c0140c;
+  --danger-soft: #fbe3e1;
+  --info: #0057b8;
+
+  --scrim: linear-gradient(180deg, rgba(6, 22, 38, 0) 0%, rgba(6, 22, 38, 0.78) 100%);
+  --motif-line: rgba(0, 87, 184, 0.10);
+  --pc-texture-opacity: 0;
+  color-scheme: light;
+}
+
+/* ---------- DARK ---------- */
+.dark {
+  --bg: #061626;
+  --bg-subtle: #0a2540;
+  --bg-muted: #12314f;
+  --surface: #0e2840;
+  --surface-raised: #143656;
+
+  --text: #e8eef6;
+  --text-strong: #ffffff;
+  --text-muted: #9db0c8;
+  --text-subtle: #647a98;
+  --text-inverse: #0a2540;
+
+  --accent: #ffd200;
+  --accent-text: #0a2540;
+  --accent-hover: #ffcb05;
+  --accent-press: #e6a700;
+
+  --brand-blue: #4d9fff;
+  --brand-blue-hover: #7fb8ff;
+  --eye: #ff5a4d;
+  --eye-warm: #ff7a45;
+
+  --border: #1e3e5e;
+  --border-strong: #4d9fff;
+  --ring: #ffd200;
+
+  --success: #4ecb7d;
+  --success-soft: rgba(16, 50, 32, 0.55);
+  --warning: #f0b541;
+  --warning-soft: rgba(58, 45, 14, 0.55);
+  --danger: #ff6b5e;
+  --danger-soft: rgba(58, 22, 18, 0.55);
+  --info: #4d9fff;
+
+  --scrim: linear-gradient(180deg, rgba(3, 8, 15, 0) 0%, rgba(3, 8, 15, 0.82) 100%);
+  --motif-line: rgba(77, 159, 255, 0.12);
+  --pc-texture-opacity: 0.05;
+  color-scheme: dark;
+}
+
+/* ---------- SENSOR-VIEW (LiDAR) — the signature theme ---------- */
+.sensor-view {
+  --bg: #03080f;
+  --bg-subtle: #06121f;
+  --bg-muted: #0a1a2a;
+  --surface: rgba(8, 24, 38, 0.82);
+  --surface-raised: rgba(12, 32, 50, 0.88);
+
+  --text: #dcf2ff;
+  --text-strong: #ffffff;
+  --text-muted: #7fa8c8;
+  --text-subtle: #4f6f8c;
+  --text-inverse: #03080f;
+
+  --accent: #ffe14d;
+  --accent-text: #03080f;
+  --accent-hover: #ffd200;
+  --accent-press: #e6a700;
+
+  --brand-blue: #5fb0ff;
+  --brand-blue-hover: #8fc8ff;
+  --eye: #ff6f60;
+  --eye-warm: #ff8a52;
+
+  --border: #16344e;
+  --border-strong: #00e5ff;
+  --ring: #39ff14;
+
+  --success: #39ff14;
+  --success-soft: rgba(12, 50, 20, 0.55);
+  --warning: #ffd200;
+  --warning-soft: rgba(58, 45, 14, 0.55);
+  --danger: #ff2d55;
+  --danger-soft: rgba(58, 14, 26, 0.55);
+  --info: #00e5ff;
+
+  --scrim: linear-gradient(180deg, rgba(3, 8, 15, 0) 0%, rgba(3, 8, 15, 0.88) 100%);
+  --motif-line: rgba(0, 229, 255, 0.14);
+  --pc-texture-opacity: 0.10;
+  color-scheme: dark;
+}
+
+/* Auto-dark for no-JS visitors who prefer dark and haven't chosen a theme.
+   The no-flash script normally resolves an explicit class before paint. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not(.dark):not(.sensor-view) {
+    --bg: #061626; --bg-subtle: #0a2540; --bg-muted: #12314f;
+    --surface: #0e2840; --surface-raised: #143656;
+    --text: #e8eef6; --text-strong: #ffffff; --text-muted: #9db0c8; --text-subtle: #647a98;
+    --accent: #ffd200; --brand-blue: #4d9fff; --eye: #ff5a4d;
+    --border: #1e3e5e; --border-strong: #4d9fff; --ring: #ffd200;
+    --success: #4ecb7d; --warning: #f0b541; --danger: #ff6b5e;
+    --motif-line: rgba(77, 159, 255, 0.12); --pc-texture-opacity: 0.05;
+    color-scheme: dark;
+  }
+}
+
+/* =============================================================================
+   Tailwind v4 theme mapping — semantic tokens -> utilities (bg-bg, text-text, ...)
+   ========================================================================== */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-muted: var(--bg-muted);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-text: var(--text);
+  --color-text-strong: var(--text-strong);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+  --color-text-inverse: var(--text-inverse);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-hover: var(--accent-hover);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-blue-hover: var(--brand-blue-hover);
+  --color-eye: var(--eye);
+  --color-eye-warm: var(--eye-warm);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  /* raw brand hues */
+  --color-mt-yellow: #ffcb05;
+  --color-mt-yellow-bright: #ffd200;
+  --color-mt-yellow-deep: #e6a700;
+  --color-mt-blue: #0057b8;
+  --color-mt-blue-600: #004a9e;
+  --color-mt-navy: #0a2540;
+  --color-mt-navy-900: #061626;
+  --color-mt-red: #e2231a;
+  --color-mt-orange: #f05a28;
+
+  /* point-cloud depth ramp (graphics/data only) */
+  --color-pc-near: #ff2d55;
+  --color-pc-1: #ff7a18;
+  --color-pc-2: #ffd200;
+  --color-pc-3: #39ff14;
+  --color-pc-4: #00e5ff;
+  --color-pc-5: #2e7dff;
+  --color-pc-far: #7a3cff;
+
+  /* fonts (bound to next/font css vars in layout) */
+  --font-display: var(--font-saira), system-ui, sans-serif;
+  --font-body: var(--font-plex), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /* type scale */
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1;
+  --text-eyebrow--letter-spacing: 0.14em;
+  --text-eyebrow--font-weight: 600;
+  --text-lead: 1.25rem;
+  --text-lead--line-height: 1.55;
+  --text-h5: 1.125rem;
+  --text-h5--line-height: 1.35;
+  --text-h4: 1.375rem;
+  --text-h4--line-height: 1.25;
+  --text-h3: 1.875rem;
+  --text-h3--line-height: 1.15;
+  --text-h3--letter-spacing: -0.01em;
+  --text-h2: 2.5rem;
+  --text-h2--line-height: 1.1;
+  --text-h2--letter-spacing: -0.015em;
+  --text-h1: 3.5rem;
+  --text-h1--line-height: 1.05;
+  --text-h1--letter-spacing: -0.02em;
+  --text-display: 5.5rem;
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.03em;
+
+  /* radii */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+
+  /* shadows (cool navy alpha) */
+  --shadow-sm: 0 1px 2px rgba(10, 37, 64, 0.08), 0 1px 1px rgba(10, 37, 64, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(10, 37, 64, 0.12), 0 2px 4px rgba(10, 37, 64, 0.06);
+  --shadow-lg: 0 16px 32px -8px rgba(10, 37, 64, 0.16), 0 4px 8px rgba(10, 37, 64, 0.06);
+  --shadow-xl: 0 32px 64px -16px rgba(10, 37, 64, 0.20);
+  --shadow-accent: 0 8px 24px -6px rgba(255, 203, 5, 0.40);
+
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --breakpoint-xs: 30rem;
+}
+
+/* =============================================================================
+   Base
+   ========================================================================== */
+* {
+  border-color: var(--border);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.4s var(--ease-soft), color 0.4s var(--ease-soft);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--text-strong);
+  text-wrap: balance;
+  font-weight: 700;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+::placeholder {
+  color: var(--text-subtle);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* =============================================================================
+   Utilities & motifs
+   ========================================================================== */
+.mt-container {
+  width: 100%;
+  max-width: 75rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+@media (min-width: 768px) {
+  .mt-container { padding-inline: 3rem; }
+}
+.mt-container-wide { max-width: 90rem; }
+
+.eyebrow {
+  font-size: var(--text-eyebrow);
+  line-height: 1;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  color: var(--brand-blue);
+}
+
+.hero-scrim::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+  pointer-events: none;
+}
+
+.circuit-motif {
+  background-image:
+    linear-gradient(var(--motif-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--motif-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center;
+  -webkit-mask-image: radial-gradient(ellipse 120% 100% at 50% 0%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse 120% 100% at 50% 0%, #000 0%, transparent 75%);
+}
+
+.pointcloud-texture {
+  background-image: radial-gradient(circle, var(--brand-blue) 0.7px, transparent 0.7px);
+  background-size: 18px 18px;
+  opacity: var(--pc-texture-opacity);
+}
+
+.blade-divider {
+  width: 56px;
+  height: 4px;
+  background: var(--accent);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+.surface-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.elevated-card {
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg);
+}
+
+/* Hidden only when JS is present (html.js, set before paint) — so no-JS users
+   and crawlers always see the content. */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s var(--ease-soft), transform 0.5s var(--ease-soft);
+  will-change: opacity, transform;
+}
+.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@supports (scrollbar-color: auto) {
+  * { scrollbar-color: var(--border-strong) transparent; scrollbar-width: thin; }
+}
+
+/* =============================================================================
+   Motion governance — everything off under reduced-motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal, .js .reveal { opacity: 1 !important; transform: none !important; }
+}
+
+@keyframes iris-scan {
+  from { transform: rotate(-120deg); opacity: 0; }
+  35%  { opacity: 1; }
+  to   { transform: rotate(120deg); opacity: 0; }
+}
+@keyframes trace-pulse {
+  0% { opacity: 0.2; }
+  50% { opacity: 0.85; }
+  100% { opacity: 0.2; }
+}
+.animate-scan { animation: iris-scan 2.6s var(--ease-soft) infinite; transform-origin: center; }
+
+/* =============================================================================
+   Sensor-view (LiDAR) HUD overlay — only visible when html.sensor-view is on
+   ========================================================================== */
+.sensor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 35; /* below header (40) and mobile nav (60), above content */
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.45s var(--ease-soft), visibility 0.45s var(--ease-soft);
+}
+.sensor-view .sensor-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* point-cloud grid, faded toward the center so content stays readable */
+.sensor-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(0, 229, 255, 0.55) 0.7px, transparent 0.7px);
+  background-size: 22px 22px;
+  opacity: 0.4;
+  -webkit-mask-image: radial-gradient(ellipse 72% 64% at 50% 46%, transparent 28%, #000 100%);
+  mask-image: radial-gradient(ellipse 72% 64% at 50% 46%, transparent 28%, #000 100%);
+}
+
+/* sweeping scan line (GPU transform) */
+.sensor-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 160px;
+  background: linear-gradient(180deg, transparent, rgba(0, 229, 255, 0.14) 55%, transparent);
+  border-bottom: 1px solid rgba(57, 255, 20, 0.55);
+  box-shadow: 0 0 28px rgba(0, 229, 255, 0.22);
+  transform: translateY(-160px);
+  animation: sensor-sweep 6s linear infinite;
+}
+@keyframes sensor-sweep {
+  0% { transform: translateY(-160px); }
+  100% { transform: translateY(100vh); }
+}
+
+/* cool vignette */
+.sensor-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 100% 82% at 50% 50%, transparent 52%, rgba(0, 40, 60, 0.55) 100%);
+}
+
+/* HUD corner brackets */
+.sensor-bracket {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 2px solid rgba(57, 255, 20, 0.6);
+}
+.sensor-bracket--tl { top: 86px; left: 22px; border-right: 0; border-bottom: 0; }
+.sensor-bracket--tr { top: 86px; right: 22px; border-left: 0; border-bottom: 0; }
+.sensor-bracket--bl { bottom: 22px; left: 22px; border-right: 0; border-top: 0; }
+.sensor-bracket--br { bottom: 22px; right: 22px; border-left: 0; border-top: 0; }
+
+/* labeled readout */
+.sensor-hud {
+  position: absolute;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #39ff14;
+  text-shadow: 0 0 8px rgba(57, 255, 20, 0.55);
+  border: 1px solid rgba(57, 255, 20, 0.35);
+  border-radius: 999px;
+  padding: 5px 13px;
+  background: rgba(3, 8, 15, 0.55);
+  backdrop-filter: blur(4px);
+}
+.sensor-hud-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #39ff14;
+  box-shadow: 0 0 8px #39ff14;
+  animation: sensor-pulse 1.6s ease-in-out infinite;
+}
+@keyframes sensor-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sensor-scan { display: none; }
+  .sensor-hud-dot { animation: none; }
+}
