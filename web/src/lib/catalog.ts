@@ -794,6 +794,31 @@ export const getApplication = (slug: string) => applications.find((a) => a.slug 
 export const getLeadMagnet = (slug: string) => leadMagnets.find((m) => m.slug === slug);
 export const featuredProduct = () => products.find((p) => p.featured) ?? products[0];
 
+/**
+ * Real product photography pulled from the existing morpheustek.com (the actual
+ * SKUs). Keyed by catalog slug. Products without a real photo (the newer MRDVS
+ * cameras) fall back to the branded ProductGlyph placeholder.
+ */
+export const productImages: Record<string, string> = {
+  "lr-1f-2d-lidar": "/products/lr-1f-2d-lidar.png",
+  "lr-1bs2-mini-zone-lidar": "/products/lr-1bs2-mini-zone-lidar.png",
+  "vbd1-10-2d-lidar": "/products/vbd1-10-2d-lidar.jpg",
+  "gs1-5-safety-lidar": "/products/gs1-5-safety-lidar.png",
+  "lr-16f-100-3d-lidar": "/products/lr-16f-100-3d-lidar.png",
+  "lr-16fis-explosion-proof-3d-lidar": "/products/lr-16fis-explosion-proof-3d-lidar.jpg",
+  "lr-f240-solid-state-lidar": "/products/lr-f240-solid-state-lidar.jpg",
+  "vss-50-solid-state-3d-lidar": "/products/vss-50-solid-state-3d-lidar.png",
+  "percipio-gm461-depth-camera": "/products/percipio-gm461-depth-camera.png",
+  "percipio-gm465-dual-mode-depth-camera": "/products/percipio-gm465-dual-mode-depth-camera.png",
+  "a090-laser-rangefinder": "/products/a090-laser-rangefinder.png",
+  "lr-dds-2-tripod-3d-mapper": "/products/lr-dds-2-tripod-3d-mapper.png",
+  "lc-m50g-mobile-slam-mapper": "/products/lc-m50g-mobile-slam-mapper.png",
+  "sintrones-ibox-602p-edge-ai": "/products/sintrones-ibox-602p-edge-ai.png",
+  "sintrones-sbox-2624p-embedded": "/products/sintrones-sbox-2624p-embedded.png",
+};
+
+export const productImage = (slug: string): string | undefined => productImages[slug];
+
 export const formatPrice = (price?: number) =>
   price === undefined ? "Contact for pricing" : `$${price.toLocaleString("en-US")}`;
 

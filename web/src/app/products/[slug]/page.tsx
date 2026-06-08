@@ -7,11 +7,11 @@ import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { ProductGlyph } from "@/components/brand/ProductGlyph";
+import { ProductMedia } from "@/components/product/ProductMedia";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SpecTable } from "@/components/product/SpecTable";
 import { CtaBand } from "@/components/marketing/CtaBand";
-import { availabilityLabel, formatPrice, getCategory, getProduct, products, productsInCategory } from "@/lib/catalog";
+import { availabilityLabel, formatPrice, getCategory, getProduct, productImage, products, productsInCategory } from "@/lib/catalog";
 
 export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
@@ -56,10 +56,17 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
           <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
             <div>
-              <ProductGlyph label={product.model} className="aspect-[4/3] w-full" />
-              <p className="mt-3 text-center font-mono text-xs text-text-subtle">
-                Illustrative — real product photography supplied at launch.
-              </p>
+              <ProductMedia
+                product={product}
+                className="aspect-[4/3] w-full rounded-lg border border-border"
+                sizes="(min-width: 1024px) 45vw, 100vw"
+                pad="p-8"
+              />
+              {!productImage(product.slug) ? (
+                <p className="mt-3 text-center font-mono text-xs text-text-subtle">
+                  Illustrative — real product photography supplied at launch.
+                </p>
+              ) : null}
             </div>
 
             <div>

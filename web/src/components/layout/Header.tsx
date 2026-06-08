@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
 import { mainNav, primaryCta } from "@/lib/site";
-import { categories, featuredProduct, formatPrice } from "@/lib/catalog";
+import { categories, featuredProduct, formatPrice, productImage } from "@/lib/catalog";
 import { MegaMenu } from "./MegaMenu";
 import { MobileNav } from "./MobileNav";
 import { ThemeControls } from "./ThemeControls";
@@ -21,7 +21,7 @@ export function Header() {
           <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
             <MegaMenu
               categories={menuCategories}
-              featured={{ slug: featured.slug, name: featured.name, tagline: featured.tagline, priceLabel: formatPrice(featured.price) }}
+              featured={{ slug: featured.slug, name: featured.name, tagline: featured.tagline, priceLabel: formatPrice(featured.price), image: productImage(featured.slug) }}
             />
             {mainNav
               .filter((n) => n.label !== "Products")

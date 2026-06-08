@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { BadgeCheck, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ProductGlyph } from "@/components/brand/ProductGlyph";
 
 type Cat = { slug: string; label: string; blurb: string };
-type Featured = { slug: string; name: string; tagline: string; priceLabel: string };
+type Featured = { slug: string; name: string; tagline: string; priceLabel: string; image?: string };
 
 export function MegaMenu({ categories, featured }: { categories: Cat[]; featured: Featured }) {
   const [open, setOpen] = useState(false);
@@ -60,7 +61,13 @@ export function MegaMenu({ categories, featured }: { categories: Cat[]; featured
             <div className="border-t border-border bg-bg-subtle p-4 md:border-l md:border-t-0">
               <p className="eyebrow mb-3">Product of the month</p>
               <Link href={`/products/${featured.slug}`} className="group block">
-                <ProductGlyph label={featured.name} className="aspect-[4/3] w-full" />
+                {featured.image ? (
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border border-border bg-white">
+                    <Image src={featured.image} alt={featured.name} fill sizes="18rem" className="object-contain p-3" />
+                  </div>
+                ) : (
+                  <ProductGlyph label={featured.name} className="aspect-[4/3] w-full" />
+                )}
                 <div className="mt-3 font-display text-base font-bold text-text-strong group-hover:text-brand-blue">{featured.name}</div>
                 <p className="mt-1 line-clamp-2 text-sm text-text-muted">{featured.tagline}</p>
                 <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-text">

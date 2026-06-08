@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, ShieldCheck } from "lucide-react";
-import { ProductGlyph } from "@/components/brand/ProductGlyph";
+import { ProductMedia } from "@/components/product/ProductMedia";
 import { Badge } from "@/components/ui/Badge";
 import { formatPrice, type Product } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
@@ -15,7 +15,7 @@ export function ProductCard({ product, className }: { product: Product; classNam
         className,
       )}
     >
-      <ProductGlyph label={product.model} className="aspect-[16/10] w-full" />
+      <ProductMedia product={product} className="aspect-[16/10] w-full border-b border-border" pad="p-4" />
       <div className="flex flex-1 flex-col p-5">
         <div className="flex flex-wrap items-center gap-1.5">
           {product.featured ? <Badge tone="featured">Featured</Badge> : null}
