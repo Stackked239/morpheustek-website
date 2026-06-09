@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, ShieldCheck } from "lucide-react";
 import { ProductMedia } from "@/components/product/ProductMedia";
 import { Badge } from "@/components/ui/Badge";
-import { formatPrice, type Product } from "@/lib/catalog";
+import type { Product } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 
 export function ProductCard({ product, className }: { product: Product; className?: string }) {
@@ -34,10 +34,9 @@ export function ProductCard({ product, className }: { product: Product; classNam
         </div>
         <h3 className="mt-3 font-display text-h4 font-bold leading-tight text-text-strong">{product.name}</h3>
         <p className="mt-1.5 flex-1 text-sm leading-snug text-text-muted">{product.tagline}</p>
-        <div className="mt-4 flex items-center justify-between">
-          <span className="tnum font-mono text-sm font-semibold text-text">{formatPrice(product.price)}</span>
+        <div className="mt-4 flex items-center justify-end">
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand-blue">
-            View
+            View specs
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
           </span>
         </div>

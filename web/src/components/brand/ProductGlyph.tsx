@@ -40,7 +40,7 @@ export function ProductGlyph({ label, className }: { label?: string; className?:
           <circle key={i} cx={d.x} cy={d.y} r={d.s} fill={d.c} opacity="0.85" />
         ))}
         <circle cx={ox} cy={oy} r="6.5" fill="none" stroke="var(--pc-4)" strokeWidth="1.4" opacity="0.8" />
-        <circle cx={ox} cy={oy} r="2.4" fill="var(--mt-red, #e2231a)" />
+        <circle cx={ox} cy={oy} r="2.4" fill="var(--mt-cyan, #31b4e7)" />
       </svg>
       {label ? (
         <span className="absolute bottom-2 left-3 font-mono text-[10px] uppercase tracking-wider text-pc-4/80">{label}</span>

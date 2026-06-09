@@ -2,7 +2,11 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { EyeMark } from "./EyeMark";
 
-/** Eye + morpheusTEK wordmark lockup. Wordmark blue on light, white on dark. */
+/**
+ * Official lockup (per brand guide): stacked "morpheus" / "TEK" wordmark with the
+ * eye-con to the RIGHT. Positive = PMS 3581 navy; reversed = all white. The whole
+ * lockup is one color (currentColor inherited from the wrapper).
+ */
 export function Logo({
   href = "/",
   size = 30,
@@ -17,13 +21,14 @@ export function Logo({
   className?: string;
 }) {
   const content = (
-    <span className={cn("inline-flex items-center gap-2.5 text-text-strong", className)}>
-      <EyeMark size={size} scanning={scanning} />
-      {showWordmark && (
-        <span className="font-display text-[1.3rem] font-extrabold leading-none tracking-[-0.02em] text-mt-blue dark:text-white sensor:text-white">
-          morpheus<span className="font-black">TEK</span>
+    <span className={cn("inline-flex items-center gap-2.5 text-mt-navy dark:text-white sensor:text-white", className)}>
+      {showWordmark ? (
+        <span className="font-display leading-[0.82] tracking-tight">
+          <span className="block text-[0.82rem] font-medium lowercase">morpheus</span>
+          <span className="block text-[1.35rem] font-extrabold uppercase">TEK</span>
         </span>
-      )}
+      ) : null}
+      <EyeMark size={Math.round(size * 1.7)} scanning={scanning} className="self-center" />
     </span>
   );
   if (href === null) return content;

@@ -53,8 +53,9 @@ export default async function ResourcePage({ params }: { params: Promise<{ slug:
             </div>
 
             <div className="lg:pt-10">
-              <p className="mb-4 font-display text-h4 font-bold text-text-strong">Get your copy</p>
-              <LeadForm intent={`download:${magnet.slug}`} submitLabel="Email me the guide" />
+              <p className="mb-4 font-display text-h4 font-bold text-text-strong">Get instant access</p>
+              <p className="mb-4 text-sm text-text-muted">Quick details, then it downloads right away — no waiting on an email.</p>
+              <LeadForm intent={`download:${magnet.slug}`} submitLabel="Download now" mode="download" />
             </div>
           </div>
         </Section>

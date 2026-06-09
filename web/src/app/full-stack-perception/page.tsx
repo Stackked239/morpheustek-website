@@ -18,7 +18,7 @@ const layers = [
   {
     icon: Radar,
     title: "LiDAR — 2D & 3D",
-    body: "Planar scanning for navigation, safety fields, and SLAM; dense 3D point clouds for volumetric obstacle detection and mapping. From $595 mini zone units to 16-line 100 m 3D.",
+    body: "Planar scanning for navigation, safety fields, and SLAM; dense 3D point clouds for volumetric obstacle detection and mapping. From compact mini zone units to 16-line 100 m 3D.",
     href: "/lidar-for-robotics",
   },
   {

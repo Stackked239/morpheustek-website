@@ -11,7 +11,7 @@ import { ProductMedia } from "@/components/product/ProductMedia";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SpecTable } from "@/components/product/SpecTable";
 import { CtaBand } from "@/components/marketing/CtaBand";
-import { availabilityLabel, formatPrice, getCategory, getProduct, productImage, products, productsInCategory } from "@/lib/catalog";
+import { availabilityLabel, getCategory, getProduct, productImage, products, productsInCategory } from "@/lib/catalog";
 
 export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
@@ -104,9 +104,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 ))}
               </dl>
 
-              <div className="mt-7 flex flex-wrap items-center gap-4">
-                <span className="font-display text-h3 font-black text-text-strong">{formatPrice(product.price)}</span>
-                <span className="font-mono text-xs text-text-muted">{availabilityLabel[product.availability]}{product.availabilityNote ? ` · ${product.availabilityNote}` : ""}</span>
+              <div className="mt-7">
+                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-mono text-xs uppercase tracking-wide text-text-muted">
+                  {availabilityLabel[product.availability]}
+                  {product.availabilityNote ? ` · ${product.availabilityNote}` : ""}
+                </span>
               </div>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -120,6 +122,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 ) : null}
                 <Button href="/resources" variant="ghost" size="lg">
                   <Download className="size-4" /> Spec sheet
+                </Button>
+                <Button href="/resources" variant="ghost" size="lg">
+                  <Download className="size-4" /> Software
                 </Button>
               </div>
             </div>

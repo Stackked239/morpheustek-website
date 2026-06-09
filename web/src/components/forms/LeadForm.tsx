@@ -26,9 +26,13 @@ const robotTypes = [
 export function LeadForm({
   intent = "meeting",
   submitLabel = "Book a meeting",
+  mode = "meeting",
+  downloadUrl,
 }: {
   intent?: string;
   submitLabel?: string;
+  mode?: "meeting" | "download";
+  downloadUrl?: string;
 }) {
   const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
 
@@ -43,8 +47,40 @@ export function LeadForm({
     if ((form.elements.namedItem("company_url") as HTMLInputElement | null)?.value) return;
     setStatus("submitting");
     // Placeholder for the Phase-2 POST /api/lead (HubSpot). Simulated here.
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 500));
     setStatus("done");
+    // Instant access: trigger the download immediately (no waiting on email).
+    if (mode === "download" && downloadUrl) {
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.setAttribute("download", "");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+  }
+
+  if (status === "done" && mode === "download") {
+    return (
+      <div className="surface-card flex flex-col items-start gap-4 p-7">
+        <span className="grid size-12 place-items-center rounded-full bg-success-soft text-success">
+          <CheckCircle2 className="size-6" />
+        </span>
+        <h3 className="font-display text-h4 font-bold text-text-strong">Your download is ready.</h3>
+        <p className="text-sm leading-relaxed text-text-muted">
+          Instant access — no waiting on an email.{" "}
+          {downloadUrl ? "It should start automatically; if not, use the button below." : "A copy is on its way to your inbox too."}
+        </p>
+        {downloadUrl ? (
+          <Button href={downloadUrl} variant="primary" size="md">
+            Download again
+          </Button>
+        ) : null}
+        <Button href="/book-a-meeting?intent=engineer" variant="ghost" size="md">
+          Talk to an engineer
+        </Button>
+      </div>
+    );
   }
 
   if (status === "done") {

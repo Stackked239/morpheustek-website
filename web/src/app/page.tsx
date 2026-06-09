@@ -22,7 +22,7 @@ import { site } from "@/lib/site";
 import { applications, getProduct } from "@/lib/catalog";
 
 const fullStack = [
-  { icon: Radar, title: "LiDAR — 2D & 3D", body: "Navigation, mapping, obstacle detection, and protective zones, from $595 mini-scanners to 16-line 3D." },
+  { icon: Radar, title: "LiDAR — 2D & 3D", body: "Navigation, mapping, obstacle detection, and protective zones — from compact mini-scanners to 16-line 3D." },
   { icon: ShieldCheck, title: "Safety sensing", body: "Type 3 / SIL2 / PL d safety LiDAR for personnel-protection stop functions — the same class as SICK." },
   { icon: Camera, title: "3D cameras", body: "dToF RGBD that returns valid depth on black, reflective, and textureless surfaces stereo cameras miss." },
   { icon: Cpu, title: "Edge compute", body: "Rugged Jetson and Ryzen boxes that run the perception stack on top of our sensors, on the robot." },
@@ -53,10 +53,13 @@ export default function HomePage() {
         <Container className="relative z-10 py-24 md:py-28">
           <div className="max-w-2xl">
             <Eyebrow>{site.distributor}</Eyebrow>
-            <h1 className="mt-5 font-display text-[clamp(2.5rem,6vw,4.25rem)] font-extrabold leading-[1.03] tracking-[-0.02em] text-text-strong">
+            <p className="mt-5 max-w-2xl font-display text-[clamp(1.45rem,3.2vw,2.25rem)] font-bold uppercase leading-[1.1] tracking-tight text-accent">
+              {site.heroProblem}
+            </p>
+            <h1 className="mt-4 font-display text-[clamp(1.9rem,4.4vw,3.25rem)] font-extrabold leading-[1.04] tracking-[-0.01em] text-text-strong">
               {site.heroHeadline}
             </h1>
-            <p className="mt-6 max-w-xl text-lead text-text">{site.oneLiner}</p>
+            <p className="mt-5 max-w-xl text-lead text-text">{site.oneLiner}</p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Button href="/book-a-meeting?intent=trial" variant="primary" size="lg">
                 Start a 90-day trial
@@ -347,8 +350,8 @@ export default function HomePage() {
                   ["Safety rating", "Type 3 · SIL2 · PL d", "Type 3 · SIL2 · PL d"],
                   ["Protective range", "5 m", "3 m"],
                   ["Scanning angle", "270°", "275°"],
+                  ["Accuracy", "≤ 70 mm resolution", "Comparable"],
                   ["90-day trial", "Yes", "—"],
-                  ["Price", "A fraction of the cost", "Premium"],
                 ].map((row, i) => (
                   <div key={row[0]} className={`tnum grid grid-cols-[1.2fr_1fr_1fr] text-sm ${i % 2 ? "bg-bg-muted/40" : ""}`}>
                     <span className="p-3 text-text-muted">{row[0]}</span>
@@ -368,7 +371,7 @@ export default function HomePage() {
           <div className="grid gap-5 md:grid-cols-2">
             {[
               { eyebrow: "Product of the month", icon: Boxes, title: "The GS1-5 Safety LiDAR", body: "Affordable safety has arrived — the centerpiece of our line, featured this month.", href: "/product-of-the-month" },
-              { eyebrow: "Shows we'll be at", icon: ScanEye, title: "Meet us at Automate", body: "We're at the major North American robotics shows. Tell us you're coming and we'll save you a slot at the booth.", href: "/shows/meet-us-at-the-booth" },
+              { eyebrow: "Catch us at", icon: ScanEye, title: "Catch us at Automate — June 22, Chicago", body: "We're at the major North American robotics shows. Tell us you're coming and we'll save you a slot at the booth.", href: "/shows/meet-us-at-the-booth" },
             ].map((c, i) => (
               <Reveal key={c.title} delay={i * 80}>
                 <Link href={c.href} className="group block overflow-hidden rounded-lg border border-border bg-surface transition-colors hover:border-border-strong">

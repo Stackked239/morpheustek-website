@@ -1,22 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Saira, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Roboto_Condensed, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
+import { TopBar } from "@/components/layout/TopBar";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { SensorOverlay } from "@/components/effects/SensorOverlay";
 
-const saira = Saira({ subsets: ["latin"], variable: "--font-saira", display: "swap" });
-const plex = IBM_Plex_Sans({
+// Official brand fonts: Roboto Condensed (headlines + body), Roboto Mono for specs.
+const robotoCondensed = Roboto_Condensed({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-plex",
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-condensed",
   display: "swap",
 });
-const plexMono = IBM_Plex_Mono({
+const robotoMono = Roboto_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
-  variable: "--font-plex-mono",
+  variable: "--font-mono-rc",
   display: "swap",
 });
 
@@ -72,7 +73,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#061626" },
+    { media: "(prefers-color-scheme: dark)", color: "#06163a" },
   ],
 };
 
@@ -82,7 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       data-scroll-behavior="smooth"
       suppressHydrationWarning
-      className={`${saira.variable} ${plex.variable} ${plexMono.variable}`}
+      className={`${robotoCondensed.variable} ${robotoMono.variable}`}
     >
       <body className="font-body antialiased">
         {/* Parser-blocking no-flash theme init (runs before paint). */}
@@ -93,6 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
+        <TopBar />
         <Header />
         <main id="main" className="min-h-[60vh]">
           {children}

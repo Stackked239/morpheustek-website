@@ -8,7 +8,7 @@ import { cn } from "@/lib/cn";
 import { ProductGlyph } from "@/components/brand/ProductGlyph";
 
 type Cat = { slug: string; label: string; blurb: string };
-type Featured = { slug: string; name: string; tagline: string; priceLabel: string; image?: string };
+type Featured = { slug: string; name: string; tagline: string; image?: string };
 
 export function MegaMenu({ categories, featured }: { categories: Cat[]; featured: Featured }) {
   const [open, setOpen] = useState(false);
@@ -71,7 +71,7 @@ export function MegaMenu({ categories, featured }: { categories: Cat[]; featured
                 <div className="mt-3 font-display text-base font-bold text-text-strong group-hover:text-brand-blue">{featured.name}</div>
                 <p className="mt-1 line-clamp-2 text-sm text-text-muted">{featured.tagline}</p>
                 <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-text">
-                  <BadgeCheck className="size-3.5" /> 90-day trial · {featured.priceLabel}
+                  <BadgeCheck className="size-3.5" /> 90-day risk-free trial
                 </span>
               </Link>
             </div>

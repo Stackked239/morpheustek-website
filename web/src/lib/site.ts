@@ -10,11 +10,15 @@ export const site = {
   domain: "morpheustek.com",
   url: "https://morpheustek.com",
   email: "sales@morpheusTEK.com",
-  phone: "(302) 803-5357",
-  phoneHref: "+13028035357",
+  // Per the official brand guide (06/26). NOTE: the flyer listed (302) 803-5357 — confirm with Phil/Tom.
+  phone: "(302) 789-0421",
+  phoneHref: "+13027890421",
+  address: "Morpheus Tek, Inc. · PO Box 1988 · Silverton, OR 97381",
   // The full-stack one-liner (Phil's words, web version)
   oneLiner:
     "MorpheusTEK gives robots the sensing stack they need to see, navigate, avoid obstacles, and operate safely in the real world.",
+  // StoryBrand: the visitor's PROBLEM, stated above the fold (Tom's #1 ask).
+  heroProblem: "Your robot can't see well enough, safely enough, or affordably enough — yet.",
   // ICP-A dream headline that seeds the hero (keyword-rich = the H1)
   heroHeadline:
     "Give your robot the right LiDAR, camera, and perception stack to navigate, avoid obstacles, and operate safely.",
@@ -80,7 +84,7 @@ export const footerNav: { heading: string; links: NavLink[] }[] = [
     links: [
       { label: "Technical library", href: "/resources" },
       { label: "Robotics glossary", href: "/resources/glossary" },
-      { label: "Insights", href: "/blog" },
+      { label: "Eyes at the Edge", href: "/blog" },
       { label: "Product of the month", href: "/product-of-the-month" },
       { label: "Shows we'll be at", href: "/shows" },
     ],

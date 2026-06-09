@@ -13,30 +13,30 @@
 /* ---------- LIGHT (default) ---------- */
 :root {
   --bg: #ffffff;
-  --bg-subtle: #f5f7fa;
-  --bg-muted: #eceff3;
+  --bg-subtle: #f4f6fa;
+  --bg-muted: #e9edf3;
   --surface: #ffffff;
   --surface-raised: #ffffff;
 
-  --text: #0a2540;
-  --text-strong: #061626;
-  --text-muted: #51607a;
-  --text-subtle: #8190a6;
+  --text: #0f326c; /* PMS 3581 — primary navy */
+  --text-strong: #0a2350;
+  --text-muted: #4a5a78;
+  --text-subtle: #8290a8;
   --text-inverse: #ffffff;
 
-  --accent: #ffcb05;
-  --accent-text: #0a2540;
-  --accent-hover: #e6a700;
-  --accent-press: #cc9400;
+  --accent: #ffcc00; /* PMS 116 */
+  --accent-text: #0f326c;
+  --accent-hover: #e6b800;
+  --accent-press: #cca300;
 
-  --brand-blue: #0057b8;
-  --brand-blue-hover: #004a9e;
-  --eye: #e2231a;
-  --eye-warm: #f05a28;
+  --brand-blue: #007bbb; /* PMS 7461 */
+  --brand-blue-hover: #00679d;
+  --eye: #007bbb;
+  --eye-warm: #31b4e7; /* PMS 298 */
 
-  --border: #d5dbe3;
-  --border-strong: #0057b8;
-  --ring: #0057b8;
+  --border: #d3dae4;
+  --border-strong: #007bbb;
+  --ring: #007bbb;
 
   --success: #1e874b;
   --success-soft: #e3f3ea;
@@ -44,41 +44,41 @@
   --warning-soft: #fbf0da;
   --danger: #c0140c;
   --danger-soft: #fbe3e1;
-  --info: #0057b8;
+  --info: #007bbb;
 
-  --scrim: linear-gradient(180deg, rgba(6, 22, 38, 0) 0%, rgba(6, 22, 38, 0.78) 100%);
-  --motif-line: rgba(0, 87, 184, 0.10);
+  --scrim: linear-gradient(180deg, rgba(8, 26, 66, 0) 0%, rgba(8, 26, 66, 0.78) 100%);
+  --motif-line: rgba(0, 123, 187, 0.10);
   --pc-texture-opacity: 0;
   color-scheme: light;
 }
 
 /* ---------- DARK ---------- */
 .dark {
-  --bg: #061626;
-  --bg-subtle: #0a2540;
-  --bg-muted: #12314f;
-  --surface: #0e2840;
-  --surface-raised: #143656;
+  --bg: #06163a;
+  --bg-subtle: #0d2454;
+  --bg-muted: #15315f;
+  --surface: #0f2550;
+  --surface-raised: #173366;
 
-  --text: #e8eef6;
+  --text: #e7edf8;
   --text-strong: #ffffff;
-  --text-muted: #9db0c8;
-  --text-subtle: #647a98;
-  --text-inverse: #0a2540;
+  --text-muted: #a0b2d2;
+  --text-subtle: #6a80a8;
+  --text-inverse: #0f326c;
 
-  --accent: #ffd200;
-  --accent-text: #0a2540;
-  --accent-hover: #ffcb05;
-  --accent-press: #e6a700;
+  --accent: #ffd21f;
+  --accent-text: #0f326c;
+  --accent-hover: #ffcc00;
+  --accent-press: #e6b800;
 
-  --brand-blue: #4d9fff;
-  --brand-blue-hover: #7fb8ff;
-  --eye: #ff5a4d;
-  --eye-warm: #ff7a45;
+  --brand-blue: #4fb5ec;
+  --brand-blue-hover: #7fcaf2;
+  --eye: #4fb5ec;
+  --eye-warm: #31b4e7;
 
-  --border: #1e3e5e;
-  --border-strong: #4d9fff;
-  --ring: #ffd200;
+  --border: #1f3d6b;
+  --border-strong: #4fb5ec;
+  --ring: #ffd21f;
 
   --success: #4ecb7d;
   --success-soft: rgba(16, 50, 32, 0.55);
@@ -86,10 +86,10 @@
   --warning-soft: rgba(58, 45, 14, 0.55);
   --danger: #ff6b5e;
   --danger-soft: rgba(58, 22, 18, 0.55);
-  --info: #4d9fff;
+  --info: #4fb5ec;
 
-  --scrim: linear-gradient(180deg, rgba(3, 8, 15, 0) 0%, rgba(3, 8, 15, 0.82) 100%);
-  --motif-line: rgba(77, 159, 255, 0.12);
+  --scrim: linear-gradient(180deg, rgba(4, 12, 32, 0) 0%, rgba(4, 12, 32, 0.85) 100%);
+  --motif-line: rgba(79, 181, 236, 0.12);
   --pc-texture-opacity: 0.05;
   color-scheme: dark;
 }
@@ -140,13 +140,14 @@
    The no-flash script normally resolves an explicit class before paint. */
 @media (prefers-color-scheme: dark) {
   :root:not(.light):not(.dark):not(.sensor-view) {
-    --bg: #061626; --bg-subtle: #0a2540; --bg-muted: #12314f;
-    --surface: #0e2840; --surface-raised: #143656;
-    --text: #e8eef6; --text-strong: #ffffff; --text-muted: #9db0c8; --text-subtle: #647a98;
-    --accent: #ffd200; --brand-blue: #4d9fff; --eye: #ff5a4d;
-    --border: #1e3e5e; --border-strong: #4d9fff; --ring: #ffd200;
+    --bg: #06163a; --bg-subtle: #0d2454; --bg-muted: #15315f;
+    --surface: #0f2550; --surface-raised: #173366;
+    --text: #e7edf8; --text-strong: #ffffff; --text-muted: #a0b2d2; --text-subtle: #6a80a8;
+    --text-inverse: #0f326c;
+    --accent: #ffd21f; --accent-text: #0f326c; --brand-blue: #4fb5ec; --eye: #4fb5ec;
+    --border: #1f3d6b; --border-strong: #4fb5ec; --ring: #ffd21f;
     --success: #4ecb7d; --warning: #f0b541; --danger: #ff6b5e;
-    --motif-line: rgba(77, 159, 255, 0.12); --pc-texture-opacity: 0.05;
+    --motif-line: rgba(79, 181, 236, 0.12); --pc-texture-opacity: 0.05;
     color-scheme: dark;
   }
 }
@@ -182,15 +183,18 @@
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
 
-  /* raw brand hues */
-  --color-mt-yellow: #ffcb05;
-  --color-mt-yellow-bright: #ffd200;
-  --color-mt-yellow-deep: #e6a700;
-  --color-mt-blue: #0057b8;
-  --color-mt-blue-600: #004a9e;
-  --color-mt-navy: #0a2540;
-  --color-mt-navy-900: #061626;
-  --color-mt-red: #e2231a;
+  /* raw brand hues — official MorpheusTEK brand guide (PMS) */
+  --color-mt-yellow: #ffcc00;        /* PMS 116 */
+  --color-mt-yellow-bright: #fdda00; /* PMS 108 */
+  --color-mt-yellow-deep: #e6b800;
+  --color-mt-blue: #007bbb;          /* PMS 7461 */
+  --color-mt-blue-600: #00679d;
+  --color-mt-cyan: #31b4e7;          /* PMS 298 */
+  --color-mt-navy: #0f326c;          /* PMS 3581 */
+  --color-mt-navy-900: #0a2350;
+  --color-mt-gray: #616161;          /* PMS 4195 */
+  --color-mt-gray-light: #cccfce;    /* Cool Gray 2 */
+  --color-mt-red: #e2231a;           /* OLEI eye / danger only */
   --color-mt-orange: #f05a28;
 
   /* point-cloud depth ramp (graphics/data only) */
@@ -202,10 +206,10 @@
   --color-pc-5: #2e7dff;
   --color-pc-far: #7a3cff;
 
-  /* fonts (bound to next/font css vars in layout) */
-  --font-display: var(--font-saira), system-ui, sans-serif;
-  --font-body: var(--font-plex), system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  /* fonts — official brand: Roboto Condensed (headlines + body), Roboto Mono for specs */
+  --font-display: var(--font-condensed), "Arial Narrow", system-ui, sans-serif;
+  --font-body: var(--font-condensed), system-ui, sans-serif;
+  --font-mono: var(--font-mono-rc), ui-monospace, monospace;
 
   /* type scale */
   --text-eyebrow: 0.75rem;
@@ -222,14 +226,14 @@
   --text-h3--line-height: 1.15;
   --text-h3--letter-spacing: -0.01em;
   --text-h2: 2.5rem;
-  --text-h2--line-height: 1.1;
-  --text-h2--letter-spacing: -0.015em;
+  --text-h2--line-height: 1.08;
+  --text-h2--letter-spacing: -0.005em;
   --text-h1: 3.5rem;
-  --text-h1--line-height: 1.05;
-  --text-h1--letter-spacing: -0.02em;
+  --text-h1--line-height: 1.04;
+  --text-h1--letter-spacing: -0.01em;
   --text-display: 5.5rem;
-  --text-display--line-height: 1.02;
-  --text-display--letter-spacing: -0.03em;
+  --text-display--line-height: 1.0;
+  --text-display--letter-spacing: -0.015em;
 
   /* radii */
   --radius-xs: 2px;

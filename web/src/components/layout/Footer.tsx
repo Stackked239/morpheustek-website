@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
@@ -39,6 +39,9 @@ export function Footer() {
               <a href={`tel:${site.phoneHref}`} className="flex items-center gap-2 text-text-muted hover:text-text">
                 <Phone className="size-4 text-brand-blue" /> {site.phone}
               </a>
+              <p className="flex items-start gap-2 text-text-muted">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-brand-blue" /> {site.address}
+              </p>
             </div>
           </div>
 

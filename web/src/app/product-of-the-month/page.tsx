@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ProductGlyph } from "@/components/brand/ProductGlyph";
 import { CtaBand } from "@/components/marketing/CtaBand";
-import { featuredProduct, formatPrice } from "@/lib/catalog";
+import { featuredProduct } from "@/lib/catalog";
 
 const product = featuredProduct();
 
@@ -38,16 +38,13 @@ export default function ProductOfTheMonthPage() {
               </Badge>
               <Badge tone="in-stock">In stock</Badge>
             </div>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <span className="font-display text-h3 font-black text-text-strong">{formatPrice(product.price)}</span>
-              <div className="flex flex-wrap gap-3">
-                <Button href={`/products/${product.slug}`} variant="primary" size="lg">
-                  View the {product.model}
-                </Button>
-                <Button href="/book-a-meeting?intent=trial" variant="ghost" size="lg">
-                  Start a 90-day trial
-                </Button>
-              </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button href={`/products/${product.slug}`} variant="primary" size="lg">
+                View the {product.model}
+              </Button>
+              <Button href="/book-a-meeting?intent=trial" variant="ghost" size="lg">
+                Start a 90-day trial
+              </Button>
             </div>
           </div>
           <ProductGlyph label={product.model} className="aspect-[4/3] w-full" />

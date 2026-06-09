@@ -171,7 +171,6 @@ export const products: Product[] = [
     compare: [
       { spec: "Field of view", mt: "360°", competitor: "270° (TiM) / 190°–270° (LMS)", competitorName: "SICK TiM / LMS" },
       { spec: "Range", mt: "50 m", competitor: "~10–25 m (TiM), up to 80 m (LMS)", competitorName: "SICK TiM / LMS" },
-      { spec: "Origin", mt: "OLEI · in stock · 90-day trial", competitor: "Germany", competitorName: "SICK TiM / LMS" },
     ],
   },
   {
@@ -185,7 +184,7 @@ export const products: Product[] = [
     availability: "in-stock",
     trial: true,
     summary:
-      "A compact 270° / 10 m zone LiDAR with analog zone-alarm outputs, so it can trigger directly without a controller in simple presence-detection jobs. The easiest way to start a relationship — under $600, easy to attach to a trial.",
+      "A compact 270° / 10 m zone LiDAR with analog zone-alarm outputs, so it can trigger directly without a controller in simple presence-detection jobs. The easiest way to start a relationship — a low-barrier entry unit, easy to attach to a trial.",
     keySpecs: [
       { label: "Field of view", value: "270°" },
       { label: "Range", value: "10 m" },
@@ -262,7 +261,6 @@ export const products: Product[] = [
       { spec: "Scanning angle", mt: "270°", competitor: "275°", competitorName: "SICK nanoScan3" },
       { spec: "Safety rating", mt: "Type 3 · SIL2 · PL d", competitor: "Type 3 · SIL2 · PL d", competitorName: "SICK nanoScan3" },
       { spec: "Protective range", mt: "5 m", competitor: "3 m", competitorName: "SICK nanoScan3" },
-      { spec: "Price", mt: "A fraction of the cost · 90-day trial", competitor: "Premium", competitorName: "SICK nanoScan3" },
     ],
   },
   // ---------- 3D LiDAR ----------
@@ -328,7 +326,7 @@ export const products: Product[] = [
     brand: "OLEI",
     name: "OLEI LR-F240",
     category: "solid-state-lidar",
-    tagline: "Sub-$750 solid-state obstacle avoidance with a wide field of view.",
+    tagline: "Compact solid-state obstacle avoidance with a wide field of view.",
     price: 749,
     availability: "in-stock",
     trial: true,

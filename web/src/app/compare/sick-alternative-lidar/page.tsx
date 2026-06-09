@@ -21,7 +21,6 @@ const rows: { spec: string; mt: string; nano: string; micro: string }[] = [
   { spec: "Protective range", mt: "5 m", nano: "3 m", micro: "up to 9 m" },
   { spec: "90-day risk-free trial", mt: "Yes", nano: "—", micro: "—" },
   { spec: "North American stocking & support", mt: "Yes", nano: "Channel", micro: "Channel" },
-  { spec: "Relative price", mt: "A fraction of the cost", nano: "Premium", micro: "Premium" },
 ];
 
 export default function SickAlternativePage() {
