@@ -1,34 +1,40 @@
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/cn";
-import { EyeMark } from "./EyeMark";
 
 /**
- * Official lockup (per brand guide): stacked "morpheus" / "TEK" wordmark with the
- * eye-con to the RIGHT. Positive = PMS 3581 navy; reversed = all white. The whole
- * lockup is one color (currentColor inherited from the wrapper).
+ * Official MorpheusTEK lockup (brand guide, MT01_D1) — the real artwork extracted
+ * from the brand guide. Positive = PMS 3581 navy on light; reversed = all white on
+ * dark / sensor. The eye always stays with the wordmark (never the wordmark alone).
  */
 export function Logo({
   href = "/",
-  size = 30,
-  showWordmark = true,
-  scanning = false,
   className,
 }: {
   href?: string | null;
-  size?: number;
-  showWordmark?: boolean;
-  scanning?: boolean;
   className?: string;
 }) {
   const content = (
-    <span className={cn("inline-flex items-center gap-2.5 text-mt-navy dark:text-white sensor:text-white", className)}>
-      {showWordmark ? (
-        <span className="font-display leading-[0.82] tracking-tight">
-          <span className="block text-[0.82rem] font-medium lowercase">morpheus</span>
-          <span className="block text-[1.35rem] font-extrabold uppercase">TEK</span>
-        </span>
-      ) : null}
-      <EyeMark size={Math.round(size * 1.7)} scanning={scanning} className="self-center" />
+    <span className={cn("inline-flex items-center", className)}>
+      {/* Positive (navy) — light theme */}
+      <Image
+        src="/brand/morpheustek-logo.png"
+        alt="MorpheusTEK"
+        width={1761}
+        height={439}
+        priority
+        className="h-8 w-auto md:h-9 dark:hidden sensor:hidden"
+      />
+      {/* Reversed (white) — dark + sensor themes */}
+      <Image
+        src="/brand/morpheustek-logo-white.png"
+        alt=""
+        width={1724}
+        height={429}
+        priority
+        aria-hidden
+        className="hidden h-8 w-auto md:h-9 dark:block sensor:block"
+      />
     </span>
   );
   if (href === null) return content;
