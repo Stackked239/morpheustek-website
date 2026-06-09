@@ -1,11 +1,11 @@
+import Image from "next/image";
 import { cn } from "@/lib/cn";
 
 /**
- * The official MorpheusTEK "eye-con" (per the brand guide): an almond eye with
- * horizontal center bars running to the corners, an iris ring with top/bottom
- * segments, and a center pupil ring. Monochrome (currentColor) so it renders
- * navy on light / white on dark — never recolored, per brand rules.
- * `scanning` adds a subtle accent-yellow radar sweep for the hero only.
+ * The official MorpheusTEK circuit-eye, using the real brand-guide artwork
+ * (navy on light / white on dark + sensor). `scanning` overlays an accent-yellow
+ * sweep masked to the eye's strokes — a subtle "sensor coming online" effect used
+ * on the 404 and placeholder pages. Eye-only mark; never shown as a logo lock-up.
  */
 export function EyeMark({
   size = 40,
@@ -19,33 +19,47 @@ export function EyeMark({
   title?: string;
 }) {
   const w = size;
-  const h = Math.round(size * 0.6);
+  const h = Math.round(size * 0.743); // native artwork ratio 591:439
+  const mask = "url(/brand/morpheustek-eye.png)";
   return (
-    <svg
-      width={w}
-      height={h}
-      viewBox="0 0 100 60"
-      fill="none"
+    <span
       role="img"
       aria-label={title}
-      className={cn("shrink-0", className)}
+      className={cn("relative inline-block shrink-0 align-middle", className)}
+      style={{ width: w, height: h }}
     >
-      {/* almond eye outline */}
-      <path d="M3 30 C 22 6, 78 6, 97 30 C 78 54, 22 54, 3 30 Z" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
-      {/* horizontal center bars flanking the iris */}
-      <line x1="9" y1="30" x2="33" y2="30" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-      <line x1="67" y1="30" x2="91" y2="30" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-      {/* iris ring + top/bottom segments */}
-      <circle cx="50" cy="30" r="15" stroke="currentColor" strokeWidth="3" />
-      <line x1="40" y1="23.5" x2="60" y2="23.5" stroke="currentColor" strokeWidth="2.4" />
-      <line x1="40" y1="36.5" x2="60" y2="36.5" stroke="currentColor" strokeWidth="2.4" />
-      {/* pupil */}
-      <circle cx="50" cy="30" r="5.5" stroke="currentColor" strokeWidth="3" />
+      {/* Positive (navy) — light theme */}
+      <Image
+        src="/brand/morpheustek-eye.png"
+        alt=""
+        fill
+        sizes={`${w}px`}
+        className="object-contain dark:hidden sensor:hidden"
+      />
+      {/* Reversed (white) — dark + sensor themes */}
+      <Image
+        src="/brand/morpheustek-eye-white.png"
+        alt=""
+        fill
+        sizes={`${w}px`}
+        className="hidden object-contain dark:block sensor:block"
+      />
       {scanning ? (
-        <g className="animate-scan" style={{ transformOrigin: "50px 30px" }}>
-          <line x1="50" y1="16.5" x2="50" y2="43.5" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" opacity="0.9" />
-        </g>
+        <span
+          aria-hidden
+          className="eye-scan pointer-events-none absolute inset-0"
+          style={{
+            WebkitMaskImage: mask,
+            maskImage: mask,
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+          }}
+        />
       ) : null}
-    </svg>
+    </span>
   );
 }

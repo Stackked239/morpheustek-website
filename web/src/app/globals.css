@@ -409,6 +409,23 @@ h1, h2, h3, h4, h5, h6 {
 }
 .animate-scan { animation: iris-scan 2.6s var(--ease-soft) infinite; transform-origin: center; }
 
+/* Accent sweep that lights up the real eye-con's strokes (masked to the artwork).
+   Used by EyeMark scanning=true on the 404 / placeholder pages. */
+.eye-scan {
+  background: linear-gradient(100deg, transparent 34%, var(--accent) 50%, transparent 66%);
+  background-size: 260% 100%;
+  animation: eye-sweep 2.6s var(--ease-soft) infinite;
+}
+@keyframes eye-sweep {
+  0% { background-position: 135% 0; opacity: 0; }
+  20% { opacity: 0.95; }
+  80% { opacity: 0.95; }
+  100% { background-position: -35% 0; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eye-scan { animation: none; opacity: 0; }
+}
+
 /* =============================================================================
    Sensor-view (LiDAR) HUD overlay — only visible when html.sensor-view is on
    ========================================================================== */
