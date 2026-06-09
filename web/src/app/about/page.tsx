@@ -52,7 +52,7 @@ export default function AboutPage() {
                 with U.S.-based application support, stocking, and supplier coordination behind it.
               </p>
             </div>
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border shadow-[var(--shadow-md)]">
+            <div className="corner-crop relative aspect-[4/3] w-full overflow-hidden">
               <Image
                 src="/media/robot-eye.jpg"
                 alt="An autonomous warehouse robot with a glowing sensor eye navigating a facility aisle"
@@ -60,6 +60,13 @@ export default function AboutPage() {
                 sizes="(min-width: 1024px) 40vw, 100vw"
                 className="object-cover"
               />
+              {/* brand angled stat panel */}
+              <div className="angle-panel absolute bottom-0 right-0 bg-accent py-4 pl-9 pr-6 text-accent-text">
+                <div className="font-display text-[2.4rem] font-black uppercase leading-none">90 days</div>
+                <div className="mt-1 max-w-[12rem] font-display text-xs font-bold uppercase leading-snug">
+                  Risk-free trial on every OLEI product
+                </div>
+              </div>
             </div>
           </div>
         </Container>

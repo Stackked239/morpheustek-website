@@ -522,3 +522,13 @@ h1, h2, h3, h4, h5, h6 {
   animation: hero-zoom 24s ease-in-out infinite alternate;
   will-change: transform;
 }
+
+/* Brand angle graphics (brand guide §10) */
+.corner-crop {
+  /* 60° cut on the bottom-left corner, ≤35% of shape height */
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 16% 100%, 0 66%);
+}
+.angle-panel {
+  /* angled colored panel for key messaging / stats */
+  clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%);
+}

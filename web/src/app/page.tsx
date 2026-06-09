@@ -14,6 +14,7 @@ import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
+import { AccentHeading } from "@/components/ui/AccentHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { ProductCard } from "@/components/product/ProductCard";
 import { CtaBand } from "@/components/marketing/CtaBand";
@@ -181,9 +182,7 @@ export default function HomePage() {
         <Container>
           <Reveal className="max-w-3xl">
             <Eyebrow>The full stack</Eyebrow>
-            <h2 className="mt-4 font-display text-h2 font-extrabold text-text-strong">
-              One partner for the whole perception stack.
-            </h2>
+            <AccentHeading className="mt-4">One partner for the whole perception stack.</AccentHeading>
             <p className="mt-5 text-lead text-text-muted">
               LiDAR, 3D cameras, safety sensing, and edge compute — selected, sourced, and integrated to work together.
               Less integration risk, faster prototype-to-production, a more reliable perception system.
@@ -293,9 +292,7 @@ export default function HomePage() {
         <Container className="relative grid gap-12 py-16 md:py-24 lg:grid-cols-2 lg:items-center">
           <Reveal>
             <Eyebrow>Manufacturing strength behind the sensing stack</Eyebrow>
-            <h2 className="mt-4 font-display text-h2 font-extrabold text-text-strong">
-              Lesser-known in the U.S. doesn&apos;t mean unproven.
-            </h2>
+            <AccentHeading className="mt-4">Lesser-known in the U.S. doesn&apos;t mean unproven.</AccentHeading>
             <p className="mt-5 text-lead text-text-muted">
               MorpheusTEK partners with OLEI — part of a high-tech laser-measurement manufacturing network with deep
               OEM/ODM capability and one of the largest laser-diode purchasing footprints in the world. We add the
