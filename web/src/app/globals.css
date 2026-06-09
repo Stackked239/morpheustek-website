@@ -512,3 +512,13 @@ h1, h2, h3, h4, h5, h6 {
   .sensor-scan { display: none; }
   .sensor-hud-dot { animation: none; }
 }
+
+/* subtle slow zoom for the static point-cloud hero (GPU transform; off under reduced-motion) */
+@keyframes hero-zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+.hero-zoom {
+  animation: hero-zoom 24s ease-in-out infinite alternate;
+  will-change: transform;
+}

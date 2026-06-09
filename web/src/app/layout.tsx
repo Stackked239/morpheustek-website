@@ -51,10 +51,10 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [
       {
-        url: "/media/hero-warehouse.jpg",
+        url: "/media/hero-pointcloud.jpg",
         width: 1376,
         height: 768,
-        alt: "An autonomous mobile robot scanning a warehouse aisle with a glowing LiDAR point cloud",
+        alt: "A 3D LiDAR point-cloud view of a warehouse aisle in depth-mapped color",
       },
     ],
   },
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${site.name} — ${site.tagline}`,
     description: site.oneLiner,
-    images: ["/media/hero-warehouse.jpg"],
+    images: ["/media/hero-pointcloud.jpg"],
   },
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },

@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { ProductCard } from "@/components/product/ProductCard";
 import { CtaBand } from "@/components/marketing/CtaBand";
-import { HeroVideo } from "@/components/marketing/HeroVideo";
+import Image from "next/image";
 import { site } from "@/lib/site";
 import { applications, getProduct } from "@/lib/catalog";
 
@@ -47,7 +47,16 @@ export default function HomePage() {
     <>
       {/* ============================== HERO ============================== */}
       <section className="dark relative isolate flex min-h-[88vh] items-center overflow-hidden bg-bg">
-        <HeroVideo src="/media/hero.mp4" poster="/media/hero-warehouse.jpg" className="absolute inset-0 size-full" />
+        <div className="absolute inset-0 overflow-hidden">
+          <Image
+            src="/media/hero-pointcloud.jpg"
+            alt="A 3D LiDAR point-cloud view of a warehouse aisle in depth-mapped color"
+            fill
+            priority
+            sizes="100vw"
+            className="hero-zoom object-cover"
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-r from-mt-navy-900 via-mt-navy-900/85 to-mt-navy-900/25" aria-hidden />
         <div className="absolute inset-0 bg-gradient-to-t from-mt-navy-900 via-transparent to-mt-navy-900/40" aria-hidden />
         <Container className="relative z-10 py-24 md:py-28">

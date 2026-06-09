@@ -201,6 +201,31 @@ export const products: Product[] = [
     bestFor: ["Zone / presence detection", "Simple anti-collision on slow vehicles", "Space-constrained mounting"],
   },
   {
+    slug: "lr-1bs5-mini-lidar",
+    model: "LR-1BS5",
+    brand: "OLEI",
+    name: "OLEI LR-1BS5 Series",
+    category: "lidar-for-robotics",
+    tagline: "Mini 2D zone LiDAR with built-in alarm outputs — the LR-1BS series.",
+    availability: "contact",
+    trial: true,
+    summary:
+      "A compact 2D zone LiDAR in the LR-1BS series with built-in zone-alarm outputs, so it can trigger directly without a controller for presence and anti-collision detection. A space-saving option alongside the LR-1BS2.",
+    keySpecs: [
+      { label: "Field of view", value: "270°" },
+      { label: "Type", value: "Mini 2D zone LiDAR" },
+      { label: "Outputs", value: "Analog zone alarm" },
+      { label: "Rating", value: "IP65" },
+    ],
+    specs: [
+      { label: "Field of view", value: "270°" },
+      { label: "Type", value: "Mini 2D zone LiDAR" },
+      { label: "Outputs", value: "Analog zone alarm available" },
+      { label: "Rating", value: "IP65" },
+    ],
+    bestFor: ["Zone / presence detection", "Anti-collision on slow vehicles", "Space-constrained mounting"],
+  },
+  {
     slug: "vbd1-10-2d-lidar",
     model: "VBD1-10",
     brand: "OLEI",
@@ -525,6 +550,31 @@ export const products: Product[] = [
       { spec: "Ambient light", mt: "Up to 100 kLux (sunlight OK)", competitor: "Degrades in direct sun", competitorName: "Intel RealSense D435" },
     ],
   },
+  {
+    slug: "thermal-camera",
+    model: "CBT-3C",
+    brand: "OLEI",
+    name: "OLEI Thermal Camera",
+    category: "3d-cameras-for-robotics",
+    tagline: "Thermal imaging for perception in darkness, smoke, and glare.",
+    availability: "contact",
+    trial: true,
+    summary:
+      "A thermal imaging camera that sees heat rather than light — detecting people, vehicles, and hazards where optical and depth sensors struggle: total darkness, smoke, fog, dust, and strong glare. A complementary modality for robust outdoor and safety-critical perception.",
+    keySpecs: [
+      { label: "Tech", value: "Thermal imaging (LWIR)" },
+      { label: "Sees in", value: "Darkness · smoke · glare" },
+      { label: "Output", value: "Thermal video" },
+      { label: "Interface", value: "Ethernet" },
+    ],
+    specs: [
+      { label: "Tech", value: "Thermal imaging (LWIR)" },
+      { label: "Strengths", value: "Darkness, smoke, fog, dust, glare" },
+      { label: "Output", value: "Thermal video stream" },
+      { label: "Interface", value: "Ethernet" },
+    ],
+    bestFor: ["People & vehicle detection in low visibility", "Outdoor and night-time perception", "Fire / hot-spot and hazard detection"],
+  },
   // ---------- 1D Rangefinder ----------
   {
     slug: "a090-laser-rangefinder",
@@ -800,6 +850,8 @@ export const featuredProduct = () => products.find((p) => p.featured) ?? product
 export const productImages: Record<string, string> = {
   "lr-1f-2d-lidar": "/products/lr-1f-2d-lidar.png",
   "lr-1bs2-mini-zone-lidar": "/products/lr-1bs2-mini-zone-lidar.png",
+  "lr-1bs5-mini-lidar": "/products/lr-1bs5-mini-lidar.png",
+  "thermal-camera": "/products/thermal-camera.png",
   "vbd1-10-2d-lidar": "/products/vbd1-10-2d-lidar.jpg",
   "gs1-5-safety-lidar": "/products/gs1-5-safety-lidar.png",
   "lr-16f-100-3d-lidar": "/products/lr-16f-100-3d-lidar.png",
