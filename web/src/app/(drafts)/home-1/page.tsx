@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { HeroTitleBlock } from "./_components/HeroTitleBlock";
+import { DocControlStrip } from "./_components/DocControlStrip";
 
 /* =============================================================================
    HOME-1 — "The Acceptance Test" (precision industrial)
@@ -25,20 +27,10 @@ export default function HomeVariant1() {
   return (
     <>
       {/* §00 — Hero "Title Block": sheet frame, doc-control row, annotated GS1-5 */}
-      <section className="mt-container flex min-h-[60vh] items-center py-24">
-        <div>
-          <p className="eyebrow">Doc MT-HP-01 · Rev A · scaffold</p>
-          <h1 className="mt-4 font-display-industrial text-display-xl font-bold uppercase text-text-strong">
-            The Acceptance Test
-          </h1>
-          <p className="mt-5 max-w-xl text-lead text-text-muted">
-            Slice 0 scaffold — sections land in build order: hero, instrument,
-            economics, line card, signal chain, configurations, acceptance test.
-          </p>
-        </div>
-      </section>
+      <HeroTitleBlock />
 
       {/* §00b — Document-control strip (pillars as a ruled mono row) */}
+      <DocControlStrip />
       {/* §01 — The Instrument: to-scale 270° protective-field plot (the spectacle) */}
       {/* §02 — The Economics: dark band, dimensioned price axis vs SICK */}
       {/* §03 — The Line Card: full-width ruled table, prices listed */}
