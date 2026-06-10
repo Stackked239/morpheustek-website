@@ -35,16 +35,16 @@ const YAW_INIT = Math.PI + 0.55;                // start looking down the aisle
 const IDLE_SPEED = 0.0011;                      // rad/frame auto-orbit
 const IDLE_RESUME_MS = 2600;                    // after last drag
 const SWEEP_DURATION = 2.6;                     // seconds for the reveal sweep
-const POINT_SIZE = 1.45;
+const POINT_SIZE = 1.7;
 // =============================================================================
 
 const VERT = /* glsl */ `
-  attribute float aDepth;
+  attribute float aIntensity;
   attribute float aFlag;
   uniform float uSweep;
   uniform float uSize;
   uniform float uDpr;
-  varying float vDepth, vFlag, vGlow, vVis;
+  varying float vElev, vIntensity, vFlag, vGlow, vVis, vDim;
 
   void main() {
     float ang = atan(position.x, position.z);
@@ -53,12 +53,18 @@ const VERT = /* glsl */ `
     float behind = uSweep - a;
     // bright band trailing the sweep edge, only while the reveal runs
     vGlow = vVis * smoothstep(0.85, 0.0, behind) * (1.0 - step(7.0, uSweep));
-    vDepth = aDepth;
+    // elevation ramp position: floor (-0.8 m) → 0, rack tops (~3.8 m) → 1
+    vElev = clamp((position.y + 0.8) / 4.6, 0.0, 1.0);
+    vIntensity = aIntensity;
+    vDim = 1.0 - clamp(length(position) / 38.0, 0.0, 0.3); // far returns fade
     vFlag = aFlag;
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
-    float sz = uSize * (aFlag > 0.5 ? 1.7 : 1.0);
-    gl_PointSize = clamp(sz * uDpr * (130.0 / -mv.z), 1.0, 14.0);
+    // near-constant screen size with mild distance attenuation — the fine-grain
+    // speckle look of real scan viewers (fat blobs read as fake)
+    float att = clamp(9.0 / -mv.z, 0.6, 1.5);
+    float sz = uSize * (aFlag > 0.5 ? 1.8 : 1.0);
+    gl_PointSize = clamp(sz * uDpr * att, 1.0, 6.0);
   }
 `;
 
@@ -66,13 +72,15 @@ const FRAG = /* glsl */ `
   precision mediump float;
   uniform sampler2D uRamp;
   uniform vec3 uField;
-  varying float vDepth, vFlag, vGlow, vVis;
+  varying float vElev, vIntensity, vFlag, vGlow, vVis, vDim;
 
   void main() {
     if (vVis < 0.5) discard;
     vec2 c = gl_PointCoord - 0.5;
     if (dot(c, c) > 0.25) discard;
-    vec3 col = vFlag > 0.5 ? uField : texture2D(uRamp, vec2(vDepth, 0.5)).rgb;
+    // hue by elevation, brightness by return intensity — real scan-viewer look
+    vec3 col = texture2D(uRamp, vec2(vElev, 0.5)).rgb * (0.3 + 0.95 * vIntensity) * vDim;
+    if (vFlag > 0.5) col = uField;
     gl_FragColor = vec4(col + vGlow * 0.55, 1.0);
   }
 `;
@@ -168,17 +176,17 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
         const u8 = new Uint8Array(ab);
         const n = ab.byteLength / 8;
         const pos = new Float32Array(n * 3);
-        const depth = new Float32Array(n);
+        const intensity = new Float32Array(n);
         const flag = new Float32Array(n);
         for (let i = 0; i < n; i++) {
           pos[i * 3] = i16[i * 4] / 512;
           pos[i * 3 + 1] = i16[i * 4 + 1] / 512;
           pos[i * 3 + 2] = i16[i * 4 + 2] / 512;
-          depth[i] = u8[i * 8 + 6] / 255;
+          intensity[i] = u8[i * 8 + 6] / 255;
           flag[i] = u8[i * 8 + 7];
         }
         geometry.setAttribute("position", new BufferAttribute(pos, 3));
-        geometry.setAttribute("aDepth", new BufferAttribute(depth, 1));
+        geometry.setAttribute("aIntensity", new BufferAttribute(intensity, 1));
         geometry.setAttribute("aFlag", new BufferAttribute(flag, 1));
         points = new Points(geometry, material);
         points.frustumCulled = false;

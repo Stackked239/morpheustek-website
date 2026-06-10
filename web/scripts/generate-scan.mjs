@@ -8,10 +8,14 @@
  * floor rings, and range noise come out the way a real scan looks.
  *
  * Output: public/scan/warehouse-aisle.bin (+ .meta.json)
- *   8 bytes / point: int16 x,y,z (1/512 m units) · uint8 depth (0-255) · uint8 flag
- *   flag 0 = scene point (depth-ramp colored) · 1 = protective-field boundary
+ *   8 bytes / point: int16 x,y,z (1/512 m units) · uint8 intensity (0-255) · uint8 flag
+ *   flag 0 = scene point (elevation-ramp × intensity in the shader) · 1 = field/overlay
  *
- * Run: node scripts/generate-scan.mjs
+ * Realism model (matched against real mobile-mapping scans): per-surface
+ * reflectance with heavy speckle, range-dependent return loss + dropouts,
+ * elevation striping from discrete scan lines, hard occlusion shadows.
+ *
+ * Run: node scripts/generate-scan.mjs  (or: pnpm scan:gen)
  */
 
 import { writeFileSync, mkdirSync } from "node:fs";
@@ -24,8 +28,8 @@ const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), "../public/scan");
 const SENSOR = { x: 0, y: 0.8, z: 0 }; // 0.8 m above floor
 const MAX_RANGE = 30;                  // indoor clamp (unit is rated to 100 m)
 const ELEV_MIN = -15, ELEV_MAX = 15;   // 360° × 30° FOV per catalog
-const ELEV_LINES = 48;                 // accumulated frames → denser than 16 raw channels
-const AZ_STEP = 0.15;                  // degrees
+const ELEV_LINES = 110;                // accumulated frames → denser than 16 raw channels
+const AZ_STEP = 0.1;                   // degrees
 const RANGE_NOISE = 0.012;             // σ ≈ 12 mm
 
 // ── GS1-5 protective field (270°, 5 m max protective range) ─────────────────
@@ -35,21 +39,21 @@ const FLOOR_Y = -SENSOR.y;
 
 // ── scene: warehouse aisle, AMR at origin, +Z down the aisle ────────────────
 const boxes = [];
-/** axis-aligned box helper */
-const box = (cx, cy, cz, w, h, d) =>
-  boxes.push({ min: [cx - w / 2, cy, cz - d / 2], max: [cx + w / 2, cy + h, cz + d / 2] });
+/** axis-aligned box helper — refl is the surface's base reflectance (0..1) */
+const box = (cx, cy, cz, w, h, d, refl = 0.6) =>
+  boxes.push({ min: [cx - w / 2, cy, cz - d / 2], max: [cx + w / 2, cy + h, cz + d / 2], refl });
 
 // rack structure: uprights + shelf beams + cargo, both sides of the aisle
 for (const side of [-1, 1]) {
   const rx = side * 2.6; // rack centerline
   for (let z = 1.5; z <= 13.5; z += 3) {
-    box(rx, FLOOR_Y, z, 0.12, 4.2, 0.12);              // front upright
-    box(rx + side * 1.0, FLOOR_Y, z, 0.12, 4.2, 0.12); // rear upright
+    box(rx, FLOOR_Y, z, 0.12, 4.2, 0.12, 0.85);              // front upright (painted steel — bright)
+    box(rx + side * 1.0, FLOOR_Y, z, 0.12, 4.2, 0.12, 0.85); // rear upright
   }
   for (const level of [0, 1.6, 3.1]) {
-    box(rx + side * 0.5, FLOOR_Y + level + 1.35, 7.5, 1.1, 0.12, 12.2); // shelf beam
+    box(rx + side * 0.5, FLOOR_Y + level + 1.35, 7.5, 1.1, 0.12, 12.2, 0.8); // shelf beam
   }
-  // cargo: pallets + boxes, deterministic pseudo-random sizes/gaps
+  // cargo: pallets + boxes, deterministic pseudo-random sizes/gaps/reflectance
   let seed = side === -1 ? 7 : 13;
   const rand = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
   for (const level of [0, 1.6, 3.1]) {
@@ -57,24 +61,37 @@ for (const side of [-1, 1]) {
       if (rand() < 0.18) continue; // empty slot — gaps make racks legible
       const h = 0.5 + rand() * 0.85;
       const w = 0.8 + rand() * 0.25;
-      box(rx + side * 0.45, FLOOR_Y + level + (level ? 0.12 : 0), z, w, 0.14, 1.1); // pallet
-      box(rx + side * 0.45, FLOOR_Y + level + 0.14 + (level ? 0.12 : 0), z, w * 0.92, h, 1.0); // load
+      box(rx + side * 0.45, FLOOR_Y + level + (level ? 0.12 : 0), z, w, 0.14, 1.1, 0.35); // pallet (dark wood)
+      box(rx + side * 0.45, FLOOR_Y + level + 0.14 + (level ? 0.12 : 0), z, w * 0.92, h, 1.0,
+        0.3 + rand() * 0.5); // load — cardboard/shrink-wrap variance
     }
   }
 }
 
 // the person in the aisle — legs, torso, head: a readable human silhouette
 const PERSON = { x: 0.85, z: 4.6 };
-box(PERSON.x - 0.11, FLOOR_Y, PERSON.z, 0.13, 0.85, 0.18);        // left leg
-box(PERSON.x + 0.11, FLOOR_Y, PERSON.z, 0.13, 0.85, 0.18);        // right leg
-box(PERSON.x, FLOOR_Y + 0.85, PERSON.z, 0.46, 0.62, 0.26);        // torso
-box(PERSON.x - 0.28, FLOOR_Y + 0.92, PERSON.z, 0.1, 0.5, 0.16);   // left arm
-box(PERSON.x + 0.28, FLOOR_Y + 0.92, PERSON.z, 0.1, 0.5, 0.16);   // right arm
-const HEAD = { c: [PERSON.x, FLOOR_Y + 1.62, PERSON.z], r: 0.115 };
+box(PERSON.x - 0.11, FLOOR_Y, PERSON.z, 0.13, 0.85, 0.18, 0.4);       // left leg
+box(PERSON.x + 0.11, FLOOR_Y, PERSON.z, 0.13, 0.85, 0.18, 0.4);       // right leg
+box(PERSON.x, FLOOR_Y + 0.85, PERSON.z, 0.46, 0.62, 0.26, 0.55);      // torso (hi-vis vest)
+box(PERSON.x - 0.28, FLOOR_Y + 0.92, PERSON.z, 0.1, 0.5, 0.16, 0.45); // left arm
+box(PERSON.x + 0.28, FLOOR_Y + 0.92, PERSON.z, 0.1, 0.5, 0.16, 0.45); // right arm
+const HEAD = { c: [PERSON.x, FLOOR_Y + 1.62, PERSON.z], r: 0.115, refl: 0.5 };
+
+// parked forklift down the aisle — body, mast, forks, overhead guard
+const FK = { x: 1.15, z: 9.6 };
+box(FK.x, FLOOR_Y, FK.z, 1.15, 1.0, 2.2, 0.7);                  // body
+box(FK.x, FLOOR_Y + 1.0, FK.z + 0.55, 1.0, 1.1, 0.9, 0.65);     // cab/counterweight
+box(FK.x - 0.45, FLOOR_Y + 1.0, FK.z - 0.2, 0.08, 1.15, 0.08, 0.8); // guard post
+box(FK.x + 0.45, FLOOR_Y + 1.0, FK.z - 0.2, 0.08, 1.15, 0.08, 0.8);
+box(FK.x, FLOOR_Y + 2.1, FK.z, 1.05, 0.06, 1.6, 0.75);          // overhead guard roof
+box(FK.x, FLOOR_Y, FK.z - 1.45, 0.95, 2.6, 0.18, 0.8);          // mast
+box(FK.x - 0.28, FLOOR_Y, FK.z - 1.95, 0.16, 0.08, 1.0, 0.55);  // left fork
+box(FK.x + 0.28, FLOOR_Y, FK.z - 1.95, 0.16, 0.08, 1.0, 0.55);  // right fork
 
 // far wall at the end of the aisle; behind the AMR stays open (dock apron)
-box(0, FLOOR_Y, 16.2, 18, 6, 0.3);
+box(0, FLOOR_Y, 16.2, 18, 6, 0.3, 0.55);
 const FLOOR_BOUNDS = { x: 9, zMin: -6, zMax: 16.2 };
+const FLOOR_REFL = 0.5; // sealed concrete
 
 // ── raycasting ───────────────────────────────────────────────────────────────
 function rayBox(o, d, b) {
@@ -111,10 +128,17 @@ function rayFloor(o, d) {
     ? t : Infinity;
 }
 
+/** nearest hit → [t, surface reflectance] */
 function cast(o, d) {
-  let t = Math.min(rayFloor(o, d), raySphere(o, d, HEAD.c, HEAD.r));
-  for (const b of boxes) t = Math.min(t, rayBox(o, d, b));
-  return t;
+  let t = rayFloor(o, d);
+  let refl = FLOOR_REFL;
+  const th = raySphere(o, d, HEAD.c, HEAD.r);
+  if (th < t) { t = th; refl = HEAD.refl; }
+  for (const b of boxes) {
+    const tb = rayBox(o, d, b);
+    if (tb < t) { t = tb; refl = b.refl; }
+  }
+  return [t, refl];
 }
 
 // gaussian noise (Box–Muller), deterministic
@@ -124,7 +148,7 @@ const gauss = () =>
   Math.sqrt(-2 * Math.log(nRand() + 1e-12)) * Math.cos(2 * Math.PI * nRand());
 
 // ── sweep ────────────────────────────────────────────────────────────────────
-const pts = []; // [x, y, z, depthByte, flag]
+const pts = []; // [x, y, z, intensityByte, flag]
 const o = [SENSOR.x, SENSOR.y, SENSOR.z];
 
 for (let li = 0; li < ELEV_LINES; li++) {
@@ -133,11 +157,22 @@ for (let li = 0; li < ELEV_LINES; li++) {
   for (let az = 0; az < 360; az += AZ_STEP) {
     const a = az * (Math.PI / 180);
     const d = [Math.sin(a) * cosE, sinE, Math.cos(a) * cosE];
-    let t = cast(o, d);
-    if (!isFinite(t) || t > MAX_RANGE) continue;
-    t += gauss() * RANGE_NOISE * (0.5 + t / MAX_RANGE); // noise grows with range
-    const depth = Math.min(255, Math.round((t / 16) * 255)); // ramp normalized to 16 m
-    pts.push([o[0] + d[0] * t, o[1] + d[1] * t, o[2] + d[2] * t, depth, 0]);
+    const [t0, refl] = cast(o, d);
+    if (!isFinite(t0) || t0 > MAX_RANGE) continue;
+
+    // return strength: surface reflectance × range loss × heavy speckle
+    const rangeLoss = 1 - (t0 / MAX_RANGE) * 0.55;
+    let intensity = refl * rangeLoss * (0.55 + nRand() * 0.65);
+    // weak returns drop out entirely — ragged edges on dark/far surfaces
+    if (intensity < 0.16 && nRand() < 0.55) continue;
+    if (nRand() < 0.04) continue; // random global dropout
+    intensity = Math.min(1, intensity + gauss() * 0.05);
+
+    const t = t0 + gauss() * RANGE_NOISE * (0.5 + t0 / MAX_RANGE); // range noise
+    pts.push([
+      o[0] + d[0] * t, o[1] + d[1] * t, o[2] + d[2] * t,
+      Math.max(0, Math.min(255, Math.round(intensity * 255))), 0,
+    ]);
   }
 }
 const sceneCount = pts.length;
@@ -176,11 +211,11 @@ for (let s = 0; s <= 1; s += 0.04) {
 // ── pack + write ─────────────────────────────────────────────────────────────
 const SCALE = 512; // int16 units per meter
 const buf = Buffer.alloc(pts.length * 8);
-pts.forEach(([x, y, z, depth, flag], i) => {
+pts.forEach(([x, y, z, intensity, flag], i) => {
   buf.writeInt16LE(Math.round(x * SCALE), i * 8);
   buf.writeInt16LE(Math.round(y * SCALE), i * 8 + 2);
   buf.writeInt16LE(Math.round(z * SCALE), i * 8 + 4);
-  buf.writeUInt8(depth, i * 8 + 6);
+  buf.writeUInt8(intensity, i * 8 + 6);
   buf.writeUInt8(flag, i * 8 + 7);
 });
 
@@ -198,7 +233,7 @@ writeFileSync(
       sensorHeight: SENSOR.y,
       fieldRadius: FIELD_RADIUS,
       fieldArcDeg: FIELD_ARC_DEG,
-      depthRampMeters: 16,
+      colorModel: "elevation ramp × per-point intensity (reflectance·rangeLoss·speckle)",
       source: "simulated LR-16F-100 sweep (accumulated) + GS1-5 protective field",
     },
     null,
