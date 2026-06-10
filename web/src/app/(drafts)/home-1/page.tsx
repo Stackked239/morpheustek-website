@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { HeroTitleBlock } from "./_components/HeroTitleBlock";
 import { DocControlStrip } from "./_components/DocControlStrip";
+import { TheInstrument } from "./_components/TheInstrument";
+import { TheEconomics } from "./_components/TheEconomics";
+import { LineCard } from "./_components/LineCard";
+import { SignalChain } from "./_components/SignalChain";
+import { ReferenceConfigs } from "./_components/ReferenceConfigs";
+import { AcceptanceTest } from "./_components/AcceptanceTest";
 
 /* =============================================================================
    HOME-1 — "The Acceptance Test" (precision industrial)
@@ -32,11 +38,22 @@ export default function HomeVariant1() {
       {/* §00b — Document-control strip (pillars as a ruled mono row) */}
       <DocControlStrip />
       {/* §01 — The Instrument: to-scale 270° protective-field plot (the spectacle) */}
+      <TheInstrument />
+
       {/* §02 — The Economics: dark band, dimensioned price axis vs SICK */}
+      <TheEconomics />
+
       {/* §03 — The Line Card: full-width ruled table, prices listed */}
+      <LineCard />
+
       {/* §04 — The Signal Chain: block diagram ending at YOUR STACK */}
+      <SignalChain />
+
       {/* §05 — Reference Configurations: numbered index + detail panel */}
+      <ReferenceConfigs />
+
       {/* §06 — The Acceptance Test: numbered clauses + signature line + final CTA */}
+      <AcceptanceTest />
     </>
   );
 }
