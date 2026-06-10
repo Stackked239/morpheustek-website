@@ -889,7 +889,7 @@
   left: 0;
   right: 0;
   height: 34%;
-  background: linear-gradient(180deg, transparent, rgba(0, 229, 255, 0.14) 60%, rgba(49, 180, 231, 0.32));
+  background: linear-gradient(180deg, transparent, rgba(49, 180, 231, 0.14) 60%, rgba(49, 180, 231, 0.32));
   animation: monitor-scan 4.5s linear infinite;
 }
 @keyframes monitor-scan {

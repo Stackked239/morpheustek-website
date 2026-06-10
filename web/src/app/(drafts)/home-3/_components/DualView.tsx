@@ -67,7 +67,7 @@ export function DualView() {
               {/* depth-ramp wash: near (bottom) → far (top), point-cloud palette */}
               <div className="absolute inset-0 mix-blend-color [background:linear-gradient(to_top,var(--color-pc-near)_0%,var(--color-pc-2)_30%,var(--color-pc-3)_52%,var(--color-pc-4)_72%,var(--color-pc-far)_100%)]" />
               {/* point grid */}
-              <div className="absolute inset-0 opacity-50 mix-blend-screen [background-image:radial-gradient(circle,rgba(0,229,255,0.8)_0.7px,transparent_0.7px)] [background-size:14px_14px]" />
+              <div className="absolute inset-0 opacity-50 mix-blend-screen [background-image:radial-gradient(circle,rgba(49,180,231,0.9)_0.7px,transparent_0.7px)] [background-size:14px_14px]" />
               {/* detection frames */}
               {detections.map((d) => (
                 <div

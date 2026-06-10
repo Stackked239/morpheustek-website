@@ -27,9 +27,6 @@ export function NightHero() {
         <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[rgba(3,8,15,0.92)] via-[rgba(3,8,15,0.35)] to-[rgba(3,8,15,0.25)]" />
       </div>
 
-      {/* one scan sweep (reuses the sensor-view kit; hidden under reduced motion) */}
-      <div aria-hidden className="sensor-scan opacity-60" />
-
       {/* timestamp slate, top-left like a camera log */}
       <p className="absolute left-6 top-24 font-mono text-anno-sm uppercase tracking-[0.18em] text-text-muted md:left-12">
         23:42 · aisle 14 · <span className="text-brand-blue">scan active</span>
