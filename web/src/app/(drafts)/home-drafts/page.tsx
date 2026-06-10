@@ -11,9 +11,15 @@ export const metadata: Metadata = {
 
 const drafts = [
   { href: "/home-1", label: "Variant 1 · The Acceptance Test", owner: "John" },
-  { href: "/home-2", label: "Variant 2", owner: "John" },
-  { href: "/home-3", label: "Variant 3", owner: "Austin" },
-  { href: "/home-4", label: "Variant 4", owner: "Austin" },
+  { href: "/home-2", label: "Variant 2 · Into Focus", owner: "John" },
+  { href: "/home-3", label: "Variant 3 · The Night Shift", owner: "Austin" },
+  { href: "/home-4", label: "Variant 4 · The Price List", owner: "Austin" },
+  { href: "/home-5", label: "Variant 5 · The Control Room", owner: "Austin" },
+  { href: "/home-6", label: "Variant 6 · A Million Points of Sight", owner: "Austin" },
+  { href: "/home-7", label: "Variant 7 · The Booth", owner: "Austin" },
+  { href: "/home-8", label: "Variant 8 · The Assembly", owner: "Austin" },
+  { href: "/home-9", label: "Variant 9 · Spec Your Robot", owner: "Austin" },
+  { href: "/home-10", label: "Variant 10 · The Showroom", owner: "Austin" },
 ];
 
 export default function HomeDraftsIndex() {
