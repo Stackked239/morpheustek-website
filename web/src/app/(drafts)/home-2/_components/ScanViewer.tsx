@@ -28,14 +28,14 @@ const ASSET = "/scan/warehouse-aisle.bin";
 const TWO_PI = Math.PI * 2;
 
 // === TUNE ME (the "feel") ====================================================
-const ORBIT_TARGET = { x: 0, y: 0, z: 3.4 };    // scene point the camera circles
-const RADIUS = 10.5;                            // camera distance
-const PITCH_INIT = 0.62, PITCH_MIN = 0.15, PITCH_MAX = 0.95; // rad above floor
-const YAW_INIT = Math.PI + 0.55;                // start looking down the aisle
-const IDLE_SPEED = 0.0011;                      // rad/frame auto-orbit
-const IDLE_RESUME_MS = 2600;                    // after last drag
+const ORBIT_TARGET = { x: 0, y: 0.4, z: 5.5 };  // scene point the camera circles
+const RADIUS = 12.5;                            // camera distance
+const PITCH_INIT = 0.24, PITCH_MIN = 0.12, PITCH_MAX = 0.95; // rad above floor
+const YAW_INIT = 3.3; // scouted live: AMR + field ring foreground, corridor vanishing beyond
+const IDLE_SWAY = 0.22;                         // idle oscillation amplitude (rad)
+const IDLE_RESUME_MS = 4500;                    // hands-off time before easing home
 const SWEEP_DURATION = 2.6;                     // seconds for the reveal sweep
-const POINT_SIZE = 1.7;
+const POINT_SIZE = 1.35;
 // =============================================================================
 
 const VERT = /* glsl */ `
@@ -196,13 +196,13 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
       })
       .catch(() => {/* asset failed → fallback stays visible */});
 
-    // ---- orbit state ----
-    let yaw = YAW_INIT;
-    let pitch = PITCH_INIT;
+    // ---- orbit state: drag writes targets, camera eases toward them ----
+    let yaw = YAW_INIT, yawTarget = YAW_INIT;
+    let pitch = PITCH_INIT, pitchTarget = PITCH_INIT;
     let yawVel = 0;
     let dragging = false;
     let lastX = 0, lastY = 0;
-    let lastDragAt = 0;
+    let lastDragAt = performance.now(); // hold the hero angle through the entrance
     let sweepStart = 0;
 
     const placeCamera = () => {
@@ -213,7 +213,19 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
         ORBIT_TARGET.z + RADIUS * Math.cos(yaw) * cp,
       );
       camera.lookAt(ORBIT_TARGET.x, ORBIT_TARGET.y, ORBIT_TARGET.z);
+      if (process.env.NODE_ENV !== "production") {
+        host.dataset.cam = `yaw=${yaw.toFixed(3)} pitch=${pitch.toFixed(3)}`; // tuning readout
+      }
     };
+    if (process.env.NODE_ENV !== "production") {
+      // dev-only tuning hook: __scanView(yaw, pitch) jumps the camera there
+      (host as HTMLDivElement & { __scanView?: (y: number, p: number) => void }).__scanView =
+        (y: number, p: number) => {
+          yawTarget = y;
+          pitchTarget = p;
+          lastDragAt = performance.now() + 1e9; // suspend idle return while tuning
+        };
+    }
 
     const el = renderer.domElement;
     const onDown = (e: PointerEvent) => {
@@ -228,12 +240,16 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
       const dy = e.clientY - lastY;
       lastX = e.clientX;
       lastY = e.clientY;
-      yaw -= dx * 0.005;
-      yawVel = -dx * 0.005;
-      pitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, pitch + dy * 0.003));
+      yawTarget -= dx * 0.0035;
+      // release momentum: clamped so a fast flick coasts ~15°, never a full spin
+      yawVel = Math.max(-0.045, Math.min(0.045, -dx * 0.002));
+      pitchTarget = Math.min(PITCH_MAX, Math.max(PITCH_MIN, pitchTarget + dy * 0.002));
       lastDragAt = performance.now();
     };
-    const onUp = () => { dragging = false; };
+    const onUp = () => {
+      dragging = false;
+      lastDragAt = performance.now();
+    };
     el.addEventListener("pointerdown", onDown);
     el.addEventListener("pointermove", onMove);
     el.addEventListener("pointerup", onUp);
@@ -255,10 +271,21 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
           t >= 1 ? 10 : TWO_PI * (1 - Math.pow(1 - t, 2.2)) + 0.9; // ease-out, +0.9 glow lead
       }
       if (!dragging) {
-        yaw += yawVel; // momentum
-        yawVel *= 0.94;
-        if (now - lastDragAt > IDLE_RESUME_MS) yaw += IDLE_SPEED;
+        yawTarget += yawVel; // release momentum
+        yawVel *= 0.86;      // short tail — long flings feel unanchored
+        const idleFor = now - lastDragAt;
+        if (idleFor > IDLE_RESUME_MS) {
+          // ease back to a gently swaying home view — always composed,
+          // never strands on an awkward angle, never stops feeling alive
+          const home = YAW_INIT + IDLE_SWAY * Math.sin((idleFor - IDLE_RESUME_MS) / 4200);
+          const dYaw = ((home - yawTarget + Math.PI) % TWO_PI + TWO_PI) % TWO_PI - Math.PI;
+          yawTarget += dYaw * 0.012;
+          pitchTarget += (PITCH_INIT - pitchTarget) * 0.012;
+        }
       }
+      // critically-damped feel: camera chases the targets
+      yaw += (yawTarget - yaw) * 0.14;
+      pitch += (pitchTarget - pitch) * 0.14;
       placeCamera();
       renderer.render(scene, camera);
     };
