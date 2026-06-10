@@ -19,8 +19,8 @@ export function EyeMark({
   title?: string;
 }) {
   const w = size;
-  const h = Math.round(size * 0.743); // native artwork ratio 591:439
-  const mask = "url(/brand/morpheustek-eye.png)";
+  const h = Math.round(size * 0.66); // native artwork ratio 665:439 (left tip reconstructed)
+  const mask = "url(/brand/morpheustek-eye-v2.png)";
   return (
     <span
       role="img"
@@ -30,7 +30,7 @@ export function EyeMark({
     >
       {/* Positive (navy) — light theme */}
       <Image
-        src="/brand/morpheustek-eye.png"
+        src="/brand/morpheustek-eye-v2.png"
         alt=""
         fill
         sizes={`${w}px`}
@@ -38,7 +38,7 @@ export function EyeMark({
       />
       {/* Reversed (white) — dark + sensor themes */}
       <Image
-        src="/brand/morpheustek-eye-white.png"
+        src="/brand/morpheustek-eye-white-v2.png"
         alt=""
         fill
         sizes={`${w}px`}

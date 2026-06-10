@@ -6,7 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The MorpheusTEK marketing + product website ("Giving Sight to Robotics"), built by Stackked Tech.
 
-- **It is a standalone git repo** with its own remote (`Stackked-Tech/morpheustek-website`). It lives inside the `StackkedDev` tree but is *not* part of that mega-repo — git treats it as a separate repository (own `.git`). The parent `StackkedDev/CLAUDE.md` rule "never `git add -A`" is about that outer tree; **here, normal git workflow applies** (branch, `git add`, commit, push as usual).
+- **It is a standalone git repo** with its own remote (`Stackked-Tech/morpheustek-website`). It lives inside the `StackkedDev` tree but is *not* part of that mega-repo — git treats it as a separate repository (own `.git`). The parent `StackkedDev/CLAUDE.md` rule "never `git add -A`" is about that outer tree; here, normal `git add`/commit workflow applies.
+- ⚠️ **NEVER commit or push directly to `main`** — `main` auto-deploys to the client's live production site via Vercel. All work happens on feature branches; open a PR and let John review and merge. Merging to main = deploying to the client.
 - Two top-level directories:
   - **`web/`** — the Next.js 16 application (the actual site). **Vercel project root = `web/`.** Run, build, and edit everything from here.
   - **`docs/`** — the master build plan + specialist appendices (brand/design system, IA/UX, copy, technical architecture, conversion/SEO/GEO, interactive features, critique & phased build plan). Start at `docs/00_MASTER_PLAN.md`.
