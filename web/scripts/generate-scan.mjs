@@ -39,19 +39,20 @@ const FLOOR_Y = -SENSOR.y;
 
 // ── scene: warehouse aisle, AMR at origin, +Z down the aisle ────────────────
 const boxes = [];
-/** axis-aligned box helper — refl is the surface's base reflectance (0..1) */
-const box = (cx, cy, cz, w, h, d, refl = 0.6) =>
-  boxes.push({ min: [cx - w / 2, cy, cz - d / 2], max: [cx + w / 2, cy + h, cz + d / 2], refl });
+/** axis-aligned box helper — refl is base reflectance (0..1); kind tags the
+ *  surface material for the realistic-render twin of this scene */
+const box = (cx, cy, cz, w, h, d, refl = 0.6, kind = "load") =>
+  boxes.push({ min: [cx - w / 2, cy, cz - d / 2], max: [cx + w / 2, cy + h, cz + d / 2], refl, kind });
 
 // rack structure: uprights + shelf beams + cargo, both sides of the aisle
 for (const side of [-1, 1]) {
   const rx = side * 3.5; // rack centerline — ~5.8 m clear aisle (dual-traffic width)
   for (let z = 1.5; z <= 13.5; z += 3) {
-    box(rx, FLOOR_Y, z, 0.12, 4.2, 0.12, 0.85);              // front upright (painted steel — bright)
-    box(rx + side * 1.0, FLOOR_Y, z, 0.12, 4.2, 0.12, 0.85); // rear upright
+    box(rx, FLOOR_Y, z, 0.12, 4.2, 0.12, 0.85, "steel");              // front upright (painted steel — bright)
+    box(rx + side * 1.0, FLOOR_Y, z, 0.12, 4.2, 0.12, 0.85, "steel"); // rear upright
   }
   for (const level of [0, 1.6, 3.1]) {
-    box(rx + side * 0.5, FLOOR_Y + level + 1.35, 7.5, 1.1, 0.12, 12.2, 0.8); // shelf beam
+    box(rx + side * 0.5, FLOOR_Y + level + 1.35, 7.5, 1.1, 0.12, 12.2, 0.8, "beam"); // shelf beam
   }
   // cargo: pallets + boxes, deterministic pseudo-random sizes/gaps/reflectance
   let seed = side === -1 ? 7 : 13;
@@ -61,9 +62,9 @@ for (const side of [-1, 1]) {
       if (rand() < 0.18) continue; // empty slot — gaps make racks legible
       const h = 0.5 + rand() * 0.85;
       const w = 0.8 + rand() * 0.25;
-      box(rx + side * 0.45, FLOOR_Y + level + (level ? 0.12 : 0), z, w, 0.14, 1.1, 0.35); // pallet (dark wood)
+      box(rx + side * 0.45, FLOOR_Y + level + (level ? 0.12 : 0), z, w, 0.14, 1.1, 0.35, "pallet"); // pallet (dark wood)
       box(rx + side * 0.45, FLOOR_Y + level + 0.14 + (level ? 0.12 : 0), z, w * 0.92, h, 1.0,
-        0.3 + rand() * 0.5); // load — cardboard/shrink-wrap variance
+        0.3 + rand() * 0.5, "load"); // load — cardboard/shrink-wrap variance
     }
   }
 }
@@ -72,26 +73,26 @@ for (const side of [-1, 1]) {
 for (const side of [-1, 1]) {
   for (const z0 of [1.5, 4.5, 7.5, 10.5]) {
     for (let s = 0; s < 5; s++) {
-      box(side * 3.5, FLOOR_Y + 0.25 + s * 0.72, z0 + 0.35 + s * 0.5, 0.07, 0.09, 0.55, 0.75);
+      box(side * 3.5, FLOOR_Y + 0.25 + s * 0.72, z0 + 0.35 + s * 0.5, 0.07, 0.09, 0.55, 0.75, "steel");
     }
   }
 }
 
 // parked forklift down the aisle — body, mast, forks, overhead guard
 const FK = { x: 1.7, z: 9.6 };
-box(FK.x, FLOOR_Y, FK.z, 1.15, 1.0, 2.2, 0.7);                  // body
-box(FK.x, FLOOR_Y + 1.0, FK.z + 0.55, 1.0, 1.1, 0.9, 0.65);     // cab/counterweight
-box(FK.x - 0.45, FLOOR_Y + 1.0, FK.z - 0.2, 0.08, 1.15, 0.08, 0.8); // guard post
-box(FK.x + 0.45, FLOOR_Y + 1.0, FK.z - 0.2, 0.08, 1.15, 0.08, 0.8);
-box(FK.x, FLOOR_Y + 2.1, FK.z, 1.05, 0.06, 1.6, 0.75);          // overhead guard roof
-box(FK.x, FLOOR_Y, FK.z - 1.45, 0.95, 2.6, 0.18, 0.8);          // mast
-box(FK.x - 0.28, FLOOR_Y, FK.z - 1.95, 0.16, 0.08, 1.0, 0.55);  // left fork
-box(FK.x + 0.28, FLOOR_Y, FK.z - 1.95, 0.16, 0.08, 1.0, 0.55);  // right fork
+box(FK.x, FLOOR_Y, FK.z, 1.15, 1.0, 2.2, 0.7, "forklift");               // body
+box(FK.x, FLOOR_Y + 1.0, FK.z + 0.55, 1.0, 1.1, 0.9, 0.65, "forklift");  // cab/counterweight
+box(FK.x - 0.45, FLOOR_Y + 1.0, FK.z - 0.2, 0.08, 1.15, 0.08, 0.8, "forkliftDark"); // guard post
+box(FK.x + 0.45, FLOOR_Y + 1.0, FK.z - 0.2, 0.08, 1.15, 0.08, 0.8, "forkliftDark");
+box(FK.x, FLOOR_Y + 2.1, FK.z, 1.05, 0.06, 1.6, 0.75, "forkliftDark");   // overhead guard roof
+box(FK.x, FLOOR_Y, FK.z - 1.45, 0.95, 2.6, 0.18, 0.8, "forkliftDark");   // mast
+box(FK.x - 0.28, FLOOR_Y, FK.z - 1.95, 0.16, 0.08, 1.0, 0.55, "forkliftDark"); // left fork
+box(FK.x + 0.28, FLOOR_Y, FK.z - 1.95, 0.16, 0.08, 1.0, 0.55, "forkliftDark"); // right fork
 
 // corrugated far wall — vertical ribs give it real scan texture
-box(0, FLOOR_Y, 16.25, 18, 6, 0.2, 0.5);
+box(0, FLOOR_Y, 16.25, 18, 6, 0.2, 0.5, "wall");
 for (let x = -8.8; x <= 8.8; x += 0.45) {
-  box(x, FLOOR_Y, 16.1, 0.16, 6, 0.1, 0.68);
+  box(x, FLOOR_Y, 16.1, 0.16, 6, 0.1, 0.68, "wall");
 }
 const FLOOR_BOUNDS = { x: 9, zMin: -6, zMax: 16.2 };
 
@@ -235,6 +236,23 @@ pts.forEach(([x, y, z, intensity, flag], i) => {
 
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(join(OUT_DIR, "warehouse-aisle.bin"), buf);
+
+// scene twin for the realistic-render side of the reality-split viewer —
+// the exact same geometry the rays were cast against, tagged by material
+writeFileSync(
+  join(OUT_DIR, "warehouse-aisle.scene.json"),
+  JSON.stringify({
+    floorY: FLOOR_Y,
+    floorBounds: FLOOR_BOUNDS,
+    laneX: 2.55,
+    boxes: boxes.map((b) => ({
+      min: b.min.map((v) => +v.toFixed(3)),
+      max: b.max.map((v) => +v.toFixed(3)),
+      kind: b.kind,
+      refl: +b.refl.toFixed(2),
+    })),
+  }),
+);
 writeFileSync(
   join(OUT_DIR, "warehouse-aisle.meta.json"),
   JSON.stringify(

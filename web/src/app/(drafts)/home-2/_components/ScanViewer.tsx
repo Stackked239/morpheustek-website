@@ -2,17 +2,26 @@
 
 import { useEffect, useRef } from "react";
 import {
+  BoxGeometry,
   BufferAttribute,
   BufferGeometry,
+  Color,
   DataTexture,
+  DirectionalLight,
+  Fog,
+  HemisphereLight,
   LinearFilter,
+  Mesh,
+  MeshLambertMaterial,
   PerspectiveCamera,
+  PlaneGeometry,
   Points,
   RGBAFormat,
   Scene,
   ShaderMaterial,
   WebGLRenderer,
 } from "three";
+import { ChevronsLeftRight } from "lucide-react";
 
 /**
  * Draggable point-cloud viewer for the home-2 hero — renders the synthetic
@@ -25,7 +34,29 @@ import {
  */
 
 const ASSET = "/scan/warehouse-aisle.bin";
+const SCENE_ASSET = "/scan/warehouse-aisle.scene.json";
 const TWO_PI = Math.PI * 2;
+
+// reality-split: divider start position + realistic-side palette by box kind
+const SPLIT_INIT = 0.42;
+const SPLIT_MIN = 0.04, SPLIT_MAX = 0.96;
+const REAL_SKY = 0xdfe6ec;
+const KIND_COLORS: Record<string, number> = {
+  steel: 0xd35c2a,        // powder-coated rack orange
+  beam: 0xc94f1f,
+  pallet: 0x8a6a48,       // wood
+  load: 0xb5916b,         // cardboard
+  forklift: 0xf2b705,     // safety yellow
+  forkliftDark: 0x3a3f44, // mast/forks steel
+  wall: 0xcfd6dc,         // corrugated panel
+};
+
+interface SceneSpec {
+  floorY: number;
+  floorBounds: { x: number; zMin: number; zMax: number };
+  laneX: number;
+  boxes: { min: [number, number, number]; max: [number, number, number]; kind: string; refl: number }[];
+}
 
 // === TUNE ME (the "feel") ====================================================
 const ORBIT_TARGET = { x: 0, y: 0.4, z: 5.5 };  // scene point the camera circles
@@ -121,8 +152,19 @@ function buildRampTexture(): { tex: DataTexture; field: [number, number, number]
   return { tex, field: read("--color-mt-yellow", "#ffcc00") };
 }
 
-export function ScanViewer({ onReady, className }: { onReady?: () => void; className?: string }) {
+export function ScanViewer({
+  onReady,
+  className,
+  split = false,
+}: {
+  onReady?: () => void;
+  className?: string;
+  /** EXPERIMENT: realistic-render ⇄ scan divider over the same scene/camera */
+  split?: boolean;
+}) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const handleRef = useRef<HTMLDivElement>(null);
+  const splitRef = useRef(SPLIT_INIT);
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
 
@@ -147,6 +189,80 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
     const scene = new Scene();
     const camera = new PerspectiveCamera(50, 1, 0.1, 80);
     const { tex: ramp, field } = buildRampTexture();
+
+    // ---- realistic twin of the scene (reality-split experiment) ----
+    // Same geometry the rays were cast against, as lit solid meshes. One
+    // camera renders both worlds; the divider decides where each shows.
+    const sceneReal = new Scene();
+    let realReady = false;
+    const realDisposables: { dispose(): void }[] = [];
+    if (split) {
+      sceneReal.background = new Color(REAL_SKY);
+      sceneReal.fog = new Fog(REAL_SKY, 18, 46);
+      sceneReal.add(new HemisphereLight(0xf4f8ff, 0x8e949b, 1.15));
+      const sun = new DirectionalLight(0xffffff, 1.6);
+      sun.position.set(6, 12, -4);
+      sceneReal.add(sun);
+
+      fetch(SCENE_ASSET)
+        .then((r) => {
+          if (!r.ok) throw new Error(`scene spec ${r.status}`);
+          return r.json() as Promise<SceneSpec>;
+        })
+        .then((spec) => {
+          if (disposed) return;
+          const unit = new BoxGeometry(1, 1, 1);
+          realDisposables.push(unit);
+          const mats = new Map<string, MeshLambertMaterial>();
+          const matFor = (kind: string, refl: number) => {
+            // cardboard loads vary slightly, keyed by reflectance bucket
+            const key = kind === "load" ? `load${Math.round(refl * 10)}` : kind;
+            let m = mats.get(key);
+            if (!m) {
+              m = new MeshLambertMaterial({ color: KIND_COLORS[kind] ?? 0x999999 });
+              if (kind === "load") m.color.offsetHSL(0, 0, (refl - 0.55) * 0.35);
+              mats.set(key, m);
+              realDisposables.push(m);
+            }
+            return m;
+          };
+          for (const b of spec.boxes) {
+            const mesh = new Mesh(unit, matFor(b.kind, b.refl));
+            mesh.position.set(
+              (b.min[0] + b.max[0]) / 2,
+              (b.min[1] + b.max[1]) / 2,
+              (b.min[2] + b.max[2]) / 2,
+            );
+            mesh.scale.set(
+              Math.max(b.max[0] - b.min[0], 0.01),
+              Math.max(b.max[1] - b.min[1], 0.01),
+              Math.max(b.max[2] - b.min[2], 0.01),
+            );
+            sceneReal.add(mesh);
+          }
+          // concrete floor + painted lane lines (same positions the scan sees)
+          const floorGeo = new PlaneGeometry(
+            spec.floorBounds.x * 2,
+            spec.floorBounds.zMax - spec.floorBounds.zMin,
+          );
+          const floorMat = new MeshLambertMaterial({ color: 0xb4b8bd });
+          realDisposables.push(floorGeo, floorMat);
+          const floor = new Mesh(floorGeo, floorMat);
+          floor.rotation.x = -Math.PI / 2;
+          floor.position.set(0, spec.floorY, (spec.floorBounds.zMin + spec.floorBounds.zMax) / 2);
+          sceneReal.add(floor);
+          const laneMat = new MeshLambertMaterial({ color: 0xe3b505 });
+          realDisposables.push(laneMat);
+          for (const sx of [-spec.laneX, spec.laneX]) {
+            const lane = new Mesh(unit, laneMat);
+            lane.position.set(sx, spec.floorY + 0.006, 7.65);
+            lane.scale.set(0.14, 0.01, 16.3);
+            sceneReal.add(lane);
+          }
+          realReady = true;
+        })
+        .catch(() => {/* spec failed → plain scan view keeps working */});
+    }
 
     const material = new ShaderMaterial({
       vertexShader: VERT,
@@ -269,6 +385,34 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
     el.addEventListener("pointercancel", onUp);
     el.addEventListener("wheel", onWheel, { passive: false });
 
+    // ---- divider handle drag (reality-split) ----
+    const handle = handleRef.current;
+    let splitDragging = false;
+    const applySplit = () => {
+      if (handle) handle.style.left = `${splitRef.current * 100}%`;
+    };
+    const onSplitDown = (e: PointerEvent) => {
+      if (!e.isPrimary || (e.pointerType === "mouse" && e.button !== 0)) return;
+      e.preventDefault();
+      e.stopPropagation(); // the divider is not an orbit drag
+      splitDragging = true;
+      handle?.setPointerCapture(e.pointerId);
+    };
+    const onSplitMove = (e: PointerEvent) => {
+      if (!splitDragging || (e.pointerType === "mouse" && !(e.buttons & 1))) return;
+      const r = host.getBoundingClientRect();
+      splitRef.current = Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, (e.clientX - r.left) / r.width));
+      applySplit();
+    };
+    const onSplitUp = () => { splitDragging = false; };
+    if (handle) {
+      applySplit();
+      handle.addEventListener("pointerdown", onSplitDown);
+      handle.addEventListener("pointermove", onSplitMove);
+      handle.addEventListener("pointerup", onSplitUp);
+      handle.addEventListener("pointercancel", onSplitUp);
+    }
+
     // ---- render loop (paused while offscreen / tab hidden) ----
     let raf = 0;
     let visible = true;
@@ -303,12 +447,27 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
       pitch += (pitchTarget - pitch) * 0.14;
       radius += (radiusTarget - radius) * 0.14;
       placeCamera();
-      renderer.render(scene, camera);
+      if (split && realReady) {
+        // one camera, two worlds: realistic render left of the divider,
+        // the point cloud right of it (scissor split, CSS px — three scales by DPR)
+        const sw = Math.round(viewW * splitRef.current);
+        renderer.setScissorTest(true);
+        renderer.setScissor(0, 0, sw, viewH);
+        renderer.render(sceneReal, camera);
+        renderer.setScissor(sw, 0, viewW - sw, viewH);
+        renderer.render(scene, camera);
+        renderer.setScissorTest(false);
+      } else {
+        renderer.render(scene, camera);
+      }
     };
 
+    let viewW = 0, viewH = 0;
     const resize = () => {
       const { clientWidth: w, clientHeight: h } = host;
       if (!w || !h) return;
+      viewW = w;
+      viewH = h;
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
@@ -329,13 +488,39 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
       el.removeEventListener("pointerup", onUp);
       el.removeEventListener("pointercancel", onUp);
       el.removeEventListener("wheel", onWheel);
+      if (handle) {
+        handle.removeEventListener("pointerdown", onSplitDown);
+        handle.removeEventListener("pointermove", onSplitMove);
+        handle.removeEventListener("pointerup", onSplitUp);
+        handle.removeEventListener("pointercancel", onSplitUp);
+      }
       geometry.dispose();
       material.dispose();
       ramp.dispose();
+      for (const d of realDisposables) d.dispose();
       renderer.dispose();
       el.remove();
     };
-  }, []);
+  }, [split]);
 
-  return <div ref={hostRef} className={className} aria-hidden />;
+  return (
+    <div ref={hostRef} className={className} aria-hidden>
+      {split && (
+        <div
+          ref={handleRef}
+          className="absolute inset-y-0 z-10 w-px cursor-ew-resize select-none bg-accent/90"
+          style={{ left: `${SPLIT_INIT * 100}%`, touchAction: "none" }}
+        >
+          {/* invisible widened hit strip — a 1px line is unggrabbable */}
+          <span className="absolute inset-y-0 -left-3 -right-3" />
+          <span className="absolute left-1/2 top-1/2 grid size-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-accent bg-mt-navy-900/90 text-accent shadow-[0_0_18px_rgba(255,204,0,0.35)]">
+            <ChevronsLeftRight className="size-5" />
+          </span>
+          <span className="absolute bottom-14 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.18em] text-accent">
+            ← the site · the scan →
+          </span>
+        </div>
+      )}
+    </div>
+  );
 }
