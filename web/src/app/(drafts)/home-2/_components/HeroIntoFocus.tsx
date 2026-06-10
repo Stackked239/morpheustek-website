@@ -1,16 +1,22 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, Move3d } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { EyeMark } from "@/components/brand/EyeMark";
 import { site } from "@/lib/site";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
+
+// three.js viewer loads lazily, client-only, after first paint — never in SSR
+const ScanViewer = dynamic(() => import("./ScanViewer").then((m) => m.ScanViewer), {
+  ssr: false,
+});
 
 const chips = ["90-day risk-free trial", "Same safety class as SICK", "North American support"];
 
@@ -23,6 +29,22 @@ const chips = ["90-day risk-free trial", "Same safety class as SICK", "North Ame
  */
 export function HeroIntoFocus() {
   const scope = useRef<HTMLElement>(null);
+  const [scanOn, setScanOn] = useState(false);    // mount the 3D viewer?
+  const [scanReady, setScanReady] = useState(false); // first cloud frame rendered
+  const [hintDismissed, setHintDismissed] = useState(false);
+
+  // Progressive enhancement: viewer mounts only with motion allowed, after idle —
+  // the RadarPanel SVG is the SSR / no-JS / reduced-motion / loading state.
+  useEffect(() => {
+    if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
+    const start = () => setScanOn(true);
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(start, { timeout: 1500 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(start, 400);
+    return () => window.clearTimeout(id);
+  }, []);
 
   useGSAP(
     () => {
@@ -85,14 +107,55 @@ export function HeroIntoFocus() {
       {/* faint point-cloud field on the navy */}
       <div className="pointcloud-texture pointer-events-none absolute inset-0 opacity-[0.18]" aria-hidden />
 
-      {/* ---- yellow angular radar panel (right) ---- */}
+      {/* ---- yellow angular scan panel (right): bezel + live point-cloud viewport ---- */}
       <div
-        className="hero-parallax pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] bg-accent md:block"
+        className="hero-parallax absolute inset-y-0 right-0 hidden w-[48%] bg-accent md:block"
         style={{ clipPath: "polygon(22% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
         aria-hidden
       >
-        <div className="absolute inset-0 grid place-items-center">
-          <RadarPanel />
+        {/* dark viewport inset into the yellow bezel */}
+        <div
+          className="absolute inset-3 overflow-hidden bg-mt-navy-900"
+          style={{ clipPath: "polygon(22% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
+          onPointerDown={() => setHintDismissed(true)}
+        >
+          {/* radar SVG — SSR / no-JS / reduced-motion / loading state */}
+          <div
+            className={`absolute inset-0 grid place-items-center transition-opacity duration-700 ${
+              scanReady ? "pointer-events-none opacity-0" : "opacity-100"
+            }`}
+          >
+            <RadarPanel />
+          </div>
+
+          {/* live draggable scan */}
+          {scanOn && (
+            <ScanViewer
+              className={`absolute inset-0 transition-opacity duration-700 ${
+                scanReady ? "opacity-100" : "opacity-0"
+              }`}
+              onReady={() => setScanReady(true)}
+            />
+          )}
+
+          {/* instrumentation — true catalog facts only */}
+          <div className="pointer-events-none absolute right-4 top-3 font-mono text-[10px] uppercase tracking-[0.18em] text-text-muted">
+            LR-16F-100 · 360°×30° · simulated sweep
+          </div>
+          <div className="pointer-events-none absolute bottom-3 left-[24%] font-mono text-[10px] uppercase tracking-[0.18em] text-accent/80">
+            GS1-5 protective field · 270° · ≤5 m
+          </div>
+
+          {/* drag affordance — appears with the cloud, leaves on first touch */}
+          <div
+            className={`pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 transition-opacity duration-500 ${
+              scanReady && !hintDismissed ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <span className="inline-flex items-center gap-2 border border-border bg-bg/70 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-text backdrop-blur-sm">
+              <Move3d className="size-3.5 text-accent" /> Drag to orbit
+            </span>
+          </div>
         </div>
       </div>
 
@@ -148,13 +211,13 @@ export function HeroIntoFocus() {
   );
 }
 
-/** Concentric radar sweep — navy strokes on the yellow panel. */
+/** Concentric radar sweep — accent strokes on the dark viewport (fallback + loading state). */
 function RadarPanel() {
   const rings = [70, 118, 166, 214];
   return (
     <svg
       viewBox="0 0 460 460"
-      className="h-[78%] w-[78%] text-mt-navy"
+      className="h-[78%] w-[78%] text-accent"
       fill="none"
       aria-hidden
     >
@@ -183,8 +246,8 @@ function RadarPanel() {
       <g className="radar-sweep">
         <defs>
           <linearGradient id="sweep" x1="230" y1="230" x2="230" y2="16" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stopColor="var(--mt-navy)" stopOpacity="0.35" />
-            <stop offset="1" stopColor="var(--mt-navy)" stopOpacity="0" />
+            <stop offset="0" stopColor="var(--color-mt-yellow)" stopOpacity="0.3" />
+            <stop offset="1" stopColor="var(--color-mt-yellow)" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d="M230 230 L188 18 A214 214 0 0 1 272 18 Z" fill="url(#sweep)" />

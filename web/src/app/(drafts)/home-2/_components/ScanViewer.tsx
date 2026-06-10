@@ -1,0 +1,289 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import {
+  BufferAttribute,
+  BufferGeometry,
+  DataTexture,
+  LinearFilter,
+  PerspectiveCamera,
+  Points,
+  RGBAFormat,
+  Scene,
+  ShaderMaterial,
+  WebGLRenderer,
+} from "three";
+
+/**
+ * Draggable point-cloud viewer for the home-2 hero — renders the synthetic
+ * warehouse-aisle scan from /scan/warehouse-aisle.bin (see scripts/generate-scan.mjs).
+ *
+ * Mounted ONLY under html.js + prefers-reduced-motion: no-preference (the
+ * parent gates it); the RadarPanel SVG remains the SSR/no-JS/reduced-motion
+ * state. Entrance = a radar-sweep reveal: points materialize ring by ring,
+ * the way a real scan acquires. Then: slow idle orbit, drag to spin.
+ */
+
+const ASSET = "/scan/warehouse-aisle.bin";
+const TWO_PI = Math.PI * 2;
+
+// === TUNE ME (the "feel") ====================================================
+const ORBIT_TARGET = { x: 0, y: 0, z: 3.4 };    // scene point the camera circles
+const RADIUS = 10.5;                            // camera distance
+const PITCH_INIT = 0.62, PITCH_MIN = 0.15, PITCH_MAX = 0.95; // rad above floor
+const YAW_INIT = Math.PI + 0.55;                // start looking down the aisle
+const IDLE_SPEED = 0.0011;                      // rad/frame auto-orbit
+const IDLE_RESUME_MS = 2600;                    // after last drag
+const SWEEP_DURATION = 2.6;                     // seconds for the reveal sweep
+const POINT_SIZE = 1.45;
+// =============================================================================
+
+const VERT = /* glsl */ `
+  attribute float aDepth;
+  attribute float aFlag;
+  uniform float uSweep;
+  uniform float uSize;
+  uniform float uDpr;
+  varying float vDepth, vFlag, vGlow, vVis;
+
+  void main() {
+    float ang = atan(position.x, position.z);
+    float a = ang < 0.0 ? ang + ${TWO_PI} : ang;
+    vVis = step(a, uSweep);
+    float behind = uSweep - a;
+    // bright band trailing the sweep edge, only while the reveal runs
+    vGlow = vVis * smoothstep(0.85, 0.0, behind) * (1.0 - step(7.0, uSweep));
+    vDepth = aDepth;
+    vFlag = aFlag;
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mv;
+    float sz = uSize * (aFlag > 0.5 ? 1.7 : 1.0);
+    gl_PointSize = clamp(sz * uDpr * (130.0 / -mv.z), 1.0, 14.0);
+  }
+`;
+
+const FRAG = /* glsl */ `
+  precision mediump float;
+  uniform sampler2D uRamp;
+  uniform vec3 uField;
+  varying float vDepth, vFlag, vGlow, vVis;
+
+  void main() {
+    if (vVis < 0.5) discard;
+    vec2 c = gl_PointCoord - 0.5;
+    if (dot(c, c) > 0.25) discard;
+    vec3 col = vFlag > 0.5 ? uField : texture2D(uRamp, vec2(vDepth, 0.5)).rgb;
+    gl_FragColor = vec4(col + vGlow * 0.55, 1.0);
+  }
+`;
+
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.trim().replace("#", "");
+  const v = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+  return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+}
+
+/** 256×1 ramp texture interpolated across the CSS pc-near…pc-far depth stops. */
+function buildRampTexture(): { tex: DataTexture; field: [number, number, number] } {
+  const css = getComputedStyle(document.documentElement);
+  const read = (name: string, fallback: string) => hexToRgb(css.getPropertyValue(name) || fallback);
+  const stops = [
+    read("--color-pc-near", "#ff2d55"),
+    read("--color-pc-1", "#ff7a18"),
+    read("--color-pc-2", "#ffd200"),
+    read("--color-pc-3", "#39ff14"),
+    read("--color-pc-4", "#00e5ff"),
+    read("--color-pc-5", "#2e7dff"),
+    read("--color-pc-far", "#7a3cff"),
+  ];
+  const data = new Uint8Array(256 * 4);
+  for (let i = 0; i < 256; i++) {
+    const t = (i / 255) * (stops.length - 1);
+    const lo = Math.min(Math.floor(t), stops.length - 2);
+    const f = t - lo;
+    for (let ch = 0; ch < 3; ch++) {
+      data[i * 4 + ch] = Math.round(stops[lo][ch] * (1 - f) + stops[lo + 1][ch] * f);
+    }
+    data[i * 4 + 3] = 255;
+  }
+  const tex = new DataTexture(data, 256, 1, RGBAFormat);
+  tex.magFilter = tex.minFilter = LinearFilter;
+  tex.needsUpdate = true;
+  return { tex, field: read("--color-mt-yellow", "#ffcc00") };
+}
+
+export function ScanViewer({ onReady, className }: { onReady?: () => void; className?: string }) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+
+    let renderer: WebGLRenderer;
+    try {
+      renderer = new WebGLRenderer({ antialias: false, alpha: true, powerPreference: "low-power" });
+    } catch {
+      return; // no WebGL → RadarPanel fallback simply stays
+    }
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    renderer.setPixelRatio(dpr);
+    renderer.domElement.className = "h-full w-full cursor-grab active:cursor-grabbing";
+    renderer.domElement.style.touchAction = "pan-y"; // horizontal drag spins; vertical still scrolls
+    host.appendChild(renderer.domElement);
+
+    const scene = new Scene();
+    const camera = new PerspectiveCamera(50, 1, 0.1, 80);
+    const { tex: ramp, field } = buildRampTexture();
+
+    const material = new ShaderMaterial({
+      vertexShader: VERT,
+      fragmentShader: FRAG,
+      uniforms: {
+        uSweep: { value: 0 },
+        uSize: { value: POINT_SIZE },
+        uDpr: { value: dpr },
+        uRamp: { value: ramp },
+        uField: { value: field.map((v) => v / 255) },
+      },
+      transparent: false,
+      depthWrite: true,
+    });
+
+    const geometry = new BufferGeometry();
+    let points: Points | null = null;
+    let disposed = false;
+
+    // ---- load + decode the packed scan ----
+    fetch(ASSET)
+      .then((r) => {
+        if (!r.ok) throw new Error(`scan asset ${r.status}`);
+        return r.arrayBuffer();
+      })
+      .then((ab) => {
+        if (disposed) return;
+        const i16 = new Int16Array(ab);
+        const u8 = new Uint8Array(ab);
+        const n = ab.byteLength / 8;
+        const pos = new Float32Array(n * 3);
+        const depth = new Float32Array(n);
+        const flag = new Float32Array(n);
+        for (let i = 0; i < n; i++) {
+          pos[i * 3] = i16[i * 4] / 512;
+          pos[i * 3 + 1] = i16[i * 4 + 1] / 512;
+          pos[i * 3 + 2] = i16[i * 4 + 2] / 512;
+          depth[i] = u8[i * 8 + 6] / 255;
+          flag[i] = u8[i * 8 + 7];
+        }
+        geometry.setAttribute("position", new BufferAttribute(pos, 3));
+        geometry.setAttribute("aDepth", new BufferAttribute(depth, 1));
+        geometry.setAttribute("aFlag", new BufferAttribute(flag, 1));
+        points = new Points(geometry, material);
+        points.frustumCulled = false;
+        scene.add(points);
+        sweepStart = performance.now();
+        onReadyRef.current?.();
+      })
+      .catch(() => {/* asset failed → fallback stays visible */});
+
+    // ---- orbit state ----
+    let yaw = YAW_INIT;
+    let pitch = PITCH_INIT;
+    let yawVel = 0;
+    let dragging = false;
+    let lastX = 0, lastY = 0;
+    let lastDragAt = 0;
+    let sweepStart = 0;
+
+    const placeCamera = () => {
+      const cp = Math.cos(pitch), sp = Math.sin(pitch);
+      camera.position.set(
+        ORBIT_TARGET.x + RADIUS * Math.sin(yaw) * cp,
+        ORBIT_TARGET.y + RADIUS * sp,
+        ORBIT_TARGET.z + RADIUS * Math.cos(yaw) * cp,
+      );
+      camera.lookAt(ORBIT_TARGET.x, ORBIT_TARGET.y, ORBIT_TARGET.z);
+    };
+
+    const el = renderer.domElement;
+    const onDown = (e: PointerEvent) => {
+      dragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      el.setPointerCapture(e.pointerId);
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      yaw -= dx * 0.005;
+      yawVel = -dx * 0.005;
+      pitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, pitch + dy * 0.003));
+      lastDragAt = performance.now();
+    };
+    const onUp = () => { dragging = false; };
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onUp);
+
+    // ---- render loop (paused while offscreen / tab hidden) ----
+    let raf = 0;
+    let visible = true;
+    const io = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; });
+    io.observe(host);
+
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
+      if (!visible || document.hidden) return;
+
+      if (points && sweepStart) {
+        const t = (now - sweepStart) / 1000 / SWEEP_DURATION;
+        material.uniforms.uSweep.value =
+          t >= 1 ? 10 : TWO_PI * (1 - Math.pow(1 - t, 2.2)) + 0.9; // ease-out, +0.9 glow lead
+      }
+      if (!dragging) {
+        yaw += yawVel; // momentum
+        yawVel *= 0.94;
+        if (now - lastDragAt > IDLE_RESUME_MS) yaw += IDLE_SPEED;
+      }
+      placeCamera();
+      renderer.render(scene, camera);
+    };
+
+    const resize = () => {
+      const { clientWidth: w, clientHeight: h } = host;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    };
+    const ro = new ResizeObserver(resize);
+    ro.observe(host);
+    resize();
+    placeCamera();
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(raf);
+      io.disconnect();
+      ro.disconnect();
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onUp);
+      geometry.dispose();
+      material.dispose();
+      ramp.dispose();
+      renderer.dispose();
+      el.remove();
+    };
+  }, []);
+
+  return <div ref={hostRef} className={className} aria-hidden />;
+}

@@ -1,0 +1,12 @@
+{
+  "points": 54424,
+  "scenePoints": 48422,
+  "fieldPoints": 6002,
+  "scale": 512,
+  "bytesPerPoint": 8,
+  "sensorHeight": 0.8,
+  "fieldRadius": 2.5,
+  "fieldArcDeg": 270,
+  "depthRampMeters": 16,
+  "source": "simulated LR-16F-100 sweep (accumulated) + GS1-5 protective field"
+}
