@@ -19,7 +19,7 @@ export function EyeMark({
   title?: string;
 }) {
   const w = size;
-  const h = Math.round(size * 0.743); // native artwork ratio 591:439
+  const h = Math.round(size * 0.66); // native artwork ratio 665:439 (left tip reconstructed)
   const mask = "url(/brand/morpheustek-eye.png)";
   return (
     <span
