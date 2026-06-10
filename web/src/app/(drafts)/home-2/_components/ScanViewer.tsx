@@ -29,7 +29,8 @@ const TWO_PI = Math.PI * 2;
 
 // === TUNE ME (the "feel") ====================================================
 const ORBIT_TARGET = { x: 0, y: 0.4, z: 5.5 };  // scene point the camera circles
-const RADIUS = 12.5;                            // camera distance
+const RADIUS = 12.5;                            // home camera distance
+const RADIUS_MIN = 5.5, RADIUS_MAX = 20;        // wheel-zoom clamps
 const PITCH_INIT = 0.24, PITCH_MIN = 0.12, PITCH_MAX = 0.95; // rad above floor
 const YAW_INIT = 3.3; // scouted live: AMR + field ring foreground, corridor vanishing beyond
 const IDLE_SWAY = 0.22;                         // idle oscillation amplitude (rad)
@@ -200,6 +201,7 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
     // ---- orbit state: drag writes targets, camera eases toward them ----
     let yaw = YAW_INIT, yawTarget = YAW_INIT;
     let pitch = PITCH_INIT, pitchTarget = PITCH_INIT;
+    let radius = RADIUS, radiusTarget = RADIUS;
     let yawVel = 0;
     let dragging = false;
     let lastX = 0, lastY = 0;
@@ -209,13 +211,13 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
     const placeCamera = () => {
       const cp = Math.cos(pitch), sp = Math.sin(pitch);
       camera.position.set(
-        ORBIT_TARGET.x + RADIUS * Math.sin(yaw) * cp,
-        ORBIT_TARGET.y + RADIUS * sp,
-        ORBIT_TARGET.z + RADIUS * Math.cos(yaw) * cp,
+        ORBIT_TARGET.x + radius * Math.sin(yaw) * cp,
+        ORBIT_TARGET.y + radius * sp,
+        ORBIT_TARGET.z + radius * Math.cos(yaw) * cp,
       );
       camera.lookAt(ORBIT_TARGET.x, ORBIT_TARGET.y, ORBIT_TARGET.z);
       if (process.env.NODE_ENV !== "production") {
-        host.dataset.cam = `yaw=${yaw.toFixed(3)} pitch=${pitch.toFixed(3)}`; // tuning readout
+        host.dataset.cam = `yaw=${yaw.toFixed(3)} pitch=${pitch.toFixed(3)} r=${radius.toFixed(2)}`;
       }
     };
     if (process.env.NODE_ENV !== "production") {
@@ -253,10 +255,19 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
       dragging = false;
       lastDragAt = performance.now();
     };
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault(); // wheel over the scan zooms it — page scroll stays outside the panel
+      radiusTarget = Math.min(
+        RADIUS_MAX,
+        Math.max(RADIUS_MIN, radiusTarget * Math.exp(e.deltaY * 0.0011)),
+      );
+      lastDragAt = performance.now(); // zooming counts as interacting
+    };
     el.addEventListener("pointerdown", onDown);
     el.addEventListener("pointermove", onMove);
     el.addEventListener("pointerup", onUp);
     el.addEventListener("pointercancel", onUp);
+    el.addEventListener("wheel", onWheel, { passive: false });
 
     // ---- render loop (paused while offscreen / tab hidden) ----
     let raf = 0;
@@ -284,11 +295,13 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
           const dYaw = ((home - yawTarget + Math.PI) % TWO_PI + TWO_PI) % TWO_PI - Math.PI;
           yawTarget += dYaw * 0.012;
           pitchTarget += (PITCH_INIT - pitchTarget) * 0.012;
+          radiusTarget += (RADIUS - radiusTarget) * 0.012;
         }
       }
       // critically-damped feel: camera chases the targets
       yaw += (yawTarget - yaw) * 0.14;
       pitch += (pitchTarget - pitch) * 0.14;
+      radius += (radiusTarget - radius) * 0.14;
       placeCamera();
       renderer.render(scene, camera);
     };
@@ -315,6 +328,7 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerup", onUp);
       el.removeEventListener("pointercancel", onUp);
+      el.removeEventListener("wheel", onWheel);
       geometry.dispose();
       material.dispose();
       ramp.dispose();
