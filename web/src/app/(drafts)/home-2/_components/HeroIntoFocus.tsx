@@ -149,8 +149,10 @@ export function HeroIntoFocus() {
         aria-hidden
       />
 
-      <Container className="relative z-10 py-24 md:py-28">
-        <div className="max-w-2xl">
+      {/* pointer-events-none: the full-width container sits above the scan panel
+          and must not swallow its drags; the content column re-enables its own */}
+      <Container className="pointer-events-none relative z-10 py-24 md:py-28">
+        <div className="pointer-events-auto max-w-2xl">
           {/* eyebrow + eye for brand presence (esp. mobile) */}
           <div className="hero-line flex items-center gap-3">
             <EyeMark size={44} scanning className="text-accent" />
