@@ -33,7 +33,7 @@ const RADIUS = 12.5;                            // camera distance
 const PITCH_INIT = 0.24, PITCH_MIN = 0.12, PITCH_MAX = 0.95; // rad above floor
 const YAW_INIT = 3.3; // scouted live: AMR + field ring foreground, corridor vanishing beyond
 const IDLE_SWAY = 0.22;                         // idle oscillation amplitude (rad)
-const IDLE_RESUME_MS = 4500;                    // hands-off time before easing home
+const IDLE_RESUME_MS = 7000;                    // hands-off time before easing home
 const SWEEP_DURATION = 2.6;                     // seconds for the reveal sweep
 const POINT_SIZE = 1.35;
 // =============================================================================
@@ -138,8 +138,9 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     renderer.setPixelRatio(dpr);
-    renderer.domElement.className = "h-full w-full cursor-grab active:cursor-grabbing";
+    renderer.domElement.className = "h-full w-full cursor-grab select-none active:cursor-grabbing";
     renderer.domElement.style.touchAction = "pan-y"; // horizontal drag spins; vertical still scrolls
+    renderer.domElement.style.userSelect = "none";
     host.appendChild(renderer.domElement);
 
     const scene = new Scene();
@@ -229,7 +230,9 @@ export function ScanViewer({ onReady, className }: { onReady?: () => void; class
 
     const el = renderer.domElement;
     const onDown = (e: PointerEvent) => {
+      e.preventDefault(); // a real drag must never start a text selection
       dragging = true;
+      yawVel = 0; // grabbing the cloud stops any coast — no surprise resume
       lastX = e.clientX;
       lastY = e.clientY;
       el.setPointerCapture(e.pointerId);
