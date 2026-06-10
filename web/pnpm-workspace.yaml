@@ -1,3 +1,8 @@
+# Single-package repo. pnpm 10 requires a non-empty `packages:` field whenever
+# this file exists; `.` declares the root (web/) as the sole package.
+packages:
+  - "."
+
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
