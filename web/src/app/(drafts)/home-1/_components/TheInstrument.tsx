@@ -45,31 +45,48 @@ export function TheInstrument() {
 
         <div className="mt-14 grid gap-12 lg:grid-cols-[3fr_2fr] lg:gap-8">
           {/* FIG 01 — the protective-field plan view */}
-          <figure>
+          <figure data-fig01>
             <svg
               viewBox="0 0 400 300"
               role="img"
               aria-label="Plan view of the GS1-5 protective field: a 270° sector with a 5 metre protective boundary and a 20 to 30 metre warning boundary, drawn to scale"
               className="w-full max-w-2xl text-line-ink"
             >
-              {/* blind-wedge edges */}
-              <line x1={C.x} y1={C.y} x2={pt(150, -45).x} y2={pt(150, -45).y} stroke="currentColor" strokeWidth="0.5" />
-              <line x1={C.x} y1={C.y} x2={pt(150, 225).x} y2={pt(150, 225).y} stroke="currentColor" strokeWidth="0.5" />
-              {/* warning boundaries — dashed (20–30 m configurable max) */}
-              <path d={arc(150)} fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
-              <path d={arc(100)} fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
-              {/* protective boundary — solid, 5 m */}
+              <g className="fig01-warning">
+                {/* blind-wedge edges */}
+                <line x1={C.x} y1={C.y} x2={pt(150, -45).x} y2={pt(150, -45).y} stroke="currentColor" strokeWidth="0.5" />
+                <line x1={C.x} y1={C.y} x2={pt(150, 225).x} y2={pt(150, 225).y} stroke="currentColor" strokeWidth="0.5" />
+                {/* warning boundaries — dashed (20–30 m configurable max) */}
+                <path d={arc(150)} fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
+                <path d={arc(100)} fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
+              </g>
+              {/* protective boundary — solid, 5 m. pathLength=1 lets CSS draw it
+                  with stroke-dashoffset without measuring (no hydration risk). */}
               <path
-                d={`M ${C.x} ${C.y} L ${pt(25, -45).x.toFixed(1)} ${pt(25, -45).y.toFixed(1)} A 25 25 0 1 0 ${pt(25, 225).x.toFixed(1)} ${pt(25, 225).y.toFixed(1)} Z`}
+                className="fig01-protective"
+                pathLength={1}
+                d={`M ${C.x} ${C.y} L ${pt(25, 225).x.toFixed(1)} ${pt(25, 225).y.toFixed(1)} A 25 25 0 1 1 ${pt(25, -45).x.toFixed(1)} ${pt(25, -45).y.toFixed(1)} Z`}
                 fill="currentColor"
                 fillOpacity="0.08"
                 stroke="var(--text-strong)"
                 strokeWidth="1.5"
               />
+              {/* the radar sweep — rotates 0°→270° once, then fades (CSS) */}
+              <line
+                className="fig01-sweep"
+                aria-hidden
+                x1={C.x}
+                y1={C.y}
+                x2={pt(150, 225).x}
+                y2={pt(150, 225).y}
+                stroke="var(--brand-blue)"
+                strokeWidth="1"
+              />
               {/* sensor */}
               <rect x={C.x - 4} y={C.y - 4} width="8" height="8" fill="var(--text-strong)" />
               {/* range labels along the vertical axis */}
               <g
+                className="fig01-labels"
                 fill="var(--text-muted)"
                 fontFamily="var(--font-mono)"
                 fontSize="10"

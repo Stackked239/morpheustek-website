@@ -7,6 +7,7 @@ import { LineCard } from "./_components/LineCard";
 import { SignalChain } from "./_components/SignalChain";
 import { ReferenceConfigs } from "./_components/ReferenceConfigs";
 import { AcceptanceTest } from "./_components/AcceptanceTest";
+import { HomeOneMotion } from "./_components/HomeOneMotion";
 
 /* =============================================================================
    HOME-1 — "The Acceptance Test" (precision industrial)
@@ -54,6 +55,10 @@ export default function HomeVariant1() {
 
       {/* §06 — The Acceptance Test: numbered clauses + signature line + final CTA */}
       <AcceptanceTest />
+
+      {/* Slice 5: the one client component — IntersectionObserver driving
+          [data-draw] rules, the FIG 01 plot, and [data-count] figures */}
+      <HomeOneMotion />
     </>
   );
 }

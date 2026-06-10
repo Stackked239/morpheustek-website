@@ -442,6 +442,55 @@ h1, h2, h3, h4, h5, h6 {
 .js [data-draw].is-visible {
   transform: scaleX(1);
 }
+/* vertical variant — for ticks/bars that rise instead of extend */
+.js [data-draw="y"] {
+  transform: scaleY(0);
+  transform-origin: bottom;
+}
+.js [data-draw="y"].is-visible {
+  transform: scaleY(1);
+}
+
+/* §01 FIG 01 — the chart-recorder draw-in (home-1 "Acceptance Test" spectacle).
+   Runs ONCE on first viewport entry, then holds as a static diagram.
+   SSR/no-JS state = fully drawn (all hidden states live under .js). */
+.fig01-sweep {
+  opacity: 0;
+  transform-box: view-box;
+  transform-origin: 200px 160px;
+}
+.js [data-fig01].is-visible .fig01-sweep {
+  animation: fig01-sweep 2.4s var(--ease-rule) 0.2s 1 both;
+}
+@keyframes fig01-sweep {
+  0%   { transform: rotate(0deg); opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: rotate(270deg); opacity: 0; }
+}
+.js [data-fig01] .fig01-protective {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  fill-opacity: 0;
+  transition:
+    stroke-dashoffset 1.6s var(--ease-rule) 0.4s,
+    fill-opacity 0.6s var(--ease-soft) 1.8s;
+}
+.js [data-fig01].is-visible .fig01-protective {
+  stroke-dashoffset: 0;
+  fill-opacity: 0.08;
+}
+.js [data-fig01] .fig01-warning {
+  opacity: 0;
+  transition: opacity 0.8s var(--ease-soft) 1.3s;
+}
+.js [data-fig01] .fig01-labels {
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-soft) 1.9s;
+}
+.js [data-fig01].is-visible .fig01-warning,
+.js [data-fig01].is-visible .fig01-labels {
+  opacity: 1;
+}
 
 .surface-card {
   background: var(--surface);
@@ -483,6 +532,9 @@ h1, h2, h3, h4, h5, h6 {
   }
   .reveal, .js .reveal { opacity: 1 !important; transform: none !important; }
   [data-draw], .js [data-draw] { transform: none !important; }
+  .js [data-fig01] .fig01-protective { stroke-dashoffset: 0 !important; fill-opacity: 0.08 !important; }
+  .js [data-fig01] .fig01-warning, .js [data-fig01] .fig01-labels { opacity: 1 !important; }
+  .fig01-sweep { display: none; }
 }
 
 @keyframes iris-scan {

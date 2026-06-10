@@ -42,9 +42,10 @@ export function TheEconomics() {
         {/* the price axis */}
         <div className="mt-16 max-w-5xl">
           <div className="relative h-28">
-            {/* SICK band — hatched */}
+            {/* SICK band — hatched; draws left→right on scroll */}
             <div
-              className="absolute top-4 h-7 border border-line-ink"
+              data-draw
+              className="absolute top-4 h-7 border border-line-ink [transition-duration:1.4s]"
               style={{
                 left: x(2.1),
                 right: `${100 - parseFloat(x(22.6))}%`,
@@ -58,10 +59,13 @@ export function TheEconomics() {
             >
               Comparable SICK safety scanners · ~2× – 22×
             </p>
-            {/* GS1-5 tick — the viewport's yellow */}
-            <div className="absolute top-2 h-11 w-1 bg-accent" style={{ left: x(1) }} />
+            {/* GS1-5 tick — the viewport's yellow; rises into place */}
+            <div data-draw="y" className="absolute top-2 h-11 w-1 bg-accent" style={{ left: x(1) }} />
             <p className="absolute top-16 font-mono text-anno uppercase text-text-strong" style={{ left: "0%" }}>
-              GS1-5 · $1,950
+              GS1-5 ·{" "}
+              <span className="tnum" data-count="1950" data-prefix="$">
+                $1,950
+              </span>
               <span className="ml-2 text-text-muted">1×</span>
             </p>
             {/* baseline + scale ticks */}

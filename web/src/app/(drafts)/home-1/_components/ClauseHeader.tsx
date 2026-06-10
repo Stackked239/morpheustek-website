@@ -14,8 +14,10 @@ export function ClauseHeader({
   lead?: ReactNode;
 }) {
   return (
-    <header className="border-t border-border pt-6">
-      <div className="flex items-baseline gap-4">
+    <header>
+      {/* the section rule draws in on scroll — SSR/no-JS renders it complete */}
+      <div aria-hidden data-draw className="h-px w-full bg-border" />
+      <div className="mt-6 flex items-baseline gap-4">
         <span className="tnum font-mono text-anno-sm font-medium uppercase text-brand-blue">
           §{index}
         </span>
