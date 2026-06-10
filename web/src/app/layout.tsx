@@ -5,7 +5,6 @@ import { site } from "@/lib/site";
 import { TopBar } from "@/components/layout/TopBar";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { SensorOverlay } from "@/components/effects/SensorOverlay";
 
 // Official brand fonts: Roboto Condensed (headlines + body), Roboto Mono for specs.
 const robotoCondensed = Roboto_Condensed({
@@ -100,7 +99,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
-        <SensorOverlay />
       </body>
     </html>
   );

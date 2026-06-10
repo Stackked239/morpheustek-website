@@ -101,48 +101,52 @@
   color-scheme: dark;
 }
 
-/* ---------- SENSOR-VIEW (LiDAR) — the signature theme ---------- */
+/* ---------- SENSOR-VIEW — the "Blueprint" theme ----------
+   Recalibrated 2026-06 to the precision-industrial language: a dark
+   drafting-paper negative (deep blue-black paper, cyan-blue ink). The old
+   neon palette (matrix green #39ff14, neon cyan #00e5ff, glow) is banned —
+   nothing in this theme loops, glows, or performs. */
 .sensor-view {
-  --bg: #03080f;
-  --bg-subtle: #06121f;
-  --bg-muted: #0a1a2a;
-  --surface: rgba(8, 24, 38, 0.82);
-  --surface-raised: rgba(12, 32, 50, 0.88);
+  --bg: #050e1d;
+  --bg-subtle: #0a1830;
+  --bg-muted: #102342;
+  --surface: #0a1a33;
+  --surface-raised: #102342;
 
-  --text: #dcf2ff;
+  --text: #d9e8f8;
   --text-strong: #ffffff;
-  --text-muted: #7fa8c8;
-  --text-subtle: #4f6f8c;
-  --text-inverse: #03080f;
+  --text-muted: #8fa9c9;
+  --text-subtle: #5d7596;
+  --text-inverse: #050e1d;
 
-  --accent: #ffe14d;
-  --accent-text: #03080f;
-  --accent-hover: #ffd200;
-  --accent-press: #e6a700;
+  --accent: #ffd21f;
+  --accent-text: #0f326c;
+  --accent-hover: #ffcc00;
+  --accent-press: #e6b800;
 
-  --brand-blue: #5fb0ff;
-  --brand-blue-hover: #8fc8ff;
-  --eye: #ff6f60;
-  --eye-warm: #ff8a52;
+  --brand-blue: #4cc3ef;
+  --brand-blue-hover: #7fd4f4;
+  --eye: #4cc3ef;
+  --eye-warm: #31b4e7;
 
-  --border: #16344e;
-  --border-strong: #00e5ff;
-  --ring: #39ff14;
+  --border: #1b3a5c;
+  --border-strong: #4cc3ef;
+  --ring: #ffd21f;
 
-  --success: #39ff14;
-  --success-soft: rgba(12, 50, 20, 0.55);
-  --warning: #ffd200;
+  --success: #4ecb7d;
+  --success-soft: rgba(16, 50, 32, 0.55);
+  --warning: #f0b541;
   --warning-soft: rgba(58, 45, 14, 0.55);
-  --danger: #ff2d55;
-  --danger-soft: rgba(58, 14, 26, 0.55);
-  --info: #00e5ff;
+  --danger: #ff6b5e;
+  --danger-soft: rgba(58, 22, 18, 0.55);
+  --info: #4cc3ef;
 
-  --scrim: linear-gradient(180deg, rgba(3, 8, 15, 0) 0%, rgba(3, 8, 15, 0.88) 100%);
-  --motif-line: rgba(0, 229, 255, 0.14);
-  --pc-texture-opacity: 0.10;
-  --line-ink: rgba(0, 229, 255, 0.30);
-  --grid-minor: rgba(0, 229, 255, 0.05);
-  --grid-major: rgba(0, 229, 255, 0.10);
+  --scrim: linear-gradient(180deg, rgba(5, 14, 29, 0) 0%, rgba(5, 14, 29, 0.88) 100%);
+  --motif-line: rgba(76, 195, 239, 0.10);
+  --pc-texture-opacity: 0.06;
+  --line-ink: rgba(76, 195, 239, 0.32);
+  --grid-minor: rgba(76, 195, 239, 0.06);
+  --grid-major: rgba(76, 195, 239, 0.12);
   color-scheme: dark;
 }
 
@@ -566,109 +570,9 @@ h1, h2, h3, h4, h5, h6 {
   .eye-scan { animation: none; opacity: 0; }
 }
 
-/* =============================================================================
-   Sensor-view (LiDAR) HUD overlay — only visible when html.sensor-view is on
-   ========================================================================== */
-.sensor-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 35; /* below header (40) and mobile nav (60), above content */
-  pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.45s var(--ease-soft), visibility 0.45s var(--ease-soft);
-}
-.sensor-view .sensor-overlay {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* point-cloud grid, faded toward the center so content stays readable */
-.sensor-grid {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(0, 229, 255, 0.55) 0.7px, transparent 0.7px);
-  background-size: 22px 22px;
-  opacity: 0.4;
-  -webkit-mask-image: radial-gradient(ellipse 72% 64% at 50% 46%, transparent 28%, #000 100%);
-  mask-image: radial-gradient(ellipse 72% 64% at 50% 46%, transparent 28%, #000 100%);
-}
-
-/* sweeping scan line (GPU transform) */
-.sensor-scan {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 160px;
-  background: linear-gradient(180deg, transparent, rgba(0, 229, 255, 0.14) 55%, transparent);
-  border-bottom: 1px solid rgba(57, 255, 20, 0.55);
-  box-shadow: 0 0 28px rgba(0, 229, 255, 0.22);
-  transform: translateY(-160px);
-  animation: sensor-sweep 6s linear infinite;
-}
-@keyframes sensor-sweep {
-  0% { transform: translateY(-160px); }
-  100% { transform: translateY(100vh); }
-}
-
-/* cool vignette */
-.sensor-vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 100% 82% at 50% 50%, transparent 52%, rgba(0, 40, 60, 0.55) 100%);
-}
-
-/* HUD corner brackets */
-.sensor-bracket {
-  position: absolute;
-  width: 26px;
-  height: 26px;
-  border: 2px solid rgba(57, 255, 20, 0.6);
-}
-.sensor-bracket--tl { top: 86px; left: 22px; border-right: 0; border-bottom: 0; }
-.sensor-bracket--tr { top: 86px; right: 22px; border-left: 0; border-bottom: 0; }
-.sensor-bracket--bl { bottom: 22px; left: 22px; border-right: 0; border-top: 0; }
-.sensor-bracket--br { bottom: 22px; right: 22px; border-left: 0; border-top: 0; }
-
-/* labeled readout */
-.sensor-hud {
-  position: absolute;
-  bottom: 26px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #39ff14;
-  text-shadow: 0 0 8px rgba(57, 255, 20, 0.55);
-  border: 1px solid rgba(57, 255, 20, 0.35);
-  border-radius: 999px;
-  padding: 5px 13px;
-  background: rgba(3, 8, 15, 0.55);
-  backdrop-filter: blur(4px);
-}
-.sensor-hud-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: #39ff14;
-  box-shadow: 0 0 8px #39ff14;
-  animation: sensor-pulse 1.6s ease-in-out infinite;
-}
-@keyframes sensor-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sensor-scan { display: none; }
-  .sensor-hud-dot { animation: none; }
-}
+/* The old sensor-view HUD overlay (scanline, corner brackets, glow pill) was
+   removed 2026-06 — the looping hacker-HUD aesthetic was rejected with the
+   home-1 redesign. Sensor view is now the "Blueprint" theme: palette only. */
 
 /* subtle slow zoom for the static point-cloud hero (GPU transform; off under reduced-motion) */
 @keyframes hero-zoom {
