@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
@@ -10,9 +10,19 @@ import { ThemeControls } from "./ThemeControls";
 type Item = { label: string; href: string };
 type Cat = { slug: string; label: string };
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
 export function MobileNav({ nav, categories }: { nav: Item[]; categories: Cat[] }) {
   const [open, setOpen] = useState(false);
   const [prodOpen, setProdOpen] = useState(false);
+  const openerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const close = useCallback(() => {
+    setOpen(false);
+    openerRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -21,12 +31,47 @@ export function MobileNav({ nav, categories }: { nav: Item[]; categories: Cat[] 
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const focusables = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    first?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key !== "Tab" || focusables.length === 0) return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        }
+      } else if (document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, close]);
+
   return (
     <div className="lg:hidden">
       <button
+        ref={openerRef}
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open menu"
+        aria-expanded={open}
+        aria-controls="mobile-nav-panel"
         className="grid size-10 place-items-center rounded-md text-text hover:bg-bg-muted focus-visible:outline-2"
       >
         <Menu className="size-5" />
@@ -36,8 +81,13 @@ export function MobileNav({ nav, categories }: { nav: Item[]; categories: Cat[] 
         className={cn("fixed inset-0 z-[60] transition-opacity duration-200", open ? "visible opacity-100" : "invisible opacity-0")}
         aria-hidden={!open}
       >
-        <div className="absolute inset-0 bg-mt-navy-900/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
+        <div className="absolute inset-0 bg-mt-navy-900/60 backdrop-blur-sm" onClick={close} />
         <div
+          ref={panelRef}
+          id="mobile-nav-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Site menu"
           className={cn(
             "absolute right-0 top-0 flex h-full w-[88%] max-w-sm flex-col bg-bg shadow-[var(--shadow-xl)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
             open ? "translate-x-0" : "translate-x-full",
@@ -45,7 +95,7 @@ export function MobileNav({ nav, categories }: { nav: Item[]; categories: Cat[] 
         >
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <ThemeControls />
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close menu" className="grid size-10 place-items-center rounded-md hover:bg-bg-muted focus-visible:outline-2">
+            <button type="button" onClick={close} aria-label="Close menu" className="grid size-10 place-items-center rounded-md hover:bg-bg-muted focus-visible:outline-2">
               <X className="size-5" />
             </button>
           </div>
@@ -63,7 +113,7 @@ export function MobileNav({ nav, categories }: { nav: Item[]; categories: Cat[] 
             {prodOpen ? (
               <div className="mb-1 ml-3 border-l border-border pl-3">
                 {categories.map((c) => (
-                  <Link key={c.slug} href={`/${c.slug}`} onClick={() => setOpen(false)} className="block rounded-md px-3 py-2 text-sm text-text-muted hover:bg-bg-muted hover:text-text">
+                  <Link key={c.slug} href={`/${c.slug}`} onClick={close} className="block rounded-md px-3 py-2 text-sm text-text-muted hover:bg-bg-muted hover:text-text">
                     {c.label}
                   </Link>
                 ))}
@@ -72,7 +122,7 @@ export function MobileNav({ nav, categories }: { nav: Item[]; categories: Cat[] 
             {nav
               .filter((n) => n.label !== "Products")
               .map((n) => (
-                <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className="block rounded-md px-3 py-3 font-display text-lg font-bold text-text-strong hover:bg-bg-muted">
+                <Link key={n.href} href={n.href} onClick={close} className="block rounded-md px-3 py-3 font-display text-lg font-bold text-text-strong hover:bg-bg-muted">
                   {n.label}
                 </Link>
               ))}

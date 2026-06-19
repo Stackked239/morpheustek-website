@@ -2,17 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { getProduct, productImage } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
-
-gsap.registerPlugin(useGSAP);
 
 /**
  * The assembly — the four-step perception stack the client raved about, now
@@ -127,6 +124,26 @@ const ASSEMBLIES: readonly Assembly[] = [
 
 const DEFAULT_ID = ASSEMBLIES[0].id; // AMR — the no-JS / SSR state
 
+function runAssemblyBuildIn(parts: HTMLElement[]) {
+  if (!parts.length) return;
+  if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
+  gsap.killTweensOf(parts);
+  gsap.fromTo(
+    parts,
+    { opacity: 0, y: 48, scale: 0.94 },
+    {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.7,
+      ease: "power3.out",
+      stagger: 0.14,
+      clearProps: "transform,opacity",
+      overwrite: true,
+    },
+  );
+}
+
 function StepCard({
   index,
   step,
@@ -164,7 +181,7 @@ function StepCard({
       <article
         data-part
         className={cn(
-          "group flex min-w-0 flex-1 flex-col gap-5 rounded-lg border border-border bg-bg-muted p-5 sm:flex-row sm:items-center sm:gap-7 sm:p-6",
+          "assembly-part group flex min-w-0 flex-1 flex-col gap-5 rounded-lg border border-border bg-bg-muted p-5 sm:flex-row sm:items-center sm:gap-7 sm:p-6",
           "transition-colors duration-200 hover:border-border-strong",
         )}
       >
@@ -234,15 +251,13 @@ export function AssemblyStack() {
   // gsap scope lives on an inner div (Container is a plain wrapper and doesn't
   // forward a ref) — it still encloses every [data-part] in the stack.
   const scope = useRef<HTMLDivElement>(null);
+  const stackRef = useRef<HTMLOListElement>(null);
   const [activeId, setActiveId] = useState<string>(DEFAULT_ID);
   const [revealKey, setRevealKey] = useState(0); // bumped on viewport re-entry → replays the build-in
 
   const active = ASSEMBLIES.find((a) => a.id === activeId) ?? ASSEMBLIES[0];
 
-  // Replay-on-scroll (the client's ask): re-fire the build-in each time the
-  // section re-enters the viewport. Gated to motion-OK so reduced-motion never
-  // triggers it. revealKey === 0 (first paint) is intentionally NOT animated, so
-  // the SSR / no-JS final state is untouched until a real entry or a tab change.
+  // Replay-on-scroll: re-fire the build-in each time the section re-enters.
   useEffect(() => {
     const node = scope.current;
     if (!node) return;
@@ -255,31 +270,22 @@ export function AssemblyStack() {
     return () => io.disconnect();
   }, []);
 
-  // The stagger build-in — final-state-first, so the parts already sit where they
-  // belong; this just re-flows them in on tab change or viewport re-entry. A plain
-  // reduced-motion guard (no gsap.matchMedia context to accumulate); revertOnUpdate
-  // bounds cleanup to one live context per run.
-  useGSAP(
-    () => {
-      if (revealKey === 0) return; // leave the SSR / first-paint state untouched
-      if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
-      gsap.fromTo(
-        "[data-part]",
-        { autoAlpha: 0, x: 28, y: -10 },
-        {
-          autoAlpha: 1,
-          x: 0,
-          y: 0,
-          duration: 0.55,
-          ease: "power3.out",
-          stagger: 0.1,
-          clearProps: "transform,opacity,visibility",
-          overwrite: true,
-        },
-      );
-    },
-    { scope, dependencies: [activeId, revealKey], revertOnUpdate: true },
-  );
+  // Tab change / scroll re-entry: animate after React commits the stack DOM.
+  useLayoutEffect(() => {
+    if (revealKey === 0) return;
+    const parts = stackRef.current?.querySelectorAll<HTMLElement>(".assembly-part");
+    if (!parts?.length) return;
+    runAssemblyBuildIn(Array.from(parts));
+    return () => {
+      gsap.set(parts, { clearProps: "all", opacity: 1 });
+    };
+  }, [activeId, revealKey]);
+
+  const selectPlatform = (id: string) => {
+    if (id === activeId) return;
+    setActiveId(id);
+    setRevealKey((k) => k + 1);
+  };
 
   // overflow-x-clip (not -hidden) contains the gsap x build-in WITHOUT making a
   // scroll container — so the sticky selector below can pin to the page.
@@ -317,7 +323,7 @@ export function AssemblyStack() {
                 key={a.id}
                 type="button"
                 aria-pressed={selected}
-                onClick={() => setActiveId(a.id)}
+                onClick={() => selectPlatform(a.id)}
                 className={cn(
                   "rounded-lg px-4 py-2 font-mono text-anno-sm font-semibold uppercase tracking-[0.12em] transition-colors duration-150",
                   "focus-visible:outline-2 focus-visible:outline-offset-2",
@@ -338,11 +344,15 @@ export function AssemblyStack() {
           className="mt-4 font-mono text-anno-sm uppercase tracking-[0.14em] text-text-subtle"
         >
           <span className="text-text-muted">Configured for {active.label}</span> · {active.blurb}
+          <span className="sr-only">
+            {" "}
+            — {active.parts.map((p) => getProduct(p.slug)?.model).filter(Boolean).join(", ")}
+          </span>
         </p>
 
-        {/* ── the stack — reconciled in place per assembly (StepCards keyed by
-            their stable role); the gsap fromTo re-flows the parts on change ── */}
-        <ol className="mt-10 flex flex-col gap-5 md:gap-6">
+        {/* ── the stack — remounted per platform so parts swap cleanly, then
+            stagger in via runBuildIn after React commits the new DOM ── */}
+        <ol ref={stackRef} key={activeId} className="mt-10 flex flex-col gap-5 md:gap-6">
           {STEPS.map((step, i) => (
             <StepCard key={step.role} index={i} step={step} part={active.parts[i]} />
           ))}

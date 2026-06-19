@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import gsap from "gsap";
 import { ArrowRight, ArrowUpRight, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
@@ -54,6 +55,26 @@ const TABS = CATEGORY_ORDER.map((slug) => ({
   category: getCategory(slug),
   items: productsInCategory(slug),
 })).filter((t) => t.category && t.items.length > 0);
+
+function runBrowseBuildIn(cards: HTMLElement[]) {
+  if (!cards.length) return;
+  if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
+  gsap.killTweensOf(cards);
+  gsap.fromTo(
+    cards,
+    { opacity: 0, y: 40, scale: 0.96 },
+    {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.65,
+      ease: "power3.out",
+      stagger: 0.08,
+      clearProps: "transform,opacity",
+      overwrite: true,
+    },
+  );
+}
 
 function ProductPlate({ product }: { product: Product }) {
   const src = productImage(product.slug);
@@ -121,8 +142,42 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 export function CategoryBrowse() {
+  const gridRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<CategorySlug>(TABS[0]?.slug ?? "lidar-for-robotics");
+  const [revealKey, setRevealKey] = useState(0);
   const current = TABS.find((t) => t.slug === active) ?? TABS[0];
+  const panelId = "browse-category-panel";
+
+  const selectCategory = (slug: CategorySlug) => {
+    if (slug === active) return;
+    setActive(slug);
+    setRevealKey((k) => k + 1);
+  };
+
+  // Replay-on-scroll: re-fire the card build-in each time the grid re-enters.
+  useEffect(() => {
+    const node = gridRef.current;
+    if (!node) return;
+    if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) setRevealKey((k) => k + 1);
+      },
+      { threshold: 0.15 },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    if (revealKey === 0) return;
+    const cards = gridRef.current?.querySelectorAll<HTMLElement>(".browse-card");
+    if (!cards?.length) return;
+    runBrowseBuildIn(Array.from(cards));
+    return () => {
+      gsap.set(cards, { clearProps: "all", opacity: 1 });
+    };
+  }, [active, revealKey]);
 
   return (
     <Section tone="default" className="relative overflow-hidden border-t border-border">
@@ -150,18 +205,23 @@ export function CategoryBrowse() {
 
         {/* segmented category selector */}
         <div
-          role="group"
+          role="tablist"
           aria-label="Product categories"
           className="mt-9 flex flex-wrap gap-2 border-b border-border pb-1"
         >
           {TABS.map((t) => {
             const isActive = t.slug === active;
+            const tabId = `browse-tab-${t.slug}`;
             return (
               <button
                 key={t.slug}
+                id={tabId}
                 type="button"
-                aria-pressed={isActive}
-                onClick={() => setActive(t.slug)}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={panelId}
+                tabIndex={isActive ? 0 : -1}
+                onClick={() => selectCategory(t.slug)}
                 className={cn(
                   "inline-flex items-center gap-2 rounded-md px-3.5 py-2 font-mono text-anno-sm uppercase tracking-[0.1em]",
                   "transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2",
@@ -184,20 +244,21 @@ export function CategoryBrowse() {
           })}
         </div>
 
-        {/* active category intro + grid live in one tabpanel, remounted per slug so
-            the entrance animation replays on every category switch. */}
-        <div key={active}>
+        <div
+          id={panelId}
+          role="tabpanel"
+          aria-labelledby={`browse-tab-${active}`}
+        >
           <p className="mt-7 max-w-3xl text-base leading-relaxed text-text-muted">{current?.category?.blurb}</p>
 
-          {/* product grid — final-state-first (visible by default). The .js gate
-              below adds a staggered reveal that replays per category (key remount)
-              and on viewport re-entry (CSS scroll-driven), off under reduced-motion. */}
-          <div className="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {current?.items.map((product) => (
-              <div key={product.slug}>
-                <ProductCard product={product} />
-              </div>
-            ))}
+          <div ref={gridRef} className="mt-7">
+            <div key={active} className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {current?.items.map((product) => (
+                <div key={product.slug} className="browse-card">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -212,7 +273,6 @@ export function CategoryBrowse() {
           — they spec it with you.
         </p>
       </Container>
-
     </Section>
   );
 }
