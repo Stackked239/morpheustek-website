@@ -281,8 +281,10 @@ export function AssemblyStack() {
     { scope, dependencies: [activeId, revealKey], revertOnUpdate: true },
   );
 
+  // overflow-x-clip (not -hidden) contains the gsap x build-in WITHOUT making a
+  // scroll container — so the sticky selector below can pin to the page.
   return (
-    <Section tone="subtle" className="overflow-hidden border-t border-border !bg-bg-muted">
+    <Section tone="subtle" className="overflow-x-clip border-t border-border !bg-bg-muted">
       <Container>
         <div ref={scope}>
         {/* ── section header ──────────────────────────────────────────────── */}
@@ -298,11 +300,15 @@ export function AssemblyStack() {
           </p>
         </div>
 
-        {/* ── the segmented selector (Austin's idea) ──────────────────────── */}
+        {/* ── the segmented selector (Austin's idea) ──────────────────────────
+            Sticky: stays pinned just below the 72px site header while you scroll
+            the parts, so you can switch platforms without scrolling back up. Its
+            containing block is the scope div, so it releases at the bottom of the
+            whole component. bg-bg is opaque so parts scroll cleanly underneath. */}
         <div
           role="group"
           aria-label="Choose a robot platform"
-          className="mt-9 inline-flex flex-wrap gap-1.5 rounded-xl border border-border bg-bg p-1.5"
+          className="sticky top-20 z-30 mt-9 inline-flex flex-wrap gap-1.5 rounded-xl border border-border bg-bg p-1.5 shadow-md"
         >
           {ASSEMBLIES.map((a) => {
             const selected = a.id === activeId;
