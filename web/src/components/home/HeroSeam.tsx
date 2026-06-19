@@ -16,15 +16,7 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 // three.js viewer loads lazily, client-only, after first paint — never in SSR
 const SeamViewer = dynamic(() => import("./SeamViewer").then((m) => m.SeamViewer), { ssr: false });
 
-// scene-space anchors for the live dimension overlays — MUST match generate-scan.mjs
-// (SENSOR at origin 0.8 m above a floor at y=-0.8; 2.5 m configured field; forklift at x1.7/z9.6)
-const SENSOR: [number, number, number] = [0, -0.8, 0];      // AMR footprint = field centre, on the floor
-const FIELD_EDGE: [number, number, number] = [0, -0.8, 2.5]; // 2.5 m protective radius, down the aisle
-const FORKLIFT: [number, number, number] = [1.7, 0.35, 9.6]; // the half-photo / half-scan "oh" object
-
 const chips = ["90-day risk-free trial", "Same safety class as SICK", "North American support"];
-
-type Cert = { configured: string; max: string; rating: string; angle: string };
 
 /**
  * Home hero — "The Seam".
@@ -32,13 +24,12 @@ type Cert = { configured: string; max: string; rating: string; angle: string };
  * One warehouse aisle, one camera, a divider you drag: the aisle as you see it
  * on the left, the same aisle as an OLEI sensor sees it on the right. The
  * choreography: the brand eye opens → the scan acquires ring-by-ring → the seam
- * sweeps once across the forklift (so you know it moves) → the GS1-5 field
- * resolves and a live dimension line measures the 2.5 m protective radius
- * against the rack pitch. Everything below the EyeMark poster runs ONLY under
- * html.js + prefers-reduced-motion: no-preference; the poster is the complete,
+ * sweeps once across the forklift, so you know it moves. Everything below the
+ * EyeMark poster runs ONLY under html.js + prefers-reduced-motion: no-preference;
+ * the poster is the complete,
  * readable SSR / no-JS / reduced-motion hero.
  */
-export function HeroSeam({ distributor, problem, cert }: { distributor: string; problem: string; cert: Cert }) {
+export function HeroSeam({ distributor, problem }: { distributor: string; problem: string }) {
   const scope = useRef<HTMLElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);     // inner viewport — projection reference box
   const eyeRef = useRef<HTMLDivElement>(null);
@@ -47,18 +38,9 @@ export function HeroSeam({ distributor, problem, cert }: { distributor: string; 
 
   const [scanOn, setScanOn] = useState(false);       // mount the 3D viewer?
   const [scanReady, setScanReady] = useState(false); // first cloud frame rendered
-  const [overlaysOn, setOverlaysOn] = useState(false);
   const [hintDismissed, setHintDismissed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pill, setPill] = useState<"lidar" | "camera">("lidar");
-
-  // dimension-overlay element refs (mutated imperatively each frame — no per-frame React state)
-  const dimGroupRef = useRef<SVGGElement>(null);
-  const dimLineRef = useRef<SVGLineElement>(null);
-  const tickARef = useRef<SVGGElement>(null);
-  const tickBRef = useRef<SVGGElement>(null);
-  const capRef = useRef<HTMLDivElement>(null);
-  const fkRef = useRef<HTMLDivElement>(null);
 
   // Progressive enhancement: mount only with motion allowed and not on Save-Data,
   // after idle. The EyeMark poster is the SSR / no-JS / reduced-motion state.
@@ -83,65 +65,11 @@ export function HeroSeam({ distributor, problem, cert }: { distributor: string; 
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // reveal the field + dimension overlays once acquisition + the seam sweep land
-  useEffect(() => {
-    if (!scanReady) return;
-    const id = window.setTimeout(() => setOverlaysOn(true), 3600);
-    return () => window.clearTimeout(id);
-  }, [scanReady]);
-
   // mobile: the pill drives the seam fully (no 1px handle on touch)
   useEffect(() => {
     if (!isMobile || !scanReady) return;
     api.current?.setSplitTarget(pill === "lidar" ? 0.06 : 0.94);
   }, [isMobile, scanReady, pill]);
-
-  // ---- live dimension overlays: glue DOM/SVG to the moving camera ----
-  useEffect(() => {
-    if (!scanReady) return;
-    let raf = 0;
-    const draw = () => {
-      raf = requestAnimationFrame(draw);
-      const a = api.current;
-      // pause entirely when the tab is hidden OR the hero is scrolled offscreen
-      // (the viewer freezes its camera there, so this work would be wasted)
-      if (!a || document.hidden || !a.isActive()) return;
-      const w = a.getViewW(); // cached — no per-frame layout read
-      if (!w) return;
-      const seamPx = a.getSplit() * w;
-      const pA = a.project(...SENSOR);
-      const pB = a.project(...FIELD_EDGE);
-      const pF = a.project(...FORKLIFT);
-
-      // the field + its measurement belong to the machine's half: fade in as
-      // their anchor clears the seam (soft band avoids boundary flicker).
-      const fade = (x: number, visible: boolean) =>
-        overlaysOn && visible ? Math.max(0, Math.min(1, (x - seamPx) / 40)) : 0;
-
-      const line = dimLineRef.current, cap = capRef.current, grp = dimGroupRef.current;
-      if (line) {
-        line.setAttribute("x1", String(pA.x));
-        line.setAttribute("y1", String(pA.y));
-        line.setAttribute("x2", String(pB.x));
-        line.setAttribute("y2", String(pB.y));
-      }
-      if (tickARef.current) tickARef.current.setAttribute("transform", `translate(${pA.x} ${pA.y})`);
-      if (tickBRef.current) tickBRef.current.setAttribute("transform", `translate(${pB.x} ${pB.y})`);
-      const dimOn = fade(pB.x, pB.visible);
-      if (grp) grp.style.opacity = String(dimOn);
-      if (cap) {
-        cap.style.transform = `translate(${(pA.x + pB.x) / 2}px, ${(pA.y + pB.y) / 2 + 14}px)`;
-        cap.style.opacity = String(dimOn);
-      }
-      const fk = fkRef.current;
-      if (fk) {
-        fk.style.transform = `translate(${pF.x}px, ${pF.y}px)`;
-        fk.style.opacity = String(fade(pF.x, pF.visible));
-      }
-    };
-    raf = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(raf);
-  }, [scanReady, overlaysOn]);
 
   // ---- re-entry replay: re-run the full "eyeball → scan acquires → Boom" beat ----
   // The client (06-12, R10) wanted the entry choreography to re-fire on scroll-back,
@@ -156,8 +84,7 @@ export function HeroSeam({ distributor, problem, cert }: { distributor: string; 
       if (replayingRef.current || !api.current) return;
       if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
       replayingRef.current = true;
-      setOverlaysOn(false);
-      setScanReady(false); // eye crossfades back in, scan + overlays fade out
+      setScanReady(false); // eye crossfades back in, scan fades out
       if (eyeRef.current) {
         gsap.fromTo(eyeRef.current, { scale: 0.7 }, { scale: 1, duration: 0.7, ease: "power3.out" });
       }
@@ -205,8 +132,6 @@ export function HeroSeam({ distributor, problem, cert }: { distributor: string; 
     { scope },
   );
 
-  const dimCaption = `${cert.configured} configured · ${cert.max} · ${cert.rating}`;
-
   return (
     <section
       ref={scope}
@@ -247,37 +172,6 @@ export function HeroSeam({ distributor, problem, cert }: { distributor: string; 
               onReady={() => setScanReady(true)}
             />
           )}
-
-          {/* live dimension overlays — measure the field against real geometry, glued as you drag */}
-          <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
-            <g ref={dimGroupRef} style={{ opacity: 0 }}>
-              <line
-                ref={dimLineRef}
-                x1="0" y1="0" x2="0" y2="0"
-                stroke="var(--accent)" strokeWidth="1" strokeDasharray="2 3" opacity="0.75"
-              />
-              <g ref={tickARef} stroke="var(--accent)" strokeWidth="1">
-                <line x1="-4" y1="-4" x2="4" y2="4" /><line x1="-4" y1="4" x2="4" y2="-4" />
-              </g>
-              <g ref={tickBRef} stroke="var(--accent)" strokeWidth="1">
-                <line x1="0" y1="-5" x2="0" y2="5" /><line x1="-5" y1="0" x2="5" y2="0" />
-              </g>
-            </g>
-          </svg>
-          <div
-            ref={capRef}
-            style={{ opacity: 0 }}
-            className="pointer-events-none absolute left-0 top-0 -translate-x-1/2 whitespace-nowrap border border-accent/40 bg-mt-navy-900/85 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-accent backdrop-blur-sm"
-          >
-            {dimCaption}
-          </div>
-          <div
-            ref={fkRef}
-            style={{ opacity: 0 }}
-            className="pointer-events-none absolute left-0 top-0 -translate-x-1/2 -translate-y-7 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.16em] text-text-muted"
-          >
-            <span className="text-accent">+</span> Forklift
-          </div>
 
           {/* fixed instrumentation — true catalog model */}
           <div className="pointer-events-none absolute right-4 top-3 font-mono text-[10px] uppercase tracking-[0.18em] text-text-muted">

@@ -1,6 +1,5 @@
 import { CtaBand } from "@/components/marketing/CtaBand";
 import { site } from "@/lib/site";
-import { getProduct } from "@/lib/catalog";
 import { HeroSeam } from "./HeroSeam";
 import { TrustBand } from "./TrustBand";
 import { AssemblyStack } from "./AssemblyStack";
@@ -30,21 +29,9 @@ import { CategoryBrowse } from "./CategoryBrowse";
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function HomeSeam() {
-  // Hero cert caption, data-driven from the GS1-5 record (the safety-badge rule —
-  // it can't describe another SKU). 2.5 m = the configured field the scan renders.
-  const gs15 = getProduct("gs1-5-safety-lidar");
-  const spec = (label: string, fallback: string) =>
-    gs15?.keySpecs?.find((s) => s.label === label)?.value ?? fallback;
-  const cert = {
-    configured: "2.5 m",
-    max: spec("Protective range", "5 m max"),
-    rating: spec("Safety rating", "Type 3 · SIL2 · PL d"),
-    angle: spec("Scanning angle", "270°"),
-  };
-
   return (
     <>
-      <HeroSeam distributor={site.distributor} problem={site.heroProblem} cert={cert} />
+      <HeroSeam distributor={site.distributor} problem={site.heroProblem} />
       <AssemblyStack />
       <CertifyPlot />
       <RangeLedger />
