@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { BadgeCheck, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ProductGlyph } from "@/components/brand/ProductGlyph";
+import { ProductPlateBackdrop } from "@/components/product/ProductPlateBackdrop";
 
 type Cat = { slug: string; label: string; blurb: string };
 type Featured = { slug: string; name: string; tagline: string; image?: string };
@@ -62,7 +63,8 @@ export function MegaMenu({ categories, featured }: { categories: Cat[]; featured
               <p className="eyebrow mb-3">Product of the month</p>
               <Link href={`/products/${featured.slug}`} className="group block">
                 {featured.image ? (
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border border-border bg-white">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border border-border bg-bg-subtle">
+                    <ProductPlateBackdrop />
                     <Image src={featured.image} alt={featured.name} fill sizes="18rem" className="object-contain p-3" />
                   </div>
                 ) : (
