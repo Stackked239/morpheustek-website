@@ -21,9 +21,11 @@ pnpm dev              # http://localhost:3000  — use `PORT=3100 pnpm dev` if 3
 pnpm build            # production build — this is ALSO the only typecheck (tsconfig is noEmit)
 pnpm start            # serve the production build
 pnpm lint             # eslint (next core-web-vitals + typescript)
+pnpm scan:gen         # regenerate the home-2 LiDAR point cloud + scene spec (public/scan/)
 ```
 
 - **Package manager is pnpm** (`pnpm-lock.yaml`, `pnpm-workspace.yaml`). Do not use npm or yarn.
+- `pnpm add` requires `-w` here (single-package workspace root check trips otherwise).
 - There is **no separate typecheck script and no test runner** (no vitest/jest/playwright config, no test files). Verify by running `pnpm build`; never claim "tests pass."
 
 ## ⚠️ Next.js 16 — this is not the Next.js in your training data
@@ -66,6 +68,20 @@ pnpm lint             # eslint (next core-web-vitals + typescript)
 - The **8 category pillar pages are top-level routes** whose folder name equals the `CategorySlug` (e.g. `/safety-lidar`, `/3d-cameras-for-robotics`) — SEO keyword pillars, *not* nested under `/products`.
 - **Forms are client-side only — there are no `/api` routes yet.** `LeadForm`, `book-a-meeting`, and `contact` don't post anywhere; Phase 2 wires them to HubSpot. Don't assume a backend exists.
 - `app/robots.ts` allows AI crawlers by default (intentional GEO strategy) — confirm with the client before launch.
+- `app/(drafts)/` holds the homepage-variant shootout (`/home-1`…`/home-10`, hub at `/home-drafts`) — noindex, never linked from nav. Austin (austin@stackked.tech) builds variants 3–10; home-1/home-2 are John's. Hero experiments go behind a top-of-file boolean flag + a draft PR, never straight to main.
+
+### home-2 LiDAR scan hero (drafts)
+
+- `web/scripts/generate-scan.mjs` raycasts a warehouse scene → `public/scan/warehouse-aisle.bin` (8 B/point: int16 xyz ÷512, uint8 intensity, uint8 flag) + `.scene.json` (same geometry, kind-tagged, for the realistic-render twin). Regenerate with `pnpm scan:gen` after scene edits.
+- `ScanViewer.tsx` dev-only tuning hooks: `host.dataset.cam` readout and `host.__scanView(yaw, pitch)` (suspends idle-return). Scout camera angles with these — never infer camera pose from screenshots; the idle sway/ease-home moves the camera between tool calls.
+- Realism rules learned the hard way: tiny near-constant point size (fat distance-scaled blobs read as fake), hue by elevation × brightness by intensity, imperfection is the realism (speckle, dropouts, occlusion shadows).
+
+### Hard-won gotchas
+
+- **Synthetic pointer events bypass hit-testing.** `dispatchEvent(new PointerEvent(...))` on a canvas proves nothing about real mice — verify pointer paths with `document.elementFromPoint`. (A full-width z-10 hero Container silently ate all panel drags below ~1900px for a whole session.)
+- **Changing a `public/` image in place serves stale pixels** — next/image and browsers cache by URL. Rename the file (`-v2`) when pixels change.
+- The brand eye PNGs are `morpheustek-eye-v2.png` / `morpheustek-eye-white-v2.png` (left tip reconstructed; originals were cropped at the canvas edge). Always render them via `EyeMark`; its aspect constant (0.66) matches the repaired art.
+- The chrome-devtools MCP browser window is on John's desktop — he interacts with it live during sessions. Unexplained pointer events / moved cameras are usually him, not a bug.
 
 ## Where to go deeper
 

@@ -42,7 +42,10 @@ export function Header() {
           <Button href={primaryCta.engineer.href} variant="ghost" size="sm" className="hidden xl:inline-flex">
             Talk to an engineer
           </Button>
-          <Button href={primaryCta.trial.href} variant="primary" size="sm" className="hidden md:inline-flex">
+          {/* Outline, not yellow: brand rule = one yellow CTA per viewport, and the
+              page hero owns it. ghost reads correctly in all three themes (secondary's
+              white-on-light-blue fails AA contrast in dark). */}
+          <Button href={primaryCta.trial.href} variant="ghost" size="sm" className="hidden md:inline-flex">
             Start a 90-day trial
           </Button>
           <MobileNav nav={mainNav} categories={navCategories} />

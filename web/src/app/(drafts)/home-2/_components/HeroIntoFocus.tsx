@@ -20,6 +20,11 @@ const ScanViewer = dynamic(() => import("./ScanViewer").then((m) => m.ScanViewer
 
 const chips = ["90-day risk-free trial", "Same safety class as SICK", "North American support"];
 
+// EXPERIMENT: realistic-render ⇄ scan divider — the same 3D scene and camera
+// rendered two ways, split at a draggable handle ("what you see / what the
+// robot sees"). Flip to false to fully revert to the scan-only viewer.
+const REALITY_SPLIT = true;
+
 /**
  * Variant 2 hero — "Into Focus".
  * Bold navy ⇄ yellow angular duotone (live-site language) with a concentric
@@ -111,9 +116,10 @@ export function HeroIntoFocus() {
             <EyeMark size={200} scanning className="opacity-90" />
           </div>
 
-          {/* live draggable scan */}
+          {/* live draggable scan (+ optional reality-split divider) */}
           {scanOn && (
             <ScanViewer
+              split={REALITY_SPLIT}
               className={`absolute inset-0 transition-opacity duration-700 ${
                 scanReady ? "opacity-100" : "opacity-0"
               }`}

@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 const drafts = [
+  { href: "/home-seam", label: "★ The Seam · synthesized hero (from the 06-12 review)", owner: "John" },
   { href: "/home-1", label: "Variant 1 · The Acceptance Test", owner: "John" },
   { href: "/home-2", label: "Variant 2 · Into Focus", owner: "John" },
   { href: "/home-3", label: "Variant 3 · The Night Shift", owner: "Austin" },
