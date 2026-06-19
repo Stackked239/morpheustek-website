@@ -9,6 +9,7 @@ import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { ProductGlyph } from "@/components/brand/ProductGlyph";
+import { ProductPlateBackdrop } from "@/components/product/ProductPlateBackdrop";
 import {
   getCategory,
   productImage,
@@ -58,15 +59,8 @@ function ProductPlate({ product }: { product: Product }) {
   const src = productImage(product.slug);
   return (
     <div className="relative aspect-[16/11] w-full overflow-hidden border-b border-border bg-bg-subtle">
-      {/* branded backdrop — NOT white. Faint accent wash + schematic point-cloud
-          dot motif, so the plate reads as instrument, not catalog. */}
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_-10%,color-mix(in_oklab,var(--accent)_14%,transparent),transparent_60%)]"
-        aria-hidden
-      />
-      <div className="pointcloud-texture pointer-events-none absolute inset-0 opacity-50" aria-hidden />
-      {/* corner registration tick — drafting-table detail */}
-      <span className="reg-mark left-3 top-3" aria-hidden />
+      {/* branded backdrop — NOT white (shared source of truth, R05) */}
+      <ProductPlateBackdrop />
 
       {src ? (
         <Image

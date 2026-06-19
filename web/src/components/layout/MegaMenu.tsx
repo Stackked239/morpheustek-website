@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { BadgeCheck, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ProductGlyph } from "@/components/brand/ProductGlyph";
+import { ProductPlateBackdrop } from "@/components/product/ProductPlateBackdrop";
 
 type Cat = { slug: string; label: string; blurb: string };
 type Featured = { slug: string; name: string; tagline: string; image?: string };
@@ -24,7 +25,6 @@ export function MegaMenu({ categories, featured }: { categories: Cat[]; featured
 
   return (
     <div
-      className="relative"
       onMouseEnter={openNow}
       onMouseLeave={closeSoon}
       onFocusCapture={openNow}
@@ -42,13 +42,17 @@ export function MegaMenu({ categories, featured }: { categories: Cat[]; featured
         <ChevronDown className={cn("size-4 transition-transform duration-200", open && "rotate-180")} />
       </Link>
 
+      {/* Anchored to the sticky, full-width <header> (the wrapper above is
+          intentionally NOT positioned), so the panel centres on the viewport —
+          not on this left-of-centre trigger — and can't overflow the edge (R04).
+          Don't add `relative`/positioning to the wrapper or intervening nodes. */}
       <div
         className={cn(
           "absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 transition-all duration-200",
           open ? "visible translate-y-0 opacity-100" : "pointer-events-none invisible -translate-y-1 opacity-0",
         )}
       >
-        <div className="w-[min(60rem,92vw)] overflow-hidden rounded-xl border border-border border-t-2 border-t-accent bg-surface shadow-[var(--shadow-md)]">
+        <div className="max-h-[calc(100svh-6rem)] w-[min(60rem,92vw)] overflow-y-auto overflow-x-hidden rounded-xl border border-border border-t-2 border-t-accent bg-surface shadow-[var(--shadow-md)]">
           <div className="grid grid-cols-1 md:grid-cols-[1fr_18rem]">
             <div className="grid grid-cols-1 gap-1 p-4 sm:grid-cols-2">
               {categories.map((c) => (
@@ -62,7 +66,8 @@ export function MegaMenu({ categories, featured }: { categories: Cat[]; featured
               <p className="eyebrow mb-3">Product of the month</p>
               <Link href={`/products/${featured.slug}`} className="group block">
                 {featured.image ? (
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border border-border bg-white">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border border-border bg-bg-subtle">
+                    <ProductPlateBackdrop />
                     <Image src={featured.image} alt={featured.name} fill sizes="18rem" className="object-contain p-3" />
                   </div>
                 ) : (

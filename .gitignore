@@ -30,3 +30,4 @@ next-env.d.ts
 # ── Tooling artifacts ──
 .playwright-mcp/
 coverage/
+_review/

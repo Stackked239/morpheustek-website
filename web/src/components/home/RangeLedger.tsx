@@ -45,20 +45,30 @@ type Row = {
   to: number;
   /** short instrumentation note rendered in mono */
   note: string;
-  /** depth-ramp gradient for the bar — near→far reads as short→long range */
-  gradient: string;
 };
 
 // True working ranges from catalog.ts keySpecs. Ordered by reach so the ledger
 // climbs from centimetres on the left to a football field on the right.
+// Bars render in a single ink (brand-blue) — the client said the rainbow depth
+// gradients "don't do anything"; the depth-ramp colour was decoration, not data.
 const rows: readonly Row[] = [
-  { slug: "mrdvs-s10-rgbd-camera",       from: 0.3, to: 8,   note: "dToF RGBD · 0.3–8 m",      gradient: "from-pc-near to-pc-1" },
-  { slug: "gs1-5-safety-lidar",          from: 0.1, to: 5,   note: "safety · 5 m protective",  gradient: "from-pc-1 to-pc-2" },
-  { slug: "lr-f240-solid-state-lidar",   from: 0.1, to: 12,  note: "solid-state · 12 m",       gradient: "from-pc-2 to-pc-3" },
-  { slug: "vss-50-solid-state-3d-lidar", from: 0.5, to: 50,  note: "solid-state · up to 50 m", gradient: "from-pc-3 to-pc-4" },
-  { slug: "lr-1f-2d-lidar",              from: 0.1, to: 50,  note: "2D 360° · 50 m",           gradient: "from-pc-4 to-pc-5" },
-  { slug: "a090-laser-rangefinder",      from: 0.1, to: 90,  note: "1D rangefinder · 90 m",    gradient: "from-pc-5 to-pc-far" },
-  { slug: "lr-16f-100-3d-lidar",         from: 0.5, to: 100, note: "16-line 3D · 100 m",       gradient: "from-pc-near to-pc-far" },
+  { slug: "mrdvs-s10-rgbd-camera",       from: 0.3, to: 8,   note: "dToF RGBD · 0.3–8 m" },
+  { slug: "gs1-5-safety-lidar",          from: 0.1, to: 5,   note: "safety · 5 m protective" },
+  { slug: "lr-f240-solid-state-lidar",   from: 0.1, to: 12,  note: "solid-state · 12 m" },
+  { slug: "vss-50-solid-state-3d-lidar", from: 0.5, to: 50,  note: "solid-state · up to 50 m" },
+  { slug: "lr-1f-2d-lidar",              from: 0.1, to: 50,  note: "2D 360° · 50 m" },
+  { slug: "a090-laser-rangefinder",      from: 0.1, to: 90,  note: "1D rangefinder · 90 m" },
+  { slug: "lr-16f-100-3d-lidar",         from: 0.5, to: 100, note: "16-line 3D · 100 m" },
+] as const;
+
+// Physical anchors for the to-scale reference strip — each pinned to its TRUE
+// position on the same log axis (via x()), so the abstract metres are defined by
+// something real: a pallet pocket, an aisle, a football field. The bar that
+// reaches 100 m visibly lands under "Football field" — the claim, shown.
+const SCALE_REFS = [
+  { at: 0.3, label: "Pallet pocket", value: "30 cm" },
+  { at: 3, label: "Warehouse aisle", value: "3 m" },
+  { at: 100, label: "Football field", value: "100 m" },
 ] as const;
 
 export function RangeLedger() {
@@ -112,10 +122,10 @@ export function RangeLedger() {
                         {r.note}
                       </span>
                     </div>
-                    <div className="relative mt-2 h-3 overflow-hidden rounded-full bg-bg-muted">
+                    <div className="relative mt-2 h-3 overflow-hidden rounded-full bg-bg-subtle ring-1 ring-inset ring-border/60">
                       <span
                         aria-hidden
-                        className={`ledger-bar absolute inset-y-0 rounded-full bg-gradient-to-r ${r.gradient}`}
+                        className="ledger-bar absolute inset-y-0 rounded-full bg-brand-blue transition-colors group-hover:bg-brand-blue-hover"
                         style={{ left: `${r.left * 100}%`, width: `${r.width * 100}%` }}
                       />
                     </div>
@@ -140,13 +150,34 @@ export function RangeLedger() {
               ))}
             </div>
 
-            {/* end-to-end annotation — the headline promise, restated against the axis */}
-            <div
-              aria-hidden
-              className="mt-3 flex justify-between font-mono text-anno-sm uppercase tracking-[0.14em] text-text-subtle"
-            >
-              <span>Centimeters</span>
-              <span>A football field</span>
+            {/* to-scale reference strip — physical anchors pinned to their true
+                position on the same log axis, so the metres mean something. Edge
+                labels shift in-bounds (left/right) instead of centring off-canvas.
+                Structural ink only — no colour, no motion. */}
+            <div aria-hidden className="relative mt-5 h-9">
+              {SCALE_REFS.map((ref) => {
+                const pos = x(ref.at) * 100;
+                const shift = pos <= 10 ? "translate-x-0" : pos >= 90 ? "-translate-x-full" : "-translate-x-1/2";
+                const text = pos <= 10 ? "text-left" : pos >= 90 ? "text-right" : "text-center";
+                return (
+                  <div
+                    key={ref.label}
+                    className={`absolute top-0 ${shift} ${text}`}
+                    style={{ left: `${pos}%` }}
+                  >
+                    <span className="block whitespace-nowrap font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-text-muted">
+                      {ref.label}
+                    </span>
+                    <span className="block whitespace-nowrap font-mono text-[10px] text-text-subtle">{ref.value}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* the headline promise, drawn as an engineering dimension line that
+                spans the whole axis (|———— … ————|) — the claim, defined. */}
+            <div className="dim-line mt-2 font-mono text-anno-sm uppercase tracking-[0.14em] text-text-subtle" aria-hidden>
+              Centimeters to a football field
             </div>
           </div>
         </div>
