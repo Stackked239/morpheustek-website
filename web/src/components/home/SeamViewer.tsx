@@ -209,9 +209,12 @@ export function SeamViewer({
   const hostRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
   const onReadyRef = useRef(onReady);
-  onReadyRef.current = onReady;
   const apiRef = useRef(api);
-  apiRef.current = api;
+
+  useEffect(() => {
+    onReadyRef.current = onReady;
+    apiRef.current = api;
+  });
 
   useEffect(() => {
     const host = hostRef.current;

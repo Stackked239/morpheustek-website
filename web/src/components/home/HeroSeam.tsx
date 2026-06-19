@@ -84,16 +84,11 @@ export function HeroSeam({ distributor, problem }: { distributor: string; proble
       if (replayingRef.current || !api.current) return;
       if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
       replayingRef.current = true;
-      setScanReady(false); // eye crossfades back in, scan fades out
-      if (eyeRef.current) {
-        gsap.fromTo(eyeRef.current, { scale: 0.7 }, { scale: 1, duration: 0.7, ease: "power3.out" });
-      }
-      // …then, once the eye has read, restart acquisition and crossfade to the scan
+      // Re-run acquisition + seam nudge in place — no eye/scan crossfade (that read as a flicker).
+      api.current.replayIntro();
       window.setTimeout(() => {
-        api.current?.replayIntro(); // reset sweepStart → ring-by-ring acquisition re-runs
-        setScanReady(true);
         replayingRef.current = false;
-      }, 760);
+      }, 2800);
     };
     const io = new IntersectionObserver(
       ([e]) => {
@@ -118,8 +113,18 @@ export function HeroSeam({ distributor, problem }: { distributor: string; proble
         // scale only: the crossfade-out lives on the parent's opacity, so we must
         // not leave an inline opacity on this element.
         if (eyeRef.current) tl.from(eyeRef.current, { scale: 0.7, duration: 0.7 }, 0);
-        // headline + supporting lines rise into place
-        tl.from(".hero-line", { yPercent: 110, opacity: 0, duration: 0.9, stagger: 0.09 }, 0.12);
+        tl.fromTo(
+          ".hero-line",
+          { yPercent: 110, opacity: 0 },
+          {
+            yPercent: 0,
+            opacity: 1,
+            duration: 0.9,
+            stagger: 0.09,
+            clearProps: "transform,opacity",
+          },
+          0.12,
+        );
 
         // the instrument panel lags the scroll — depth without parallax nausea
         gsap.to(".hero-parallax", {
@@ -127,6 +132,10 @@ export function HeroSeam({ distributor, problem }: { distributor: string; proble
           ease: "none",
           scrollTrigger: { trigger: scope.current, start: "top top", end: "bottom top", scrub: true },
         });
+
+        return () => {
+          gsap.set(".hero-line", { clearProps: "all" });
+        };
       });
     },
     { scope },
@@ -140,9 +149,9 @@ export function HeroSeam({ distributor, problem }: { distributor: string; proble
       {/* faint point-cloud field on the navy */}
       <div className="pointcloud-texture pointer-events-none absolute inset-0 opacity-[0.18]" aria-hidden />
 
-      {/* ---- the instrument: scan card on mobile (in flow, on top), angular panel on desktop ---- */}
+      {/* ---- the instrument: scan below headline on mobile; absolute right on desktop ---- */}
       <div
-        className="hero-parallax relative h-[52svh] w-full bg-accent md:absolute md:inset-y-0 md:right-0 md:h-auto md:w-[44%] md:[clip-path:polygon(22%_0%,100%_0%,100%_100%,0%_100%)]"
+        className="hero-parallax relative order-2 h-[48svh] w-full bg-accent md:absolute md:inset-y-0 md:right-0 md:order-none md:h-auto md:w-[44%] md:[clip-path:polygon(22%_0%,100%_0%,100%_100%,0%_100%)]"
       >
         {/* dark viewport inset into the yellow bezel */}
         <div
@@ -210,8 +219,8 @@ export function HeroSeam({ distributor, problem }: { distributor: string; proble
         </div>
       </div>
 
-      {/* ---- headline column ---- */}
-      <Container className="pointer-events-none relative z-10 py-14 md:py-28">
+      {/* ---- headline column (first on mobile via order-1; in-flow left on desktop) ---- */}
+      <Container className="pointer-events-none relative z-10 order-1 py-10 md:order-none md:py-28">
         <div className="pointer-events-auto max-w-2xl">
           <div className="hero-line flex items-center gap-3">
             <EyeMark size={40} scanning />
