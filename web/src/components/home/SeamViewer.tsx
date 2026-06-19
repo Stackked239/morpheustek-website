@@ -89,7 +89,7 @@ export interface SeamApi {
   isActive: () => boolean;
   /** Lerp the divider toward a goal (mobile CAMERA/LiDAR pill). */
   setSplitTarget: (v: number) => void;
-  /** SHORT re-entry replay: reset to entry pose + re-sweep the seam. No remount. */
+  /** Re-entry replay: reset to entry pose and re-run the acquisition sweep (R10). */
   replayIntro: () => void;
 }
 
@@ -441,10 +441,16 @@ export function SeamViewer({
           splitTarget = Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, v));
         },
         replayIntro: () => {
-          // SHORT re-entry: reset the seam + re-sweep it. No eye blink, no
-          // re-acquisition, no remount — just the affordance, once more.
+          // Re-entry replay of the full entry beat (R10): reset to the entry pose
+          // and re-run the ring-by-ring acquisition sweep. The tick loop re-arms
+          // the seam nudge when the sweep completes — guarded by userTookOver, so
+          // a mobile CAMERA/LiDAR pill keeps its own seam (re-applied by the parent).
           userTookOver = false;
-          armNudge();
+          nudgeStart = 0;
+          split = SPLIT_INIT;
+          splitTarget = SPLIT_REST;
+          nudgeArmed = false;
+          sweepStart = performance.now();
         },
       };
     }

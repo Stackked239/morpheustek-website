@@ -43,13 +43,13 @@ export function HeroSeam({ distributor, problem, cert }: { distributor: string; 
   const panelRef = useRef<HTMLDivElement>(null);     // inner viewport — projection reference box
   const eyeRef = useRef<HTMLDivElement>(null);
   const api = useRef<SeamApi | null>(null);
+  const replayingRef = useRef(false); // guards against overlapping re-entry replays
 
   const [scanOn, setScanOn] = useState(false);       // mount the 3D viewer?
   const [scanReady, setScanReady] = useState(false); // first cloud frame rendered
   const [overlaysOn, setOverlaysOn] = useState(false);
   const [hintDismissed, setHintDismissed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const isMobileRef = useRef(false); // for the deps:[] observers that mustn't capture a stale isMobile
   const [pill, setPill] = useState<"lidar" | "camera">("lidar");
 
   // dimension-overlay element refs (mutated imperatively each frame — no per-frame React state)
@@ -77,7 +77,7 @@ export function HeroSeam({ distributor, problem, cert }: { distributor: string; 
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
-    const update = () => { isMobileRef.current = mq.matches; setIsMobile(mq.matches); };
+    const update = () => setIsMobile(mq.matches);
     update();
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
@@ -143,16 +143,36 @@ export function HeroSeam({ distributor, problem, cert }: { distributor: string; 
     return () => cancelAnimationFrame(raf);
   }, [scanReady, overlaysOn]);
 
-  // ---- short re-entry replay: reset + re-sweep the seam (no remount, no eye blink) ----
+  // ---- re-entry replay: re-run the full "eyeball → scan acquires → Boom" beat ----
+  // The client (06-12, R10) wanted the entry choreography to re-fire on scroll-back,
+  // not just on first load: bring the brand eye back, then crossfade to a freshly
+  // re-acquiring scan. Runs on touch too (the pill re-applies its seam after).
+  // All deps are refs / stable setters, so the deps:[] effect closure stays valid.
   useEffect(() => {
     const section = scope.current;
     if (!section) return;
     let leftAt = 0;
+    const runReplay = () => {
+      if (replayingRef.current || !api.current) return;
+      if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
+      replayingRef.current = true;
+      setOverlaysOn(false);
+      setScanReady(false); // eye crossfades back in, scan + overlays fade out
+      if (eyeRef.current) {
+        gsap.fromTo(eyeRef.current, { scale: 0.7 }, { scale: 1, duration: 0.7, ease: "power3.out" });
+      }
+      // …then, once the eye has read, restart acquisition and crossfade to the scan
+      window.setTimeout(() => {
+        api.current?.replayIntro(); // reset sweepStart → ring-by-ring acquisition re-runs
+        setScanReady(true);
+        replayingRef.current = false;
+      }, 760);
+    };
     const io = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) {
-          // on touch the CAMERA/LiDAR pill owns the seam — don't yank it back
-          if (!isMobileRef.current && leftAt && performance.now() - leftAt > 1200) api.current?.replayIntro();
+          // replay only after a real absence (avoids re-firing on tiny scroll jitter)
+          if (leftAt && performance.now() - leftAt > 1200) runReplay();
         } else {
           leftAt = performance.now();
         }
