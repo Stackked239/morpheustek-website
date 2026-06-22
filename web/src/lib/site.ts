@@ -48,15 +48,23 @@ export const primaryCta = {
 
 export type NavLink = { label: string; href: string; description?: string };
 
-/** Top navigation (Shows surfaces as a seasonal banner, not nav). */
+/** Top navigation — "Resources" is a dropdown (see resourcesNav); 5 clean tabs. */
 export const mainNav: { label: string; href: string }[] = [
   { label: "Products", href: "/products" },
   { label: "Applications", href: "/applications" },
   { label: "Compare", href: "/compare/sick-alternative-lidar" },
   { label: "Resources", href: "/resources" },
-  { label: "Robotics glossary", href: "/resources/glossary" },
-  { label: "Blog", href: "/blog" },
   { label: "Why us", href: "/about" },
+];
+
+/** Resources dropdown — the library, glossary, blog, and shows grouped under the
+ *  "Resources" trigger so the bar stays clean and each keeps its full clever name. */
+export const resourcesNav: NavLink[] = [
+  { label: "Technical library", href: "/resources", description: "Guides, spec sheets, and buyer's checklists." },
+  { label: "Robotics glossary", href: "/resources/glossary", description: "Plain-English robot-perception terms." },
+  { label: "Eyes at the Edge (Blog)", href: "/blog", description: "Technical writing on LiDAR, safety, and 3D." },
+  { label: "Product of the month", href: "/product-of-the-month", description: "This month's featured sensor." },
+  { label: "Shows we'll be at", href: "/shows", description: "Where to meet us in person." },
 ];
 
 /** Capability/solution pages surfaced in the Products mega-menu "Beyond the catalog"

@@ -2,9 +2,10 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
-import { mainNav, primaryCta } from "@/lib/site";
+import { mainNav, primaryCta, resourcesNav } from "@/lib/site";
 import { categories, featuredProduct, productImage } from "@/lib/catalog";
 import { MegaMenu } from "./MegaMenu";
+import { ResourcesMenu } from "./ResourcesMenu";
 import { MobileNav } from "./MobileNav";
 import { ThemeControls } from "./ThemeControls";
 
@@ -19,13 +20,18 @@ export function Header() {
         <div className="flex items-center gap-6">
           <Logo />
           <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
-            <MegaMenu
-              categories={menuCategories}
-              featured={{ slug: featured.slug, name: featured.name, tagline: featured.tagline, image: productImage(featured.slug) }}
-            />
-            {mainNav
-              .filter((n) => n.label !== "Products")
-              .map((n) => (
+            {/* Render in order; Products + Resources are dropdowns, the rest plain tabs. */}
+            {mainNav.map((n) => {
+              if (n.label === "Products")
+                return (
+                  <MegaMenu
+                    key={n.href}
+                    categories={menuCategories}
+                    featured={{ slug: featured.slug, name: featured.name, tagline: featured.tagline, image: productImage(featured.slug) }}
+                  />
+                );
+              if (n.label === "Resources") return <ResourcesMenu key={n.href} />;
+              return (
                 <Link
                   key={n.href}
                   href={n.href}
@@ -33,21 +39,23 @@ export function Header() {
                 >
                   {n.label}
                 </Link>
-              ))}
+              );
+            })}
           </nav>
         </div>
 
         <div className="flex items-center gap-2">
           <ThemeControls className="hidden sm:flex" />
-          {/* Header carries only the primary trial CTA — "Talk to an engineer" was pulled
-              out to make room for the full "Robotics glossary" nav tab (it still appears in
-              every page hero). Outline, not yellow: brand rule = one yellow CTA per viewport,
-              and the page hero owns it. ghost reads correctly in all three themes (secondary's
-              white-on-light-blue fails AA contrast in dark). */}
+          <Button href={primaryCta.engineer.href} variant="ghost" size="sm" className="hidden xl:inline-flex">
+            Talk to an engineer
+          </Button>
+          {/* Outline, not yellow: brand rule = one yellow CTA per viewport, and the page hero
+              owns it. ghost reads correctly in all three themes (secondary's white-on-light-blue
+              fails AA contrast in dark). */}
           <Button href={primaryCta.trial.href} variant="ghost" size="sm" className="hidden md:inline-flex">
             Start a 90-day trial
           </Button>
-          <MobileNav nav={mainNav} categories={navCategories} />
+          <MobileNav nav={mainNav} categories={navCategories} resources={resourcesNav} />
         </div>
       </Container>
     </header>

@@ -13,9 +13,10 @@ type Cat = { slug: string; label: string };
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
-export function MobileNav({ nav, categories }: { nav: Item[]; categories: Cat[] }) {
+export function MobileNav({ nav, categories, resources }: { nav: Item[]; categories: Cat[]; resources: Item[] }) {
   const [open, setOpen] = useState(false);
   const [prodOpen, setProdOpen] = useState(false);
+  const [resOpen, setResOpen] = useState(false);
   const openerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -121,11 +122,34 @@ export function MobileNav({ nav, categories }: { nav: Item[]; categories: Cat[] 
             ) : null}
             {nav
               .filter((n) => n.label !== "Products")
-              .map((n) => (
-                <Link key={n.href} href={n.href} onClick={close} className="block rounded-md px-3 py-3 font-display text-lg font-bold text-text-strong hover:bg-bg-muted">
-                  {n.label}
-                </Link>
-              ))}
+              .map((n) =>
+                n.label === "Resources" ? (
+                  <div key={n.href}>
+                    <button
+                      type="button"
+                      onClick={() => setResOpen((v) => !v)}
+                      aria-expanded={resOpen}
+                      className="flex w-full items-center justify-between rounded-md px-3 py-3 text-left font-display text-lg font-bold text-text-strong hover:bg-bg-muted"
+                    >
+                      Resources
+                      <ChevronDown className={cn("size-5 transition-transform", resOpen && "rotate-180")} />
+                    </button>
+                    {resOpen ? (
+                      <div className="mb-1 ml-3 border-l border-border pl-3">
+                        {resources.map((r) => (
+                          <Link key={r.href} href={r.href} onClick={close} className="block rounded-md px-3 py-2 text-sm text-text-muted hover:bg-bg-muted hover:text-text">
+                            {r.label}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <Link key={n.href} href={n.href} onClick={close} className="block rounded-md px-3 py-3 font-display text-lg font-bold text-text-strong hover:bg-bg-muted">
+                    {n.label}
+                  </Link>
+                ),
+              )}
           </nav>
 
           <div className="grid gap-2 border-t border-border p-4">
