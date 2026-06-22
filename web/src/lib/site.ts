@@ -48,13 +48,22 @@ export const primaryCta = {
 
 export type NavLink = { label: string; href: string; description?: string };
 
-/** Top navigation — locked 5 items (Shows surfaces as a seasonal banner, not nav). */
+/** Top navigation (Shows surfaces as a seasonal banner, not nav). */
 export const mainNav: { label: string; href: string }[] = [
   { label: "Products", href: "/products" },
   { label: "Applications", href: "/applications" },
   { label: "Compare", href: "/compare/sick-alternative-lidar" },
   { label: "Resources", href: "/resources" },
+  { label: "Robotics glossary", href: "/resources/glossary" },
+  { label: "Blog", href: "/blog" },
   { label: "Why us", href: "/about" },
+];
+
+/** Capability/solution pages surfaced in the Products mega-menu "Beyond the catalog"
+ *  row — differentiators (build-to-spec, full-stack) otherwise only in the footer. */
+export const solutionsLinks: NavLink[] = [
+  { label: "Custom solutions", href: "/custom-solutions", description: "Build to your spec — FOV, housing, firmware, connectors." },
+  { label: "Full-stack perception", href: "/full-stack-perception", description: "LiDAR, 3D cameras, safety, and edge compute as one stack." },
 ];
 
 export const footerNav: { heading: string; links: NavLink[] }[] = [
