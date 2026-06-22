@@ -117,6 +117,9 @@ export function CertifyPlot() {
       {/* blueprint drafting grid — this section IS an engineering drawing; the
           grid makes it the recessed "drawing board" that anchors the page rhythm */}
       <div className="draft-grid pointer-events-none absolute inset-0 opacity-60" aria-hidden />
+      {/* seam blend — soft tonal lift at the bottom edge so this light section eases into
+          CategoryBrowse's matching top lift instead of a hard same-tone seam. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-[linear-gradient(to_top,var(--bg-muted),transparent)]" aria-hidden />
       <Container className="relative">
         <div className="grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           {/* ---- copy column ---- */}

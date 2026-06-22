@@ -180,9 +180,13 @@ export function CategoryBrowse() {
   }, [active, revealKey]);
 
   return (
-    <Section tone="default" className="relative overflow-hidden border-t border-border">
-      {/* faint schematic grid behind the whole band — structural ink, never behind copy */}
-      <div className="circuit-motif pointer-events-none absolute inset-0 opacity-60" aria-hidden />
+    <Section tone="default" className="relative overflow-hidden">
+      {/* seam blend — soft tonal lift at the top edge so this light band separates from
+          CertifyPlot's matching bottom lift instead of butting it on a hard same-tone seam. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[linear-gradient(to_bottom,var(--bg-muted),transparent)]" aria-hidden />
+      {/* dot field (NOT a grid) — differentiates this band's background from CertifyPlot's
+          square draft-grid above it; same --motif-line ink so it stays visible across all themes. */}
+      <div className="dot-motif pointer-events-none absolute inset-0 opacity-60" aria-hidden />
 
       <Container className="relative">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">

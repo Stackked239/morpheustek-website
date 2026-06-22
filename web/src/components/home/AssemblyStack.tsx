@@ -290,8 +290,11 @@ export function AssemblyStack() {
   // overflow-x-clip (not -hidden) contains the gsap x build-in WITHOUT making a
   // scroll container — so the sticky selector below can pin to the page.
   return (
-    <Section tone="subtle" className="overflow-x-clip border-t border-border !bg-bg-muted">
-      <Container>
+    <Section tone="subtle" className="relative overflow-x-clip !bg-bg-muted">
+      {/* seam blend — soft tonal lift at the top, meeting RangeLedger's matching bottom lift so
+          the two muted bands separate via one soft valley instead of a hard same-tone seam. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[linear-gradient(to_bottom,var(--bg),transparent)]" aria-hidden />
+      <Container className="relative">
         <div ref={scope}>
         {/* ── section header ──────────────────────────────────────────────── */}
         <div className="max-w-2xl">
