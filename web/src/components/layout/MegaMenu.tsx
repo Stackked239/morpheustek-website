@@ -3,10 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { BadgeCheck, ChevronDown } from "lucide-react";
+import { ArrowRight, BadgeCheck, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ProductGlyph } from "@/components/brand/ProductGlyph";
 import { ProductPlateBackdrop } from "@/components/product/ProductPlateBackdrop";
+import { solutionsLinks } from "@/lib/site";
 
 type Cat = { slug: string; label: string; blurb: string };
 type Featured = { slug: string; name: string; tagline: string; image?: string };
@@ -80,6 +81,25 @@ export function MegaMenu({ categories, featured }: { categories: Cat[]; featured
                 </span>
               </Link>
             </div>
+          </div>
+
+          {/* Beyond the catalog — the build-to-spec / full-stack differentiators,
+              otherwise reachable only from the footer. Surfaced here so they're one
+              click from the top nav on any page. */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border bg-bg-subtle px-4 py-3">
+            <span className="font-mono text-anno-sm uppercase tracking-[0.14em] text-text-muted">
+              Beyond the catalog
+            </span>
+            {solutionsLinks.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="group inline-flex items-center gap-1.5 text-sm font-semibold text-text-strong transition-colors hover:text-brand-blue"
+              >
+                {l.label}
+                <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden />
+              </Link>
+            ))}
           </div>
         </div>
       </div>

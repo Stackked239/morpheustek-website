@@ -29,7 +29,7 @@ export function Header() {
                 <Link
                   key={n.href}
                   href={n.href}
-                  className="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium text-text-muted transition-colors hover:bg-bg-muted hover:text-text"
+                  className="inline-flex h-9 items-center whitespace-nowrap rounded-md px-3 text-sm font-medium text-text-muted transition-colors hover:bg-bg-muted hover:text-text"
                 >
                   {n.label}
                 </Link>
@@ -39,11 +39,10 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <ThemeControls className="hidden sm:flex" />
-          <Button href={primaryCta.engineer.href} variant="ghost" size="sm" className="hidden xl:inline-flex">
-            Talk to an engineer
-          </Button>
-          {/* Outline, not yellow: brand rule = one yellow CTA per viewport, and the
-              page hero owns it. ghost reads correctly in all three themes (secondary's
+          {/* Header carries only the primary trial CTA — "Talk to an engineer" was pulled
+              out to make room for the full "Robotics glossary" nav tab (it still appears in
+              every page hero). Outline, not yellow: brand rule = one yellow CTA per viewport,
+              and the page hero owns it. ghost reads correctly in all three themes (secondary's
               white-on-light-blue fails AA contrast in dark). */}
           <Button href={primaryCta.trial.href} variant="ghost" size="sm" className="hidden md:inline-flex">
             Start a 90-day trial

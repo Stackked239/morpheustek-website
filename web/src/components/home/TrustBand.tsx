@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, Globe, ShieldCheck } from "lucide-react";
 import { Section } from "@/components/ui/Section";
 import { Container } from "@/components/ui/Container";
 import { Eyebrow } from "@/components/ui/Eyebrow";
@@ -97,6 +97,22 @@ export function TrustBand() {
               </div>
             ))}
           </dl>
+
+        {/* ---- world-scale supply: Phil's manufacturing-scale beat, echoed from /about.
+             Full-width row under the grid; borrowed credibility, not-a-startup signal. ---- */}
+        <div className="relative flex flex-col gap-3 rounded-r-md border-l-2 border-l-accent bg-bg px-5 py-5 sm:flex-row sm:items-center sm:gap-6 md:col-span-2">
+          <p className="flex shrink-0 items-center gap-2 font-mono text-anno-sm uppercase tracking-[0.14em] text-brand-blue">
+            <Globe className="size-4" aria-hidden />
+            World-scale supply
+          </p>
+          <p className="text-text">
+            Backed by{" "}
+            <span className="font-semibold text-text-strong">
+              one of the world&apos;s largest laser-diode purchasing footprints
+            </span>{" "}
+            — not a startup, a manufacturing-backed perception partner.
+          </p>
+        </div>
       </Container>
     </Section>
   );

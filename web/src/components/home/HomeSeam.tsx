@@ -6,6 +6,7 @@ import { AssemblyStack } from "./AssemblyStack";
 import { CertifyPlot } from "./CertifyPlot";
 import { RangeLedger } from "./RangeLedger";
 import { CategoryBrowse } from "./CategoryBrowse";
+import { BuildToSpec } from "./BuildToSpec";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HOMEPAGE — "The Seam"
@@ -32,11 +33,12 @@ export function HomeSeam() {
   return (
     <>
       <HeroSeam distributor={site.distributor} problem={site.heroProblem} />
+      <RangeLedger />
       <AssemblyStack />
       <CertifyPlot />
-      <RangeLedger />
       <CategoryBrowse />
       <TrustBand />
+      <BuildToSpec />
       <CtaBand
         eyebrow="The 90-day acceptance test"
         title="Try it free, 90 days. Your floor."

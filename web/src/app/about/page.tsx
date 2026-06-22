@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Compass, Factory, HandshakeIcon, ShieldCheck } from "lucide-react";
+import { Compass, Factory, Globe, HandshakeIcon, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
@@ -83,10 +83,24 @@ export default function AboutPage() {
             </h2>
             <p className="mt-5 text-lead text-text-muted">
               MorpheusTEK is the exclusive North American distributor for OLEI LiDAR. OLEI is part of a high-tech
-              laser-measurement manufacturing network with deep OEM/ODM capability and one of the largest laser-diode
-              purchasing footprints in the world. That&apos;s a serious manufacturing foundation entering the North
-              American robotics market.
+              laser-measurement manufacturing network with deep OEM/ODM capability — a serious manufacturing
+              foundation entering the North American robotics market.
             </p>
+            {/* Scale callout — Phil's ask: unbury OLEI's world-scale laser-diode buying power.
+                Borrowed credibility: it's what separates a manufacturing-backed partner from a startup. */}
+            <div className="mt-6 rounded-r-md border-l-2 border-l-accent bg-surface px-5 py-5">
+              <p className="flex items-center gap-2 font-mono text-anno-sm uppercase tracking-[0.14em] text-accent">
+                <Globe className="size-4" aria-hidden />
+                World-scale supply
+              </p>
+              <p className="mt-2.5 font-display text-h4 font-extrabold leading-tight text-text-strong">
+                One of the world&apos;s largest laser-diode purchasing footprints.
+              </p>
+              <p className="mt-2 max-w-md text-sm leading-snug text-text-muted">
+                Laser diodes are the heart of every LiDAR — and OLEI&apos;s network buys them at a scale a startup
+                can&apos;t match. That&apos;s supply security behind every MorpheusTEK unit.
+              </p>
+            </div>
             <p className="mt-4 leading-relaxed text-text-muted">
               MorpheusTEK adds the part that matters locally: application support, customization, stocking programs, and
               supplier coordination — so robotics OEMs and integrators get a manufacturing-backed perception partner,
