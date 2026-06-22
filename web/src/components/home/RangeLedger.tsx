@@ -128,8 +128,12 @@ export function RangeLedger() {
   const rowActive = (id: SensorId) => activeId === "all" || activeId === id;
 
   return (
-    <Section tone="subtle" className="border-t border-border !py-10 md:!py-12 lg:!py-8 !bg-bg-muted">
-      <Container>
+    <Section tone="subtle" className="relative border-t border-border !py-10 md:!py-12 lg:!py-8 !bg-bg-muted">
+      {/* seam blend — soft tonal lift at the bottom so this muted band reads as distinct from
+          the AssemblyStack band below (both !bg-bg-muted after the reorder). Lift toward --bg
+          for contrast; pairs with AssemblyStack's matching top lift. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-[linear-gradient(to_top,var(--bg),transparent)]" aria-hidden />
+      <Container className="relative">
         <div className="max-w-3xl">
           <Eyebrow>The line, end to end</Eyebrow>
           <h2 className="mt-4 font-display text-[clamp(2rem,3.25vw,3.25rem)] font-extrabold uppercase leading-[1.02] tracking-tight text-text-strong">

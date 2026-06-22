@@ -388,6 +388,16 @@
   mask-image: radial-gradient(ellipse 120% 100% at 50% 0%, #000 0%, transparent 75%);
 }
 
+/* dot field — same ink + top-fade as .circuit-motif, but dots instead of a grid, so a
+   section can carry background texture WITHOUT clashing against the square draft-grid. */
+.dot-motif {
+  background-image: radial-gradient(circle, var(--motif-line) 1.1px, transparent 1.4px);
+  background-size: 22px 22px;
+  background-position: center;
+  -webkit-mask-image: radial-gradient(ellipse 120% 100% at 50% 0%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse 120% 100% at 50% 0%, #000 0%, transparent 75%);
+}
+
 .pointcloud-texture {
   background-image: radial-gradient(circle, var(--brand-blue) 0.7px, transparent 0.7px);
   background-size: 18px 18px;
