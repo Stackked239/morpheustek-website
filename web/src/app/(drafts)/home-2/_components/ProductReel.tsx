@@ -19,7 +19,7 @@ const reel = [
   "lr-1f-2d-lidar",
   "lr-16f-100-3d-lidar",
   "lr-f240-solid-state-lidar",
-  "percipio-gm461-depth-camera",
+  "mrdvs-s10-rgbd-camera",
   "lc-m50g-mobile-slam-mapper",
   "a090-laser-rangefinder",
   "sintrones-ibox-602p-edge-ai",

@@ -23,7 +23,7 @@ const CURATED: string[] = [
   "vss-50-solid-state-3d-lidar",
   // 3D cameras
   "mrdvs-s10-rgbd-camera",
-  "percipio-gm461-depth-camera",
+  "mrdvs-s11-rgbd-camera",
   // Rangefinder / mapping / edge
   "a090-laser-rangefinder",
   "lc-m50g-mobile-slam-mapper",

@@ -34,11 +34,11 @@ const steps = [
     spec: "16 ch · 360°×30° · 100 m · IP66",
   },
   {
-    slug: "percipio-gm465-dual-mode-depth-camera",
+    slug: "mrdvs-s11-rgbd-camera",
     role: "See",
     claim: "Close range gets eyes.",
-    body: "Switchable high-speed or high-accuracy depth in one rugged industrial camera — pallet pockets, bins, and low obstacles at arm's length.",
-    spec: "Dual-mode depth · industrial housing",
+    body: "Ultra-wide 140° dToF depth in one rugged camera — pallet pockets, bins, and low obstacles to 6 m at ±1 cm, seeing closer than active stereo.",
+    spec: "140° FOV · dToF · ±1 cm @ 2 m",
   },
   {
     slug: "sintrones-ibox-602p-edge-ai",
