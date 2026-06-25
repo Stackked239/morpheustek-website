@@ -13,7 +13,7 @@ import { getProduct, productImage } from "@/lib/catalog";
 const kit = [
   { slug: "gs1-5-safety-lidar", tag: "01 · Protect", pos: "left-[4%] top-[6%] -rotate-3", w: "w-[34%]" },
   { slug: "lr-16f-100-3d-lidar", tag: "02 · Map", pos: "right-[6%] top-[10%] rotate-2", w: "w-[30%]" },
-  { slug: "percipio-gm465-dual-mode-depth-camera", tag: "03 · See", pos: "bottom-[10%] left-[8%] rotate-1", w: "w-[32%]" },
+  { slug: "mrdvs-s11-rgbd-camera", tag: "03 · See", pos: "bottom-[10%] left-[8%] rotate-1", w: "w-[32%]" },
   { slug: "sintrones-ibox-602p-edge-ai", tag: "04 · Think", pos: "bottom-[6%] right-[4%] -rotate-2", w: "w-[34%]" },
 ] as const;
 

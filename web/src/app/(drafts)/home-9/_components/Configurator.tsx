@@ -55,7 +55,7 @@ function buildStack(env: Env, people: boolean, job: Job): StackPick[] {
 
   // close-range depth
   if (job === "close") {
-    add("percipio-gm465-dual-mode-depth-camera", "Switchable high-speed or high-accuracy depth for pockets, bins, and low obstacles.");
+    add("mrdvs-s11-rgbd-camera", "Ultra-wide 140° dToF depth — sees closer than active stereo for pockets, bins, and low obstacles.");
   }
 
   // the brain, always

@@ -13,7 +13,7 @@ import { CircuitTraces } from "./CircuitTraces";
  * GS1-5 sign and four demo units — screws, cast shadows, label tags, no cards.
  */
 
-const mounted = ["lr-1bs2-mini-zone-lidar", "vbd1-10-2d-lidar", "percipio-gm461-depth-camera", "a090-laser-rangefinder"] as const;
+const mounted = ["lr-1bs2-mini-zone-lidar", "vbd1-10-2d-lidar", "mrdvs-s10-rgbd-camera", "a090-laser-rangefinder"] as const;
 
 // hard print shadow for CTAs — same top-left light as .booth-object
 const ctaShadow = "shadow-[4px_5px_0_0_rgba(92,64,0,0.30)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_rgba(92,64,0,0.30)]";
