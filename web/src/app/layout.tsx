@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Roboto_Condensed, Roboto_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { site } from "@/lib/site";
 import { TopBar } from "@/components/layout/TopBar";
@@ -99,6 +100,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
+        {/* Instantly / Leadsy.ai website-visitor tracking pixel — de-anonymizes
+            visitors from email campaigns for click tracking + automated follow-up.
+            Added per client request (Tom Pittman / Sales Pro, 2026-06-25). The
+            data-* attributes are forwarded to the injected <script> by next/script. */}
+        <Script
+          id="vtag-ai-js"
+          src="https://r2.leadsy.ai/tag.js"
+          strategy="afterInteractive"
+          data-pid="FXPn93H0lUabmQS3"
+          data-version="062024"
+        />
       </body>
     </html>
   );
