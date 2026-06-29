@@ -55,7 +55,7 @@ export function ShowroomDeck() {
 
   const gs15 = getProduct("gs1-5-safety-lidar");
   const vss = getProduct("vss-50-solid-state-3d-lidar");
-  const gm465 = getProduct("percipio-gm465-dual-mode-depth-camera");
+  const gm465 = getProduct("mrdvs-s11-rgbd-camera");
   const ibox = getProduct("sintrones-ibox-602p-edge-ai");
 
   const slide = "relative shrink-0 snap-start overflow-hidden lg:h-full lg:w-full max-lg:min-h-[88svh]";

@@ -9,7 +9,7 @@
  */
 
 export type Availability = "in-stock" | "pre-order" | "contact";
-export type Brand = "OLEI" | "Percipio" | "MRDVS" | "Sintrones";
+export type Brand = "OLEI" | "MRDVS" | "Sintrones";
 
 export type CategorySlug =
   | "lidar-for-robotics"
@@ -400,56 +400,6 @@ export const products: Product[] = [
   },
   // ---------- 3D Cameras ----------
   {
-    slug: "percipio-gm461-depth-camera",
-    model: "GM461-E1",
-    brand: "Percipio",
-    name: "Percipio GM461-E1",
-    category: "3d-cameras-for-robotics",
-    tagline: "Cost-effective, industrial-grade RealSense replacement.",
-    availability: "contact",
-    trial: false,
-    summary:
-      "A structured-light 3D depth camera in a compact, IP65-rated industrial housing with low (~3W) power draw — positioned directly as a rugged, cost-effective, still-available alternative to Intel RealSense.",
-    keySpecs: [
-      { label: "Tech", value: "Structured-light depth" },
-      { label: "Rating", value: "IP65" },
-      { label: "Power", value: "~3 W" },
-      { label: "Form", value: "Compact" },
-    ],
-    specs: [
-      { label: "Tech", value: "Structured-light depth" },
-      { label: "Rating", value: "IP65 industrial" },
-      { label: "Power", value: "~3 W" },
-      { label: "Form", value: "Compact / lightweight" },
-    ],
-    bestFor: ["Bin picking / pick-and-place vision", "RealSense replacements needing IP65 ruggedness", "Low-power embedded vision"],
-  },
-  {
-    slug: "percipio-gm465-dual-mode-depth-camera",
-    model: "GM465-E1",
-    brand: "Percipio",
-    name: "Percipio GM465-E1",
-    category: "3d-cameras-for-robotics",
-    tagline: "Switchable high-speed or high-accuracy depth in one rugged camera.",
-    availability: "contact",
-    trial: false,
-    summary:
-      "A structured-light 3D camera with dual modes — high-speed or high-accuracy depth — in an IP65 industrial housing. One SKU covers two jobs, simplifying the customer's BOM.",
-    keySpecs: [
-      { label: "Tech", value: "Structured-light" },
-      { label: "Modes", value: "Speed / accuracy" },
-      { label: "Rating", value: "IP65" },
-      { label: "Form", value: "Compact" },
-    ],
-    specs: [
-      { label: "Tech", value: "Structured-light depth" },
-      { label: "Modes", value: "High-speed or high-accuracy" },
-      { label: "Rating", value: "IP65 industrial" },
-      { label: "Form", value: "Compact / lightweight" },
-    ],
-    bestFor: ["Mixed-throughput vision lines", "Quality inspection + handling on one sensor", "RealSense-class upgrades"],
-  },
-  {
     slug: "mrdvs-s10-rgbd-camera",
     model: "S10",
     brand: "MRDVS",
@@ -549,6 +499,35 @@ export const products: Product[] = [
       { spec: "Black / textureless", mt: "Every pixel valid", competitor: "Holes on dark/reflective", competitorName: "Intel RealSense D435" },
       { spec: "Ambient light", mt: "Up to 100 kLux (sunlight OK)", competitor: "Degrades in direct sun", competitorName: "Intel RealSense D435" },
     ],
+  },
+  {
+    slug: "mrdvs-v2-pro-fusion-slam-rtls",
+    model: "V2 Pro",
+    brand: "MRDVS",
+    name: "MRDVS V2 Pro",
+    category: "3d-cameras-for-robotics",
+    tagline: "Infrastructure-free Fusion-SLAM positioning — see every pallet, track every vehicle.",
+    availability: "contact",
+    trial: false,
+    summary:
+      "An all-in-one RTLS module that fuses 2D LiDAR, a ceiling-facing camera, and an IMU into MRDVS's proprietary Fusion-SLAM™ pipeline — delivering infrastructure-free, sub-3 cm positioning (x, y, yaw) for AGVs, AMRs, and forklifts. In LiDAR-degraded spaces — long corridors, metal racking, open floor — it dynamically leans on visual-inertial data to stay locked in. Map once, deploy everywhere.",
+    keySpecs: [
+      { label: "Method", value: "Fusion-SLAM (LiDAR+cam+IMU)" },
+      { label: "Accuracy", value: "Sub-3 cm (x, y, yaw)" },
+      { label: "Infrastructure", value: "Zero / none required" },
+      { label: "Rating", value: "IP54" },
+    ],
+    specs: [
+      { label: "Method", value: "Fusion-SLAM™ — 2D LiDAR + ceiling camera + IMU" },
+      { label: "Output", value: "Localization: x, y, yaw" },
+      { label: "Accuracy", value: "Sub-3 cm positioning" },
+      { label: "Infrastructure", value: "None — no reflectors, magnets, or wires" },
+      { label: "Integration", value: "Open API (WMS / FMS)" },
+      { label: "Tags (optional)", value: "RFID / QR pallet tags + vehicle scanner" },
+      { label: "IP rating", value: "IP54" },
+      { label: "Operating temp", value: "−20 to 60 °C" },
+    ],
+    bestFor: ["AGV/AMR & forklift fleet positioning (infrastructure-free)", "LiDAR-degraded sites — long corridors, metal racking, open floor", "Rapid retrofit + digital-warehouse pallet/vehicle tracking"],
   },
   {
     slug: "thermal-camera",
@@ -848,21 +827,23 @@ export const featuredProduct = () => products.find((p) => p.featured) ?? product
  * cameras) fall back to the branded ProductGlyph placeholder.
  */
 export const productImages: Record<string, string> = {
-  "lr-1f-2d-lidar": "/products/lr-1f-2d-lidar.png",
-  "lr-1bs2-mini-zone-lidar": "/products/lr-1bs2-mini-zone-lidar.png",
-  "lr-1bs5-mini-lidar": "/products/lr-1bs5-mini-lidar.png",
-  "thermal-camera": "/products/thermal-camera.png",
-  "vbd1-10-2d-lidar": "/products/vbd1-10-2d-lidar.jpg",
-  "gs1-5-safety-lidar": "/products/gs1-5-safety-lidar.png",
-  "lr-16f-100-3d-lidar": "/products/lr-16f-100-3d-lidar.png",
-  "lr-16fis-explosion-proof-3d-lidar": "/products/lr-16fis-explosion-proof-3d-lidar.jpg",
-  "lr-f240-solid-state-lidar": "/products/lr-f240-solid-state-lidar.jpg",
-  "vss-50-solid-state-3d-lidar": "/products/vss-50-solid-state-3d-lidar.png",
-  "percipio-gm461-depth-camera": "/products/percipio-gm461-depth-camera.png",
-  "percipio-gm465-dual-mode-depth-camera": "/products/percipio-gm465-dual-mode-depth-camera.png",
-  "a090-laser-rangefinder": "/products/a090-laser-rangefinder.png",
-  "lr-dds-2-tripod-3d-mapper": "/products/lr-dds-2-tripod-3d-mapper.png",
-  "lc-m50g-mobile-slam-mapper": "/products/lc-m50g-mobile-slam-mapper.png",
+  "lr-1f-2d-lidar": "/products/lr-1f-2d-lidar-v2.png",
+  "lr-1bs2-mini-zone-lidar": "/products/lr-1bs2-mini-zone-lidar-v2.png",
+  "lr-1bs5-mini-lidar": "/products/lr-1bs5-mini-lidar-v2.png",
+  "thermal-camera": "/products/thermal-camera-v2.png",
+  "vbd1-10-2d-lidar": "/products/vbd1-10-2d-lidar-v2.png",
+  "gs1-5-safety-lidar": "/products/gs1-5-safety-lidar-v2.png",
+  "lr-16f-100-3d-lidar": "/products/lr-16f-100-3d-lidar-v2.png",
+  "lr-16fis-explosion-proof-3d-lidar": "/products/lr-16fis-explosion-proof-3d-lidar-v2.png",
+  "lr-f240-solid-state-lidar": "/products/lr-f240-solid-state-lidar-v2.png",
+  "vss-50-solid-state-3d-lidar": "/products/vss-50-solid-state-3d-lidar-v2.png",
+  "mrdvs-s10-rgbd-camera": "/products/mrdvs-s10-rgbd-camera.png",
+  "mrdvs-s10-ultra-rgbd-camera": "/products/mrdvs-s10-ultra-rgbd-camera.png",
+  "mrdvs-s11-rgbd-camera": "/products/mrdvs-s11-rgbd-camera.png",
+  "mrdvs-v2-pro-fusion-slam-rtls": "/products/mrdvs-v2-pro-fusion-slam-rtls.png",
+  "a090-laser-rangefinder": "/products/a090-laser-rangefinder-v2.png",
+  "lr-dds-2-tripod-3d-mapper": "/products/lr-dds-2-tripod-3d-mapper-v2.png",
+  "lc-m50g-mobile-slam-mapper": "/products/lc-m50g-mobile-slam-mapper-v2.png",
   "sintrones-ibox-602p-edge-ai": "/products/sintrones-ibox-602p-edge-ai.png",
   "sintrones-sbox-2624p-embedded": "/products/sintrones-sbox-2624p-embedded.png",
 };
