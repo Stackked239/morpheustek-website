@@ -3,30 +3,36 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
-import { footerNav, site } from "@/lib/site";
-import { leadMagnets } from "@/lib/catalog";
+import type { LeadMagnet } from "@/lib/cms";
+import type { SiteSettings } from "@/lib/cms";
 
-export function Footer() {
-  const primaryMagnet = leadMagnets.find((m) => m.primary) ?? leadMagnets[0];
+export function Footer({
+  site,
+  footerNav,
+  primaryMagnet,
+}: {
+  site: Pick<SiteSettings, "oneLiner" | "email" | "phone" | "phoneHref" | "address" | "distributor">;
+  footerNav: SiteSettings["footerNav"];
+  primaryMagnet?: LeadMagnet;
+}) {
   const year = 2026;
 
   return (
     <footer className="dark relative overflow-hidden border-t border-border bg-bg text-text">
       <div className="circuit-motif pointer-events-none absolute inset-x-0 top-0 h-40 opacity-70" aria-hidden />
       <Container className="relative py-16">
-        {/* Stay-in-touch / primary lead magnet */}
-        <div className="mb-14 flex flex-col items-start justify-between gap-6 rounded-xl border border-border bg-surface p-7 md:flex-row md:items-center">
-          <div className="max-w-xl">
-            <p className="eyebrow mb-2">Stay ahead of the spec</p>
-            <h2 className="font-display text-h4 font-bold text-text-strong">
-              Get the {primaryMagnet.title}
-            </h2>
-            <p className="mt-1 text-sm text-text-muted">{primaryMagnet.blurb}</p>
+        {primaryMagnet ? (
+          <div className="mb-14 flex flex-col items-start justify-between gap-6 rounded-xl border border-border bg-surface p-7 md:flex-row md:items-center">
+            <div className="max-w-xl">
+              <p className="eyebrow mb-2">Stay ahead of the spec</p>
+              <h2 className="font-display text-h4 font-bold text-text-strong">Get the {primaryMagnet.title}</h2>
+              <p className="mt-1 text-sm text-text-muted">{primaryMagnet.blurb}</p>
+            </div>
+            <Button href={`/resources/${primaryMagnet.slug}`} variant="primary" size="lg" className="shrink-0">
+              Download the checklist
+            </Button>
           </div>
-          <Button href={`/resources/${primaryMagnet.slug}`} variant="primary" size="lg" className="shrink-0">
-            Download the checklist
-          </Button>
-        </div>
+        ) : null}
 
         <div className="grid grid-cols-2 gap-10 md:grid-cols-6">
           <div className="col-span-2">
@@ -67,8 +73,12 @@ export function Footer() {
           </p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <span className="text-text-muted">Giving Sight to Robotics</span>
-            <Link href="/privacy" className="hover:text-text">Privacy</Link>
-            <Link href="/terms" className="hover:text-text">Terms</Link>
+            <Link href="/privacy" className="hover:text-text">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-text">
+              Terms
+            </Link>
           </div>
         </div>
       </Container>

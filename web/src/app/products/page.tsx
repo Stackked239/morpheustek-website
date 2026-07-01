@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { PageHero } from "@/components/marketing/PageHero";
 import { CtaBand } from "@/components/marketing/CtaBand";
 import { ProductCard } from "@/components/product/ProductCard";
-import { categories, productsInCategory } from "@/lib/catalog";
+import { getCategories, productsInCategory } from "@/lib/cms";
 
 export const metadata: Metadata = {
   title: "Products — LiDAR, 3D Cameras & Edge Compute for Robotics",
@@ -14,7 +14,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/products" },
 };
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const categories = await getCategories();
+  const byCategory = await Promise.all(
+    categories.map(async (cat) => ({ cat, items: await productsInCategory(cat.slug) })),
+  );
+
   return (
     <>
       <PageHero
@@ -36,8 +41,7 @@ export default function ProductsPage() {
 
       <Section>
         <Container wide>
-          {categories.map((cat) => {
-            const items = productsInCategory(cat.slug);
+          {byCategory.map(({ cat, items }) => {
             if (items.length === 0) return null;
             return (
               <div key={cat.slug} className="mb-16 last:mb-0 scroll-mt-24" id={cat.slug}>

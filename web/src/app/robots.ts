@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       // AI crawlers are allowed by default for GEO (Google-Extended, GPTBot,
       // ClaudeBot, PerplexityBot). Confirm with the client before launch.
-      { userAgent: "*", allow: "/" },
+      { userAgent: "*", allow: "/", disallow: ["/admin", "/admin/"] },
     ],
     sitemap: `${site.url}/sitemap.xml`,
     host: site.url,

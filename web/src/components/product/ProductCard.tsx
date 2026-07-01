@@ -2,11 +2,12 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, ShieldCheck } from "lucide-react";
 import { ProductMedia } from "@/components/product/ProductMedia";
 import { Badge } from "@/components/ui/Badge";
-import type { Product } from "@/lib/catalog";
+import { productImage, type Product } from "@/lib/cms";
 import { cn } from "@/lib/cn";
 
-export function ProductCard({ product, className }: { product: Product; className?: string }) {
+export async function ProductCard({ product, className }: { product: Product; className?: string }) {
   const isSafety = (product.certifications?.length ?? 0) > 0;
+  const imageSrc = await productImage(product.slug);
   return (
     <Link
       href={`/products/${product.slug}`}
@@ -15,7 +16,7 @@ export function ProductCard({ product, className }: { product: Product; classNam
         className,
       )}
     >
-      <ProductMedia product={product} className="aspect-[16/10] w-full border-b border-border" pad="p-4" />
+      <ProductMedia product={product} imageSrc={imageSrc} className="aspect-[16/10] w-full border-b border-border" pad="p-4" />
       <div className="flex flex-1 flex-col p-5">
         <div className="flex flex-wrap items-center gap-1.5">
           {product.featured ? <Badge tone="featured">Featured</Badge> : null}

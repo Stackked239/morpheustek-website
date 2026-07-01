@@ -5,22 +5,23 @@ import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { LeadForm } from "@/components/forms/LeadForm";
-import { getLeadMagnet, leadMagnets } from "@/lib/catalog";
+import { getLeadMagnet, getLeadMagnets, getRobotTypes } from "@/lib/cms";
 
-export function generateStaticParams() {
-  return leadMagnets.map((m) => ({ slug: m.slug }));
+export async function generateStaticParams() {
+  const magnets = await getLeadMagnets();
+  return magnets.map((m) => ({ slug: m.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const m = getLeadMagnet(slug);
+  const m = await getLeadMagnet(slug);
   if (!m) return {};
   return { title: m.title, description: m.blurb, alternates: { canonical: `/resources/${m.slug}` } };
 }
 
 export default async function ResourcePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const magnet = getLeadMagnet(slug);
+  const [magnet, robotTypes] = await Promise.all([getLeadMagnet(slug), getRobotTypes()]);
   if (!magnet) notFound();
 
   return (
@@ -55,7 +56,13 @@ export default async function ResourcePage({ params }: { params: Promise<{ slug:
             <div className="lg:pt-10">
               <p className="mb-4 font-display text-h4 font-bold text-text-strong">Get instant access</p>
               <p className="mb-4 text-sm text-text-muted">Quick details, then it downloads right away — no waiting on an email.</p>
-              <LeadForm intent={`download:${magnet.slug}`} submitLabel="Download now" mode="download" />
+              <LeadForm
+                intent={`download:${magnet.slug}`}
+                submitLabel="Download now"
+                mode="download"
+                downloadUrl={magnet.pdfPath}
+                robotTypes={robotTypes}
+              />
             </div>
           </div>
         </Section>

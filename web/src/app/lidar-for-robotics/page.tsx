@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import { CategoryView } from "@/components/marketing/CategoryView";
-import { getCategory } from "@/lib/catalog";
+import { getCategory } from "@/lib/cms";
 
-const c = getCategory("lidar-for-robotics")!;
-export const metadata: Metadata = { title: c.title, description: c.blurb, alternates: { canonical: "/lidar-for-robotics" } };
+const slug = "lidar-for-robotics" as const;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const c = await getCategory(slug);
+  if (!c) return {};
+  return { title: c.title, description: c.blurb, alternates: { canonical: `/${slug}` } };
+}
 
 export default function Page() {
-  return <CategoryView slug="lidar-for-robotics" />;
+  return <CategoryView slug={slug} />;
 }

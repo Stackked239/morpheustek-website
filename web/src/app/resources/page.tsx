@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PageHero } from "@/components/marketing/PageHero";
 import { CtaBand } from "@/components/marketing/CtaBand";
-import { leadMagnets } from "@/lib/catalog";
+import { getLeadMagnets } from "@/lib/cms";
 
 export const metadata: Metadata = {
   title: "Technical Resource Library — Guides, Checklists & Worksheets",
@@ -16,7 +16,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/resources" },
 };
 
-export default function ResourcesPage() {
+export default async function ResourcesPage() {
+  const leadMagnets = await getLeadMagnets();
   return (
     <>
       <PageHero

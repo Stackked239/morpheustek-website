@@ -1,9 +1,15 @@
 import type { MetadataRoute } from "next";
-import { site } from "@/lib/site";
-import { applications, categories, leadMagnets, products } from "@/lib/catalog";
+import { getApplications, getCategories, getLeadMagnets, getProducts, getSiteSettings } from "@/lib/cms";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const base = site.url;
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [settings, categories, products, applications, leadMagnets] = await Promise.all([
+    getSiteSettings(),
+    getCategories(),
+    getProducts(),
+    getApplications(),
+    getLeadMagnets(),
+  ]);
+  const base = settings.url;
 
   const staticRoutes: { path: string; priority: number }[] = [
     { path: "", priority: 1 },

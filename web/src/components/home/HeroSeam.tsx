@@ -16,7 +16,9 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 // three.js viewer loads lazily, client-only, after first paint — never in SSR
 const SeamViewer = dynamic(() => import("./SeamViewer").then((m) => m.SeamViewer), { ssr: false });
 
-const chips = ["90-day risk-free trial", "Same safety class as SICK", "North American support"];
+import { defaultHeroContent } from "@/lib/cms/home-defaults";
+
+type HeroContent = typeof defaultHeroContent;
 
 /**
  * Home hero — "The Seam".
@@ -29,7 +31,17 @@ const chips = ["90-day risk-free trial", "Same safety class as SICK", "North Ame
  * the poster is the complete,
  * readable SSR / no-JS / reduced-motion hero.
  */
-export function HeroSeam({ distributor, problem }: { distributor: string; problem: string }) {
+export function HeroSeam({
+  distributor,
+  problem,
+  content,
+}: {
+  distributor: string;
+  problem: string;
+  content?: HeroContent;
+}) {
+  const hero = content ?? defaultHeroContent;
+  const chips = hero.chips;
   const scope = useRef<HTMLElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);     // inner viewport — projection reference box
   const eyeRef = useRef<HTMLDivElement>(null);
@@ -184,7 +196,7 @@ export function HeroSeam({ distributor, problem }: { distributor: string; proble
 
           {/* fixed instrumentation — true catalog model */}
           <div className="pointer-events-none absolute right-4 top-3 font-mono text-[10px] uppercase tracking-[0.18em] text-text-muted">
-            OLEI LR-16F-100 · 360°×30°
+            {hero.scanLabel}
           </div>
 
           {/* mobile-only CAMERA / LiDAR driver (no 1px handle on touch) */}
@@ -230,22 +242,23 @@ export function HeroSeam({ distributor, problem }: { distributor: string; proble
           <h1 className="mt-6 font-display text-[clamp(2.6rem,7vw,5.25rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.01em] text-text-strong">
             <span className="hero-line block overflow-hidden">
               <span className="block">
-                Giving <span className="text-accent">Sight</span>
+                {hero.headlineLine1}{" "}
+                <span className="text-accent">{hero.headlineAccent}</span>
               </span>
             </span>
             <span className="hero-line block overflow-hidden">
-              <span className="block">to Robotics</span>
+              <span className="block">{hero.headlineLine2}</span>
             </span>
           </h1>
 
           <p className="hero-line mt-7 max-w-xl text-lead text-text-muted">{problem}</p>
 
           <div className="hero-line mt-9 flex flex-wrap gap-3">
-            <Button href="/book-a-meeting?intent=trial" variant="primary" size="lg">
-              Start a 90-day trial
+            <Button href={hero.primaryCta.href} variant="primary" size="lg">
+              {hero.primaryCta.label}
             </Button>
-            <Button href="/book-a-meeting?intent=engineer" variant="ghost" size="lg">
-              Talk to an engineer
+            <Button href={hero.secondaryCta.href} variant="ghost" size="lg">
+              {hero.secondaryCta.label}
             </Button>
           </div>
 

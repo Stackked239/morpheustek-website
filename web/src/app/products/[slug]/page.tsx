@@ -11,17 +11,27 @@ import { ProductMedia } from "@/components/product/ProductMedia";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SpecTable } from "@/components/product/SpecTable";
 import { CtaBand } from "@/components/marketing/CtaBand";
-import { availabilityLabel, getCategory, getProduct, productImage, products, productsInCategory } from "@/lib/catalog";
+import {
+  availabilityLabel,
+  getCategory,
+  getProduct,
+  getProducts,
+  productImage,
+  productsInCategory,
+  visibleSpecs,
+} from "@/lib/cms";
+import { cn } from "@/lib/cn";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const products = await getProducts();
   return products.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const p = getProduct(slug);
+  const p = await getProduct(slug);
   if (!p) return {};
-  const cat = getCategory(p.category);
+  const cat = await getCategory(p.category);
   return {
     title: `${p.name} — ${cat?.label ?? "Sensor"}`,
     description: p.summary,
@@ -32,11 +42,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProduct(slug);
   if (!product) notFound();
-  const cat = getCategory(product.category);
+  const cat = await getCategory(product.category);
   const isSafety = (product.certifications?.length ?? 0) > 0;
-  const related = productsInCategory(product.category).filter((p) => p.slug !== product.slug).slice(0, 3);
+  const related = (await productsInCategory(product.category)).filter((p) => p.slug !== product.slug).slice(0, 3);
+  const imageSrc = await productImage(product.slug);
+  const keySpecs = visibleSpecs(product.keySpecs);
+  const specs = visibleSpecs(product.specs);
 
   return (
     <>
@@ -58,11 +71,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <div>
               <ProductMedia
                 product={product}
+                imageSrc={imageSrc}
                 className="aspect-[4/3] w-full rounded-lg border border-border"
                 sizes="(min-width: 1024px) 45vw, 100vw"
                 pad="p-8"
               />
-              {!productImage(product.slug) ? (
+              {!imageSrc ? (
                 <p className="mt-3 text-center font-mono text-xs text-text-subtle">
                   Illustrative — real product photography supplied at launch.
                 </p>
@@ -96,10 +110,21 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
               {/* key specs above the fold — the engineer's first read */}
               <dl className="mt-7 grid grid-cols-2 gap-3">
-                {product.keySpecs.map((s) => (
-                  <div key={s.label} className="rounded-md border border-border bg-surface p-3">
-                    <dt className="font-mono text-[11px] uppercase tracking-wide text-text-muted">{s.label}</dt>
-                    <dd className="tnum mt-1 font-display text-base font-bold text-text-strong">{s.value}</dd>
+                {keySpecs.map((s) => (
+                  <div
+                    key={s.label}
+                    className={cn(
+                      "rounded-md border p-3",
+                      s.highlight ? "border-accent bg-accent/15" : "border-border bg-surface",
+                    )}
+                  >
+                    <dt className="font-mono text-[11px] uppercase tracking-wide text-text-muted">
+                      {s.label}
+                      {s.highlight ? <span className="ml-1 text-accent" aria-hidden>★</span> : null}
+                    </dt>
+                    <dd className={cn("tnum mt-1 font-display text-base font-bold text-text-strong", s.highlight && "text-text-strong")}>
+                      {s.value}
+                    </dd>
                   </div>
                 ))}
               </dl>
@@ -199,7 +224,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <div className="surface-card p-6">
                 <h2 className="font-display text-h4 font-bold text-text-strong">Full specifications</h2>
                 <div className="mt-4">
-                  <SpecTable specs={product.specs} caption={`${product.name} specifications`} />
+                  <SpecTable specs={specs} caption={`${product.name} specifications`} />
                 </div>
                 <div className="mt-6 border-t border-border pt-5">
                   <p className="text-sm text-text-muted">Need a custom FOV, range, mounting, or housing?</p>

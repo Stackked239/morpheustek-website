@@ -3,11 +3,11 @@ import { Roboto_Condensed, Roboto_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { site } from "@/lib/site";
-import { TopBar } from "@/components/layout/TopBar";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { getContent } from "@/lib/cms";
+import { defaultLayoutMetadata } from "@/lib/cms/home-defaults";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 
-// Official brand fonts: Roboto Condensed (headlines + body), Roboto Mono for specs.
 const robotoCondensed = Roboto_Condensed({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
@@ -21,52 +21,44 @@ const robotoMono = Roboto_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: {
-    default: `${site.name} — ${site.tagline} | LiDAR, 3D Cameras & Edge Compute for Robotics`,
-    template: `%s · ${site.name}`,
-  },
-  description: site.oneLiner,
-  applicationName: site.name,
-  keywords: [
-    "LiDAR for robotics",
-    "2D LiDAR for robot navigation",
-    "3D LiDAR for obstacle avoidance",
-    "safety LiDAR for AMR",
-    "SIL2 safety LiDAR",
-    "custom LiDAR for robotics",
-    "LiDAR alternative to SICK",
-    "Hokuyo LiDAR alternative",
-    "LiDAR supplier North America",
-    "3D cameras for robotics",
-    "robot perception sensor supplier",
-  ],
-  openGraph: {
-    type: "website",
-    siteName: site.name,
-    title: `${site.name} — ${site.tagline}`,
-    description: site.oneLiner,
-    url: site.url,
-    locale: "en_US",
-    images: [
-      {
-        url: "/media/hero-pointcloud.jpg",
-        width: 1376,
-        height: 768,
-        alt: "A 3D LiDAR point-cloud view of a warehouse aisle in depth-mapped color",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${site.name} — ${site.tagline}`,
-    description: site.oneLiner,
-    images: ["/media/hero-pointcloud.jpg"],
-  },
-  alternates: { canonical: "/" },
-  robots: { index: true, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const meta = await getContent("layout.metadata", defaultLayoutMetadata);
+
+  return {
+    metadataBase: new URL(site.url),
+    title: {
+      default: meta.titleDefault,
+      template: meta.titleTemplate,
+    },
+    description: meta.description,
+    applicationName: site.name,
+    keywords: meta.keywords,
+    openGraph: {
+      type: "website",
+      siteName: site.name,
+      title: `${site.name} — ${site.tagline}`,
+      description: meta.description,
+      url: site.url,
+      locale: "en_US",
+      images: [
+        {
+          url: "/media/hero-pointcloud.jpg",
+          width: 1376,
+          height: 768,
+          alt: "A 3D LiDAR point-cloud view of a warehouse aisle in depth-mapped color",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${site.name} — ${site.tagline}`,
+      description: meta.description,
+      images: ["/media/hero-pointcloud.jpg"],
+    },
+    alternates: { canonical: "/" },
+    robots: { index: true, follow: true },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -86,7 +78,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${robotoCondensed.variable} ${robotoMono.variable}`}
     >
       <body className="font-body antialiased">
-        {/* Parser-blocking no-flash theme init (runs before paint). */}
         <script src="/theme-init.js" />
         <a
           href="#main"
@@ -94,16 +85,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <TopBar />
-        <Header />
+        <SiteHeader />
         <main id="main" className="min-h-[60vh]">
           {children}
         </main>
-        <Footer />
-        {/* Instantly / Leadsy.ai website-visitor tracking pixel — de-anonymizes
-            visitors from email campaigns for click tracking + automated follow-up.
-            Added per client request (Tom Pittman / Sales Pro, 2026-06-25). The
-            data-* attributes are forwarded to the injected <script> by next/script. */}
+        <SiteFooter />
         <Script
           id="vtag-ai-js"
           src="https://r2.leadsy.ai/tag.js"

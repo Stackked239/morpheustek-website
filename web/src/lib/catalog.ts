@@ -33,6 +33,15 @@ export interface Category {
 export interface Spec {
   label: string;
   value: string;
+  /** Hide on the live product page when false. Defaults to visible. */
+  visible?: boolean;
+  /** Emphasize with accent styling on the product page. */
+  highlight?: boolean;
+}
+
+/** Spec rows shown on the live site (visible !== false). */
+export function visibleSpecs(specs: Spec[]): Spec[] {
+  return specs.filter((s) => s.visible !== false);
 }
 
 export interface CompareRow {
@@ -765,6 +774,8 @@ export interface LeadMagnet {
   blurb: string;
   contents: string[];
   primary?: boolean;
+  /** Public URL to the downloadable PDF (Supabase Storage or /public path). */
+  pdfPath?: string;
 }
 
 export const leadMagnets: LeadMagnet[] = [

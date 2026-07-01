@@ -9,6 +9,10 @@ import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { getProduct, productImage } from "@/lib/catalog";
+import type { HomeCatalog } from "@/lib/cms/home-catalog";
+import type { SectionHeaderContent } from "@/lib/cms/home-defaults";
+import { defaultAssemblyHeader } from "@/lib/cms/home-defaults";
+import { homeImage, homeProduct } from "@/lib/cms/home-catalog";
 import { cn } from "@/lib/cn";
 
 /**
@@ -148,13 +152,15 @@ function StepCard({
   index,
   step,
   part,
+  catalog,
 }: {
   index: number;
   step: StepCopy;
   part: StepFrame;
+  catalog?: HomeCatalog;
 }) {
-  const product = getProduct(part.slug);
-  const img = productImage(part.slug);
+  const product = homeProduct(catalog, part.slug, getProduct);
+  const img = homeImage(catalog, part.slug, productImage);
   // Safety badge stays strictly data-driven — only the GS1-5 carries certifications.
   const isCertified = Boolean(product?.certifications?.length);
   const seq = `0${index + 1}`;
@@ -247,7 +253,13 @@ function StepCard({
   );
 }
 
-export function AssemblyStack() {
+export function AssemblyStack({
+  catalog,
+  section = defaultAssemblyHeader,
+}: {
+  catalog?: HomeCatalog;
+  section?: SectionHeaderContent;
+}) {
   // gsap scope lives on an inner div (Container is a plain wrapper and doesn't
   // forward a ref) — it still encloses every [data-part] in the stack.
   const scope = useRef<HTMLDivElement>(null);
@@ -298,15 +310,11 @@ export function AssemblyStack() {
         <div ref={scope}>
         {/* ── section header ──────────────────────────────────────────────── */}
         <div className="max-w-2xl">
-          <Eyebrow>The assembly</Eyebrow>
+          <Eyebrow>{section.eyebrow}</Eyebrow>
           <h2 className="mt-4 font-display text-h2 font-extrabold uppercase leading-[1.04] tracking-tight text-text-strong">
-            Four steps to sight you can certify.
+            {section.title}
           </h2>
-          <p className="mt-5 text-lead text-text-muted">
-            Protect, map, see, think — the same four-layer stack on every robot. Pick the
-            platform and the parts re-pick themselves. It&apos;s always going to be different;
-            the safety floor never is.
-          </p>
+          <p className="mt-5 text-lead text-text-muted">{section.body}</p>
         </div>
 
         {/* ── the segmented selector (Austin's idea) ──────────────────────────
@@ -349,7 +357,7 @@ export function AssemblyStack() {
           <span className="text-text-muted">Configured for {active.label}</span> · {active.blurb}
           <span className="sr-only">
             {" "}
-            — {active.parts.map((p) => getProduct(p.slug)?.model).filter(Boolean).join(", ")}
+            — {active.parts.map((p) => homeProduct(catalog, p.slug, getProduct)?.model).filter(Boolean).join(", ")}
           </span>
         </p>
 
@@ -357,7 +365,7 @@ export function AssemblyStack() {
             stagger in via runBuildIn after React commits the new DOM ── */}
         <ol ref={stackRef} key={activeId} className="mt-10 flex flex-col gap-5 md:gap-6">
           {STEPS.map((step, i) => (
-            <StepCard key={step.role} index={i} step={step} part={active.parts[i]} />
+            <StepCard key={step.role} index={i} step={step} part={active.parts[i]} catalog={catalog} />
           ))}
         </ol>
 

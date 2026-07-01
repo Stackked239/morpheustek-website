@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>MorpheusTEK PDF Template</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    @page { size: letter; margin: 0.55in; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Roboto Condensed", sans-serif; color: #0f326c; background: #f4f6fa; font-size: 10.5pt; line-height: 1.45; }
+    .wrap { max-width: 8.5in; margin: 24px auto; padding: 0 16px 40px; }
+  .note { background: #fff; border: 1px solid #d7dee8; border-radius: 6px; padding: 14px 16px; margin-bottom: 16px; color: #4a5a78; font-size: 10pt; }
+    .sheet { background: #fff; box-shadow: 0 8px 30px rgba(15,50,108,.08); }
+    .bar { background: #ffcc00; color: #0f326c; padding: 14px 18px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .brand { font-weight: 800; font-size: 18pt; text-transform: uppercase; }
+    .tag { font-family: "Roboto Mono", monospace; font-size: 8pt; text-transform: uppercase; letter-spacing: .12em; }
+    .hero { padding: 22px 18px 16px; border-bottom: 3px solid #0f326c; }
+    h1 { margin: 0; font-size: 22pt; font-weight: 800; text-transform: uppercase; line-height: 1.05; }
+    .sub, .lead { color: #4a5a78; margin-top: 8px; max-width: 36rem; }
+    .section { padding: 16px 18px; border-bottom: 1px solid #e9edf3; }
+    h2 { margin: 0 0 10px; font-size: 10pt; text-transform: uppercase; letter-spacing: .1em; }
+    ul { margin: 0; padding-left: 1.2rem; }
+    li { margin: 5px 0; }
+    .placeholder { background: #fff8d6; border: 1px dashed #cca300; padding: 8px 10px; border-radius: 4px; color: #6a5a20; font-size: 9.5pt; }
+    .footer { padding: 12px 18px 18px; border-top: 2px solid #ffcc00; display: flex; justify-content: space-between; gap: 12px; font-size: 8.5pt; color: #4a5a78; }
+    .footer strong { color: #0f326c; display: block; text-transform: uppercase; font-size: 9pt; }
+    .print { background: #0f326c; color: #fff; border: 0; padding: 10px 14px; font-family: inherit; font-weight: 700; text-transform: uppercase; border-radius: 4px; cursor: pointer; margin-bottom: 12px; }
+    @media print { body { background: #fff; } .wrap { margin: 0; padding: 0; } .note, .print { display: none; } .sheet { box-shadow: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <button class="print" type="button" onclick="window.print()">Print / Save as PDF</button>
+    <div class="note">
+      <strong>MorpheusTEK branded PDF template.</strong> Replace every yellow placeholder block with your copy.
+      For product spec sheets, use the auto-filled page at <code>/templates/spec-sheet/[product-slug]</code> on the site admin.
+      Brand rules: navy text on yellow (never white on yellow); Roboto Condensed for headlines; keep one yellow accent bar per page.
+    </div>
+    <article class="sheet">
+      <div class="bar">
+        <div class="brand">MorpheusTEK</div>
+        <div class="tag">Giving sight to robotics</div>
+      </div>
+      <div class="hero">
+        <h1><span class="placeholder">Document title — e.g. Safety LiDAR Buyer's Guide</span></h1>
+        <p class="sub"><span class="placeholder">One-line subtitle or SKU name</span></p>
+        <p class="lead"><span class="placeholder">2–3 sentence lede explaining who this is for and what they'll get from reading/downloading.</span></p>
+      </div>
+      <div class="section">
+        <h2>Section heading</h2>
+        <ul>
+          <li><span class="placeholder">Bullet or checklist item</span></li>
+          <li><span class="placeholder">Bullet or checklist item</span></li>
+          <li><span class="placeholder">Bullet or checklist item</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h2>Specifications (optional)</h2>
+        <p class="placeholder">Use a two-column table in Word/Google Docs, or copy specs from /templates/spec-sheet/[slug] for product sheets.</p>
+      </div>
+      <div class="section">
+        <h2>Next step</h2>
+        <p class="placeholder">CTA copy — e.g. Book a 90-day trial at morpheustek.com/book-a-meeting</p>
+      </div>
+      <div class="footer">
+        <div><strong>MorpheusTEK</strong>morpheustek.com · Exclusive North American distributor for OLEI LiDAR</div>
+        <div style="text-align:right"><strong>Contact</strong>Book a meeting · morpheustek.com/book-a-meeting</div>
+      </div>
+    </article>
+  </div>
+</body>
+</html>

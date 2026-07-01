@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { resourcesNav } from "@/lib/site";
+import type { SiteSettings } from "@/lib/cms";
 
 // Resources dropdown — a small hover/focus menu (same 120ms-grace interaction as the
 // Products MegaMenu) holding the library, glossary, blog, and shows so each keeps its
 // full clever name without crowding the top bar. Narrow panel, left-aligned to the
 // trigger — it sits well within the viewport, so no R04-style centering is needed.
-export function ResourcesMenu() {
+export function ResourcesMenu({ links }: { links: SiteSettings["resourcesNav"] }) {
   const [open, setOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -49,7 +49,7 @@ export function ResourcesMenu() {
         )}
       >
         <div className="w-80 overflow-hidden rounded-xl border border-border border-t-2 border-t-accent bg-surface p-2 shadow-[var(--shadow-md)]">
-          {resourcesNav.map((l) => (
+          {links.map((l) => (
             <Link key={l.href} href={l.href} className="group block rounded-md p-3 transition-colors hover:bg-bg-muted">
               <div className="font-display text-sm font-bold text-text-strong group-hover:text-brand-blue">{l.label}</div>
               {l.description ? <div className="mt-0.5 text-xs leading-snug text-text-muted">{l.description}</div> : null}

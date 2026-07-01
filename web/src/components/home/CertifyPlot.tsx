@@ -7,6 +7,9 @@ import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { getProduct } from "@/lib/catalog";
+import type { HomeCatalog } from "@/lib/cms/home-catalog";
+import { homeProduct } from "@/lib/cms/home-catalog";
+import { defaultCertifyContent } from "@/lib/cms/home-defaults";
 
 /* ============================================================================
    SITE YOU CAN CERTIFY — "Sight you can certify."
@@ -37,7 +40,6 @@ import { getProduct } from "@/lib/catalog";
 const VIEW = { w: 460, h: 360 };
 const C = { x: 230, y: 196 }; // sensor / field origin (AMR footprint), nudged up for the rear wedge
 const SCALE = 30; // px per metre
-const CONFIGURED_M = 2.5; // drawn protective radius (the field configured in the hero scan)
 const RINGS_M = [1, 2, 3, 4, 5] as const; // concentric scale rings, metres
 
 // the 270° aperture sweeps -45° → 225° (a 90° blind wedge centred on the rear / bottom)
@@ -74,10 +76,17 @@ function certTokens(certifications: string[]): string[] {
   ].filter((t): t is string => Boolean(t));
 }
 
-export function CertifyPlot() {
-  const product = getProduct("gs1-5-safety-lidar");
+export function CertifyPlot({
+  catalog,
+  content = defaultCertifyContent,
+}: {
+  catalog?: HomeCatalog;
+  content?: typeof defaultCertifyContent;
+}) {
+  const product = homeProduct(catalog, "gs1-5-safety-lidar", getProduct);
   const ref = useRef<HTMLDivElement>(null);
   const [drawn, setDrawn] = useState(false);
+  const configuredM = content.configuredM;
 
   // Local draw-in: toggle `is-visible` on the figure as it enters / leaves the
   // viewport. Toggling (not once-only) gives the client's replay-on-scroll.
@@ -108,7 +117,7 @@ export function CertifyPlot() {
   const certs = product.certifications ?? [];
   const badge = certTokens(certs);
 
-  const configuredEdge = pt(CONFIGURED_M * SCALE, 90); // top of field — anchors the dimension caption
+  const configuredEdge = pt(configuredM * SCALE, 90); // top of field — anchors the dimension caption
   const startEdge = pt(5 * SCALE, APERTURE_START);
   const endEdge = pt(5 * SCALE, APERTURE_END);
 
@@ -124,20 +133,17 @@ export function CertifyPlot() {
         <div className="grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           {/* ---- copy column ---- */}
           <div className="max-w-xl">
-            <Eyebrow>The safety case</Eyebrow>
+            <Eyebrow>{content.eyebrow}</Eyebrow>
             <h2 className="mt-5 font-display text-h2 font-extrabold uppercase leading-[1.04] tracking-tight text-text-strong">
-              Sight you can <span className="text-brand-blue">certify.</span>
+              {content.title} <span className="text-brand-blue">{content.titleAccent}</span>
             </h2>
             <p className="mt-6 text-lead text-text-muted">
-              The {product.name} is a {angleSpec} functional-safety scanner — the same safety
-              class as SICK, certified to stop for people. This is its protective field at true
-              proportions: the drawing your safety engineer signs off on, not a render.
+              The {product.name} is a {angleSpec} {content.bodyLead}
             </p>
             <p className="mt-4 text-text-muted">
-              Configured to a {CONFIGURED_M} m protective radius and
-              dimensioned against the {protectiveMax.replace(" max", "")} maximum — 30 years of
-              high-tech measurement instruments behind every ring. Nobody gets fired for choosing
-              the safe option, and nobody gets fired for choosing us either.
+              {content.bodyFollow
+                .replace("{configuredM}", String(configuredM))
+                .replace("{protectiveMax}", protectiveMax.replace(" max", ""))}
             </p>
 
             {/* data-driven cert badge — renders ONLY because the GS1-5 carries
@@ -179,7 +185,7 @@ export function CertifyPlot() {
             <svg
               viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
               role="img"
-              aria-label={`Plan view of the ${product.name} protective field: a ${angleSpec} sector with a 90 degree rear blind zone, drawn to scale with a ${CONFIGURED_M} metre configured protective radius and a ${protectiveMax} maximum, with concentric one-metre scale rings.`}
+              aria-label={`Plan view of the ${product.name} protective field: a ${angleSpec} sector with a 90 degree rear blind zone, drawn to scale with a ${configuredM} metre configured protective radius and a ${protectiveMax} maximum, with concentric one-metre scale rings.`}
               className="w-full text-line-ink"
             >
               {/* concentric scale rings (1–5 m) + their metric labels */}
@@ -222,7 +228,7 @@ export function CertifyPlot() {
               <path
                 className="certplot-field"
                 pathLength={1}
-                d={sector(CONFIGURED_M * SCALE)}
+                d={sector(configuredM * SCALE)}
                 fill="var(--accent)"
                 fillOpacity="0.1"
                 stroke="var(--brand-blue)"
@@ -251,12 +257,12 @@ export function CertifyPlot() {
                 />
                 <text
                   x={C.x + 8}
-                  y={C.y - (CONFIGURED_M * SCALE) / 2}
+                  y={C.y - (configuredM * SCALE) / 2}
                   fontFamily="var(--font-mono)"
                   fontSize="11"
                   letterSpacing="0.05em"
                 >
-                  R {CONFIGURED_M} m
+                  R {configuredM} m
                 </text>
               </g>
 
