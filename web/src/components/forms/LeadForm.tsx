@@ -8,7 +8,7 @@ const inputCls =
   "h-11 w-full rounded-md border border-border bg-surface px-3.5 text-sm text-text outline-none transition-colors placeholder:text-text-subtle focus:border-border-strong focus-visible:outline-2";
 const labelCls = "mb-1.5 block text-sm font-medium text-text";
 
-const robotTypes = [
+const defaultRobotTypes = [
   "AMR",
   "AGV",
   "Autonomous forklift",
@@ -28,11 +28,13 @@ export function LeadForm({
   submitLabel = "Book a meeting",
   mode = "meeting",
   downloadUrl,
+  robotTypes = defaultRobotTypes,
 }: {
   intent?: string;
   submitLabel?: string;
   mode?: "meeting" | "download";
   downloadUrl?: string;
+  robotTypes?: string[];
 }) {
   const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
 
@@ -46,8 +48,12 @@ export function LeadForm({
     // Honeypot — silently drop bots.
     if ((form.elements.namedItem("company_url") as HTMLInputElement | null)?.value) return;
     setStatus("submitting");
-    // Placeholder for the Phase-2 POST /api/lead (HubSpot). Simulated here.
-    await new Promise((r) => setTimeout(r, 500));
+    const formData = new FormData(form);
+    const res = await fetch("/api/lead", { method: "POST", body: formData });
+    if (!res.ok) {
+      setStatus("idle");
+      return;
+    }
     setStatus("done");
     // Instant access: trigger the download immediately (no waiting on email).
     if (mode === "download" && downloadUrl) {

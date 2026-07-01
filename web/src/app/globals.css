@@ -920,3 +920,319 @@
   /* angled colored panel for key messaging / stats */
   clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%);
 }
+
+/* ── Blog article template (Eyes at the Edge) ───────────────────────────── */
+.blog-article {
+  color: var(--text);
+}
+
+.blog-lede {
+  margin: 0 0 2rem;
+  font-size: 1.2rem;
+  line-height: 1.65;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+}
+
+.blog-h2 {
+  margin: 3rem 0 1.25rem;
+  padding-top: 0.5rem;
+  font-family: var(--font-condensed), sans-serif;
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--text-strong);
+}
+
+.blog-h3 {
+  margin: 2rem 0 0.75rem;
+  font-family: var(--font-condensed), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-strong);
+}
+
+.blog-p {
+  margin: 0 0 1.25rem;
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  color: var(--text-muted);
+}
+
+.blog-hr {
+  margin: 2.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.blog-quote {
+  margin: 2rem 0;
+  border-left: 3px solid var(--brand-blue);
+  background: linear-gradient(90deg, var(--bg-muted), transparent 70%);
+  padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+}
+
+.blog-quote-lead {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--text-strong);
+}
+
+.blog-quote-attr {
+  margin: 0.75rem 0 0;
+  font-family: var(--font-mono-rc), monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.blog-ul {
+  margin: 0 0 1.5rem;
+  padding-left: 1.25rem;
+  list-style: none;
+}
+
+.blog-ul li {
+  position: relative;
+  margin-bottom: 0.65rem;
+  padding-left: 0.75rem;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+.blog-ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--accent);
+}
+
+.blog-callout {
+  margin: 2rem 0;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  background: var(--bg-muted);
+  padding: 1.25rem 1.5rem;
+}
+
+.blog-callout-label {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-mono-rc), monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand-blue);
+}
+
+.blog-callout-body {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+.blog-specs {
+  margin: 2rem 0;
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--border);
+}
+
+.blog-spec-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) minmax(10rem, 1.25fr);
+  gap: 1rem;
+  background: var(--bg);
+  padding: 0.85rem 1.1rem;
+}
+
+.blog-spec-row dt {
+  font-family: var(--font-mono-rc), monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.blog-spec-row dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.blog-steps {
+  margin: 2rem 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+}
+
+.blog-steps li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: start;
+  border: 1px solid var(--border);
+  background: var(--bg-muted);
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+}
+
+.blog-step-num {
+  font-family: var(--font-mono-rc), monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent-text);
+  background: var(--accent);
+  padding: 0.35rem 0.5rem;
+  line-height: 1;
+}
+
+.blog-step-title {
+  margin: 0;
+  font-family: var(--font-condensed), sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-strong);
+}
+
+.blog-step-body {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.blog-takeaways {
+  margin: 3rem 0 0;
+  border: 1px solid var(--border);
+  background: var(--bg-muted);
+  padding: 1.5rem 1.5rem 1.25rem;
+  border-radius: 0.5rem;
+}
+
+.blog-takeaways-label {
+  margin: 0 0 1rem;
+  font-family: var(--font-mono-rc), monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-blue);
+}
+
+.blog-takeaways ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blog-takeaways li {
+  position: relative;
+  margin-bottom: 0.75rem;
+  padding-left: 1rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.blog-takeaways li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.blog-cta {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.blog-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  background: var(--accent);
+  padding: 0.85rem 1.35rem;
+  font-family: var(--font-mono-rc), monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+  transition: filter 0.15s ease;
+}
+
+.blog-cta-primary:hover {
+  filter: brightness(1.05);
+}
+
+.blog-cta-secondary {
+  font-family: var(--font-mono-rc), monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-blue);
+  text-underline-offset: 4px;
+}
+
+.blog-cta-secondary:hover {
+  text-decoration: underline;
+}
+
+/* Spec sheet / PDF print — hide site chrome */
+@media print {
+  header,
+  footer,
+  .site-header,
+  .site-footer,
+  [data-site-chrome] {
+    display: none !important;
+  }
+
+  .spec-sheet-print {
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Admin live preview — render marketing pages with site theme inside the panel */
+.admin-live-preview {
+  isolation: isolate;
+}
+
+.admin-live-preview a {
+  pointer-events: none;
+}

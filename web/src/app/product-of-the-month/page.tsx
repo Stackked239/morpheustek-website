@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import { notFound } from "next/navigation";
 import { BadgeCheck, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
@@ -7,17 +9,33 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ProductGlyph } from "@/components/brand/ProductGlyph";
 import { CtaBand } from "@/components/marketing/CtaBand";
-import { featuredProduct } from "@/lib/catalog";
+import { getContent, getProduct, productImage, visibleSpecs } from "@/lib/cms";
+import { defaultProductOfMonth } from "@/lib/cms/home-defaults";
 
-const product = featuredProduct();
+export async function generateMetadata(): Promise<Metadata> {
+  const merch = await getContent("merch.product_of_month", defaultProductOfMonth);
+  const product = await getProduct(merch.productSlug);
+  if (!product) {
+    return { title: "Product of the Month", alternates: { canonical: "/product-of-the-month" } };
+  }
+  return {
+    title: "Product of the Month",
+    description: `This month's featured sensor: the ${product.name} — ${product.tagline}`,
+    alternates: { canonical: "/product-of-the-month" },
+  };
+}
 
-export const metadata: Metadata = {
-  title: "Product of the Month",
-  description: `This month's featured sensor: the ${product.name} — ${product.tagline}`,
-  alternates: { canonical: "/product-of-the-month" },
-};
+export default async function ProductOfTheMonthPage() {
+  const merch = await getContent("merch.product_of_month", defaultProductOfMonth);
+  if (!merch.enabled) notFound();
 
-export default function ProductOfTheMonthPage() {
+  const product = await getProduct(merch.productSlug);
+  if (!product) notFound();
+
+  const src = await productImage(product.slug);
+  const hasCert = (product.certifications?.length ?? 0) > 0;
+  const keySpecs = visibleSpecs(product.keySpecs);
+
   return (
     <>
       <section className="dark relative overflow-hidden bg-bg">
@@ -26,17 +44,21 @@ export default function ProductOfTheMonthPage() {
           <div>
             <Eyebrow>Product of the month</Eyebrow>
             <h1 className="mt-4 font-display text-[clamp(2rem,5vw,3.25rem)] font-extrabold leading-[1.05] tracking-[-0.02em] text-text-strong">
-              Affordable safety has arrived.
+              {merch.headline}
             </h1>
             <p className="mt-5 text-lead text-text-muted">{product.summary}</p>
             <div className="mt-6 flex flex-wrap items-center gap-2">
-              <Badge tone="safety" icon={ShieldCheck}>
-                Type 3 · SIL2 · PL d
-              </Badge>
-              <Badge tone="trial" icon={BadgeCheck}>
-                90-day trial
-              </Badge>
-              <Badge tone="in-stock">In stock</Badge>
+              {hasCert ? (
+                <Badge tone="safety" icon={ShieldCheck}>
+                  {product.certifications!.join(" · ")}
+                </Badge>
+              ) : null}
+              {product.trial ? (
+                <Badge tone="trial" icon={BadgeCheck}>
+                  90-day trial
+                </Badge>
+              ) : null}
+              <Badge tone="in-stock">{product.availability === "in-stock" ? "In stock" : "Available"}</Badge>
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button href={`/products/${product.slug}`} variant="primary" size="lg">
@@ -47,14 +69,20 @@ export default function ProductOfTheMonthPage() {
               </Button>
             </div>
           </div>
-          <ProductGlyph label={product.model} className="aspect-[4/3] w-full" />
+          {src ? (
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-border bg-bg-muted">
+              <Image src={src} alt={product.name} fill className="object-contain p-6" unoptimized={src.startsWith("http")} />
+            </div>
+          ) : (
+            <ProductGlyph label={product.model} className="aspect-[4/3] w-full" />
+          )}
         </Container>
       </section>
 
       <Section>
         <Container>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {product.keySpecs.map((s) => (
+            {keySpecs.map((s) => (
               <div key={s.label} className="surface-card p-5">
                 <div className="font-mono text-[11px] uppercase tracking-wide text-text-muted">{s.label}</div>
                 <div className="tnum mt-1 font-display text-h4 font-bold text-text-strong">{s.value}</div>
@@ -65,10 +93,10 @@ export default function ProductOfTheMonthPage() {
       </Section>
 
       <CtaBand
-        title="Same safety class as SICK. A fraction of the price."
-        body="See the GS1-5 on your own AGV next to the incumbent — risk-free for 90 days."
-        primary={{ label: "Request a trial unit", href: "/book-a-meeting?intent=trial" }}
-        secondary={{ label: "Compare to SICK", href: "/compare/sick-alternative-lidar" }}
+        title={merch.ctaBand.title}
+        body={merch.ctaBand.body}
+        primary={merch.ctaBand.primary}
+        secondary={merch.ctaBand.secondary}
       />
     </>
   );

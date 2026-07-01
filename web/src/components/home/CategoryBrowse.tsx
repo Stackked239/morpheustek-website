@@ -18,6 +18,9 @@ import {
   type CategorySlug,
   type Product,
 } from "@/lib/catalog";
+import type { HomeCatalog } from "@/lib/cms/home-catalog";
+import { homeImage } from "@/lib/cms/home-catalog";
+import { defaultCategoryBrowseContent } from "@/lib/cms/home-defaults";
 import { cn } from "@/lib/cn";
 
 /**
@@ -40,21 +43,18 @@ import { cn } from "@/lib/cn";
  */
 
 // Lead with the three the client named, then the rest of the line.
-const CATEGORY_ORDER: CategorySlug[] = [
-  "lidar-for-robotics", // 2D LiDAR
-  "safety-lidar", // Safety LiDAR
-  "3d-lidar-for-robotics", // 3D LiDAR
-  "solid-state-lidar",
-  "3d-cameras-for-robotics",
-  "rangefinders", // 1D rangefinders
-];
+const DEFAULT_CATEGORY_ORDER: CategorySlug[] = defaultCategoryBrowseContent.categoryOrder;
 
 // Only categories that actually carry products render as tabs.
-const TABS = CATEGORY_ORDER.map((slug) => ({
-  slug,
-  category: getCategory(slug),
-  items: productsInCategory(slug),
-})).filter((t) => t.category && t.items.length > 0);
+function buildTabs(catalog: HomeCatalog | undefined, order: CategorySlug[]) {
+  return order.map((slug) => ({
+    slug,
+    category: catalog?.categories.find((c) => c.slug === slug) ?? getCategory(slug),
+    items:
+      catalog?.products.filter((p) => p.category === slug) ??
+      productsInCategory(slug),
+  })).filter((t) => t.category && t.items.length > 0);
+}
 
 function runBrowseBuildIn(cards: HTMLElement[]) {
   if (!cards.length) return;
@@ -76,8 +76,8 @@ function runBrowseBuildIn(cards: HTMLElement[]) {
   );
 }
 
-function ProductPlate({ product }: { product: Product }) {
-  const src = productImage(product.slug);
+function ProductPlate({ product, catalog }: { product: Product; catalog?: HomeCatalog }) {
+  const src = homeImage(catalog, product.slug, productImage);
   return (
     <div className="relative aspect-[16/11] w-full overflow-hidden border-b border-border bg-bg-subtle">
       {/* branded backdrop — NOT white (shared source of truth, R05) */}
@@ -102,7 +102,7 @@ function ProductPlate({ product }: { product: Product }) {
   );
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, catalog }: { product: Product; catalog?: HomeCatalog }) {
   const isSafety = (product.certifications?.length ?? 0) > 0;
   return (
     <Link
@@ -114,7 +114,7 @@ function ProductCard({ product }: { product: Product }) {
         "focus-visible:outline-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0",
       )}
     >
-      <ProductPlate product={product} />
+      <ProductPlate product={product} catalog={catalog} />
 
       <div className="flex flex-1 flex-col p-5">
         <div className="flex items-center justify-between gap-2">
@@ -141,11 +141,19 @@ function ProductCard({ product }: { product: Product }) {
   );
 }
 
-export function CategoryBrowse() {
+export function CategoryBrowse({
+  catalog,
+  content = defaultCategoryBrowseContent,
+}: {
+  catalog?: HomeCatalog;
+  content?: typeof defaultCategoryBrowseContent;
+}) {
+  const order = content.categoryOrder?.length ? content.categoryOrder : DEFAULT_CATEGORY_ORDER;
+  const tabs = buildTabs(catalog, order);
   const gridRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState<CategorySlug>(TABS[0]?.slug ?? "lidar-for-robotics");
+  const [active, setActive] = useState<CategorySlug>(tabs[0]?.slug ?? "lidar-for-robotics");
   const [revealKey, setRevealKey] = useState(0);
-  const current = TABS.find((t) => t.slug === active) ?? TABS[0];
+  const current = tabs.find((t) => t.slug === active) ?? tabs[0];
   const panelId = "browse-category-panel";
 
   const selectCategory = (slug: CategorySlug) => {
@@ -191,14 +199,11 @@ export function CategoryBrowse() {
       <Container className="relative">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
-            <Eyebrow>Browse the line by category</Eyebrow>
+            <Eyebrow>{content.eyebrow}</Eyebrow>
             <h2 className="mt-5 font-display text-h2 font-extrabold uppercase leading-[1.04] tracking-tight text-text-strong">
-              The right sensor, sorted the way you spec.
+              {content.title}
             </h2>
-            <p className="mt-4 max-w-xl text-lead text-text-muted">
-              2D, safety, 3D — and everything between. Every unit ships on a 90-day risk-free trial, backed by 30
-              years of high-tech measurement instruments, not a fly-by-night manufacturer.
-            </p>
+            <p className="mt-4 max-w-xl text-lead text-text-muted">{content.body}</p>
           </div>
 
           <Button href="/products" variant="ghost" size="lg" className="self-start md:self-auto">
@@ -213,7 +218,7 @@ export function CategoryBrowse() {
           aria-label="Product categories"
           className="mt-9 flex flex-wrap gap-2 border-b border-border pb-1"
         >
-          {TABS.map((t) => {
+          {tabs.map((t) => {
             const isActive = t.slug === active;
             const tabId = `browse-tab-${t.slug}`;
             return (
@@ -259,7 +264,7 @@ export function CategoryBrowse() {
             <div key={active} className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {current?.items.map((product) => (
                 <div key={product.slug} className="browse-card">
-                  <ProductCard product={product} />
+                  <ProductCard product={product} catalog={catalog} />
                 </div>
               ))}
             </div>

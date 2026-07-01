@@ -7,11 +7,18 @@ export function SpecTable({ specs, caption, className }: { specs: Spec[]; captio
       {caption ? <caption className="sr-only">{caption}</caption> : null}
       <tbody>
         {specs.map((s, i) => (
-          <tr key={s.label} className={i % 2 ? "bg-bg-muted/40" : undefined}>
+          <tr
+            key={s.label}
+            className={cn(
+              i % 2 ? "bg-bg-muted/40" : undefined,
+              s.highlight && "bg-accent/10 ring-1 ring-inset ring-accent/30",
+            )}
+          >
             <th scope="row" className="w-2/5 py-2.5 pr-4 text-left align-top font-medium text-text-muted">
               {s.label}
+              {s.highlight ? <span className="ml-1.5 text-accent" aria-hidden>★</span> : null}
             </th>
-            <td className="tnum py-2.5 font-medium text-text">{s.value}</td>
+            <td className={cn("tnum py-2.5 font-medium text-text", s.highlight && "font-bold text-text-strong")}>{s.value}</td>
           </tr>
         ))}
       </tbody>

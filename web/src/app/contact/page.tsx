@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
 import { Mail, Phone } from "lucide-react";
+import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { LeadForm } from "@/components/forms/LeadForm";
-import { site } from "@/lib/site";
+import { getRobotTypes, getSiteSettings } from "@/lib/cms";
 
 export const metadata: Metadata = {
   title: "Contact MorpheusTEK",
@@ -12,7 +12,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const [site, robotTypes] = await Promise.all([getSiteSettings(), getRobotTypes()]);
+
   return (
     <section className="dark relative overflow-hidden bg-bg">
       <div className="circuit-motif pointer-events-none absolute inset-x-0 top-0 h-full opacity-50" aria-hidden />
@@ -49,7 +51,7 @@ export default function ContactPage() {
               </div>
             </div>
             <div className="lg:pt-2">
-              <LeadForm intent="contact" submitLabel="Send message" />
+              <LeadForm intent="contact" submitLabel="Send message" robotTypes={robotTypes} />
             </div>
           </div>
         </Section>

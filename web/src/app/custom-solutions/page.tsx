@@ -7,36 +7,42 @@ import { Button } from "@/components/ui/Button";
 import { PageHero } from "@/components/marketing/PageHero";
 import { CtaBand } from "@/components/marketing/CtaBand";
 import { EyeIcon } from "@/components/brand/EyeIcon";
+import { getContent } from "@/lib/cms";
+import { customSolutionsPageDefaults } from "@/lib/cms/page-defaults";
 
-export const metadata: Metadata = {
-  title: "Custom LiDAR & Camera Solutions for Robotics",
-  description:
-    "When off-the-shelf doesn't fit: custom field of view, range, mounting, housing, connectors, firmware, and integration — backed by OEM/ODM manufacturing and U.S.-based support.",
-  alternates: { canonical: "/custom-solutions" },
-};
+const serviceIcons = {
+  wrench: Wrench,
+  gauge: Gauge,
+  cable: Cable,
+  cpu: Cpu,
+  blocks: Blocks,
+} as const;
 
-const services = [
-  { icon: Wrench, title: "Mechanical housing & mounting", body: "Custom enclosures, mounting, environmental protection, and form factors for your platform." },
-  { icon: Gauge, title: "Perception performance tuning", body: "Field of view, range, resolution, scan rate, and safety zones tuned to the application." },
-  { icon: Cable, title: "Cables & connectors", body: "Connectors, harnesses, and interfaces matched to your robot's wiring and I/O." },
-  { icon: Cpu, title: "Firmware customization", body: "Firmware adjustments and configuration for your specific sensing requirements." },
-  { icon: Blocks, title: "Software & middleware integration", body: "Drivers, SDKs, and ROS / ROS 2 integration support from prototype through production." },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getContent("page.custom_solutions", customSolutionsPageDefaults);
+  return {
+    title: page.meta.title,
+    description: page.meta.description,
+    alternates: { canonical: "/custom-solutions" },
+  };
+}
 
-export default function CustomSolutionsPage() {
+export default async function CustomSolutionsPage() {
+  const page = await getContent("page.custom_solutions", customSolutionsPageDefaults);
+
   return (
     <>
       <PageHero
-        eyebrow="Custom solutions"
-        title="When off-the-shelf doesn't fit, we build to your spec."
-        lead="Customization is a big deal in robotics — and a big deal for us. Backed by OEM/ODM laser-measurement manufacturing, MorpheusTEK tailors the sensor to your platform, then adds the U.S.-based support to get it into production."
+        eyebrow={page.hero.eyebrow}
+        title={page.hero.title}
+        lead={page.hero.lead}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Custom solutions", href: "/custom-solutions" },
         ]}
       >
-        <Button href="/book-a-meeting?intent=engineer" variant="primary" size="lg">
-          Talk to an engineer
+        <Button href={page.hero.primaryCta.href} variant="primary" size="lg">
+          {page.hero.primaryCta.label}
         </Button>
       </PageHero>
 
@@ -47,13 +53,16 @@ export default function CustomSolutionsPage() {
             Custom from housing to firmware.
           </h2>
           <div className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((s) => (
-              <div key={s.title} className="flex flex-col items-start">
-                <EyeIcon icon={s.icon} size={84} />
-                <h3 className="mt-4 font-display text-h5 font-bold uppercase text-text-strong">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-text-muted">{s.body}</p>
-              </div>
-            ))}
+            {page.services.map((s) => {
+              const Icon = serviceIcons[s.icon as keyof typeof serviceIcons] ?? Wrench;
+              return (
+                <div key={s.title} className="flex flex-col items-start">
+                  <EyeIcon icon={Icon} size={84} />
+                  <h3 className="mt-4 font-display text-h5 font-bold uppercase text-text-strong">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-text-muted">{s.body}</p>
+                </div>
+              );
+            })}
           </div>
         </Container>
       </Section>
@@ -62,24 +71,17 @@ export default function CustomSolutionsPage() {
         <Container>
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
             <div>
-              <Eyebrow>Manufacturing-backed</Eyebrow>
-              <h2 className="mt-3 font-display text-h2 font-extrabold uppercase text-text-strong">
-                A custom partner, not a catalog.
-              </h2>
-              <p className="mt-5 text-lead text-text-muted">
-                Many robotics applications need adjustments an off-the-shelf sensor can't make. Because MorpheusTEK is
-                backed by a high-tech laser-measurement manufacturing network with OEM/ODM capability, we can change the
-                field of view, range, mounting, housing, connectors, or firmware — and support it from prototype through
-                production.
-              </p>
+              <Eyebrow>{page.manufacturing.eyebrow}</Eyebrow>
+              <h2 className="mt-3 font-display text-h2 font-extrabold uppercase text-text-strong">{page.manufacturing.title}</h2>
+              <p className="mt-5 text-lead text-text-muted">{page.manufacturing.body}</p>
               <div className="mt-8">
-                <Button href="/book-a-meeting?intent=engineer" variant="primary" size="lg">
-                  Discuss a custom build
+                <Button href={page.manufacturing.cta.href} variant="primary" size="lg">
+                  {page.manufacturing.cta.label}
                 </Button>
               </div>
             </div>
             <ul className="grid gap-3">
-              {["Custom field of view, range, and resolution", "Mounting, housing, and environmental protection", "Safety-zone configuration and firmware adjustments", "Integration support from prototype through production"].map((t) => (
+              {page.manufacturing.bullets.map((t) => (
                 <li key={t} className="surface-card flex items-start gap-3 p-4 text-sm text-text">
                   <span className="mt-1 size-1.5 shrink-0 rounded-full bg-accent" />
                   {t}
@@ -91,10 +93,10 @@ export default function CustomSolutionsPage() {
       </Section>
 
       <CtaBand
-        title="Tell us what off-the-shelf can't do."
-        body="Bring the spec that doesn't exist yet. We'll tailor the sensor and support it into production."
-        primary={{ label: "Talk to an engineer", href: "/book-a-meeting?intent=engineer" }}
-        secondary={{ label: "Browse products", href: "/products" }}
+        title={page.cta.title}
+        body={page.cta.body}
+        primary={page.cta.primary}
+        secondary={page.cta.secondary}
       />
     </>
   );

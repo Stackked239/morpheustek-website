@@ -7,6 +7,10 @@ import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { getProduct } from "@/lib/catalog";
+import type { HomeCatalog } from "@/lib/cms/home-catalog";
+import { homeProduct } from "@/lib/cms/home-catalog";
+import type { SectionHeaderContent } from "@/lib/cms/home-defaults";
+import { defaultRangeLedgerHeader } from "@/lib/cms/home-defaults";
 
 /**
  * SENSING ENVELOPE — the range data as a robot would experience it.
@@ -104,10 +108,16 @@ const ENVELOPES: readonly Envelope[] = [
   },
 ] as const;
 
-export function RangeLedger() {
+export function RangeLedger({
+  catalog,
+  section = defaultRangeLedgerHeader,
+}: {
+  catalog?: HomeCatalog;
+  section?: SectionHeaderContent;
+}) {
   const [activeId, setActiveId] = useState<SensorId | "all">("all");
   const envelopes = ENVELOPES.map((e) => {
-    const product = getProduct(e.slug);
+    const product = homeProduct(catalog, e.slug, getProduct);
     if (!product) throw new Error(`RangeLedger: no catalog product for slug "${e.slug}"`);
     return { ...e, model: product.model, name: product.name };
   });
@@ -135,14 +145,11 @@ export function RangeLedger() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-[linear-gradient(to_top,var(--bg),transparent)]" aria-hidden />
       <Container className="relative">
         <div className="max-w-3xl">
-          <Eyebrow>The line, end to end</Eyebrow>
+          <Eyebrow>{section.eyebrow}</Eyebrow>
           <h2 className="mt-4 font-display text-[clamp(2rem,3.25vw,3.25rem)] font-extrabold uppercase leading-[1.02] tracking-tight text-text-strong">
-            Every robot needs a sensing envelope.
+            {section.title}
           </h2>
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-text-muted md:text-lg">
-            From 30 cm pallet pockets to 100 m yard scans, the line is easier to read as
-            coverage: arcs, cones, rings, and beams around the machine.
-          </p>
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-text-muted md:text-lg">{section.body}</p>
         </div>
 
         <div className="mt-7 grid gap-5 lg:grid-cols-[minmax(20rem,0.72fr)_minmax(38rem,1.28fr)] lg:items-stretch">

@@ -6,7 +6,7 @@ import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { PageHero } from "@/components/marketing/PageHero";
 import { CtaBand } from "@/components/marketing/CtaBand";
-import { applications } from "@/lib/catalog";
+import { getApplications } from "@/lib/cms";
 
 export const metadata: Metadata = {
   title: "Applications — Robot Perception by Use Case",
@@ -15,7 +15,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/applications" },
 };
 
-export default function ApplicationsPage() {
+export default async function ApplicationsPage() {
+  const applications = await getApplications();
   return (
     <>
       <PageHero

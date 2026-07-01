@@ -9,7 +9,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageHero } from "@/components/marketing/PageHero";
 import { CtaBand } from "@/components/marketing/CtaBand";
 import { ProductCard } from "@/components/product/ProductCard";
-import { applications, getApplication, getProduct } from "@/lib/catalog";
+import { getApplication, getApplications, getProduct } from "@/lib/cms";
 
 const appImages: Record<string, string> = {
   amr: "/media/hero-warehouse.jpg",
@@ -18,13 +18,14 @@ const appImages: Record<string, string> = {
   "robotic-cleaning": "/media/robot-eye.jpg",
 };
 
-export function generateStaticParams() {
-  return applications.map((a) => ({ slug: a.slug }));
+export async function generateStaticParams() {
+  const apps = await getApplications();
+  return apps.map((a) => ({ slug: a.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const a = getApplication(slug);
+  const a = await getApplication(slug);
   if (!a) return {};
   return {
     title: `${a.title} — Sensor Fit`,
@@ -35,9 +36,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ApplicationPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const app = getApplication(slug);
+  const app = await getApplication(slug);
   if (!app) notFound();
-  const sensors = app.sensors.map(getProduct).filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const sensors = (await Promise.all(app.sensors.map((s) => getProduct(s)))).filter(
+    (p): p is NonNullable<typeof p> => Boolean(p),
+  );
 
   return (
     <>

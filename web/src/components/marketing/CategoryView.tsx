@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/Button";
 import { ProductCard } from "@/components/product/ProductCard";
 import { CtaBand } from "@/components/marketing/CtaBand";
 import { PageHero } from "@/components/marketing/PageHero";
-import { getCategory, productsInCategory, type CategorySlug } from "@/lib/catalog";
+import { getCategory, productsInCategory, type CategorySlug } from "@/lib/cms";
 
-export function CategoryView({ slug }: { slug: CategorySlug }) {
-  const category = getCategory(slug);
+export async function CategoryView({ slug }: { slug: CategorySlug }) {
+  const category = await getCategory(slug);
   if (!category) return null;
-  const items = productsInCategory(slug);
+  const items = await productsInCategory(slug);
 
   return (
     <>
