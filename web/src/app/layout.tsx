@@ -97,6 +97,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           data-pid="FXPn93H0lUabmQS3"
           data-version="062024"
         />
+        {/* HubSpot tracking — sets the hubspotutk cookie that /api/lead forwards for attribution. */}
+        <Script
+          id="hs-script-loader"
+          src="https://js.hs-scripts.com/22485651.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
