@@ -6,8 +6,12 @@ export async function POST(request: Request) {
   try {
     const form = await request.formData();
     // mt_hp is the current honeypot; company_url covers clients on cached HTML.
-    const honeypot = String(form.get("mt_hp") ?? "") || String(form.get("company_url") ?? "");
-    if (honeypot) return NextResponse.json({ ok: true });
+    // A filled honeypot marks the submission as a suspected bot, but never
+    // discards it — overzealous autofill extensions fill hidden fields on real
+    // browsers too. Flagged rows land in Supabase (reviewable) and skip HubSpot.
+    const suspectedBot = Boolean(
+      String(form.get("mt_hp") ?? "") || String(form.get("company_url") ?? ""),
+    );
 
     const payload = {
       intent: String(form.get("intent") ?? "contact"),
@@ -25,14 +29,15 @@ export async function POST(request: Request) {
 
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
       const sb = createServiceClient();
-      await sb.from("submissions").insert({
+      const { error } = await sb.from("submissions").insert({
         form_type: payload.intent,
         payload,
-        status: "pending",
+        status: suspectedBot ? "flagged" : "pending",
       });
+      if (error) console.error("Supabase submissions insert failed:", error);
     }
 
-    if (process.env.HUBSPOT_ACCESS_TOKEN) {
+    if (!suspectedBot && process.env.HUBSPOT_ACCESS_TOKEN) {
       try {
         const cookies = request.headers.get("cookie") ?? "";
         const hutk = cookies.match(/(?:^|;\s*)hubspotutk=([^;]+)/)?.[1];

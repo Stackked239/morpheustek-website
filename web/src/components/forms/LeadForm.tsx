@@ -45,10 +45,9 @@ export function LeadForm({
       form.reportValidity();
       return;
     }
-    // Honeypot — silently drop bots. The field name must stay meaningless:
-    // autofill-recognizable names (company_url) get filled by real browsers
-    // and silently eat real submissions.
-    if ((form.elements.namedItem("mt_hp") as HTMLInputElement | null)?.value) return;
+    // No client-side honeypot check: aggressive autofill/password-manager
+    // extensions fill even meaningless hidden fields, and a real user's click
+    // must never be silently discarded. The server quarantines suspected bots.
     setStatus("submitting");
     try {
       const formData = new FormData(form);
