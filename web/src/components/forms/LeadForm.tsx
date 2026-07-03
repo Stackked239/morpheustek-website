@@ -36,7 +36,7 @@ export function LeadForm({
   downloadUrl?: string;
   robotTypes?: string[];
 }) {
-  const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "error" | "done">("idle");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,20 +45,31 @@ export function LeadForm({
       form.reportValidity();
       return;
     }
-    // Honeypot — silently drop bots.
-    if ((form.elements.namedItem("company_url") as HTMLInputElement | null)?.value) return;
+    // Honeypot — silently drop bots. The field name must stay meaningless:
+    // autofill-recognizable names (company_url) get filled by real browsers
+    // and silently eat real submissions.
+    if ((form.elements.namedItem("mt_hp") as HTMLInputElement | null)?.value) return;
     setStatus("submitting");
-    const formData = new FormData(form);
-    const res = await fetch("/api/lead", { method: "POST", body: formData });
-    if (!res.ok) {
-      setStatus("idle");
+    try {
+      const formData = new FormData(form);
+      const res = await fetch("/api/lead", { method: "POST", body: formData });
+      if (!res.ok) {
+        setStatus("error");
+        return;
+      }
+    } catch {
+      setStatus("error");
       return;
     }
     setStatus("done");
     // Instant access: trigger the download immediately (no waiting on email).
     if (mode === "download" && downloadUrl) {
       const a = document.createElement("a");
-      a.href = downloadUrl;
+      // The download attribute is ignored cross-origin; Supabase storage
+      // honors ?download= by serving Content-Disposition: attachment.
+      a.href = downloadUrl.includes("/storage/") && !downloadUrl.includes("?")
+        ? `${downloadUrl}?download=`
+        : downloadUrl;
       a.setAttribute("download", "");
       document.body.appendChild(a);
       a.click();
@@ -110,10 +121,10 @@ export function LeadForm({
   return (
     <form onSubmit={handleSubmit} noValidate className="surface-card grid gap-4 p-6 sm:p-7">
       <input type="hidden" name="intent" value={intent} />
-      {/* honeypot */}
+      {/* honeypot — meaningless name so browser autofill never touches it */}
       <input
         type="text"
-        name="company_url"
+        name="mt_hp"
         tabIndex={-1}
         autoComplete="off"
         aria-hidden
@@ -184,6 +195,11 @@ export function LeadForm({
           submitLabel
         )}
       </Button>
+      {status === "error" ? (
+        <p className="text-sm font-medium text-eye" role="alert">
+          Something went wrong sending your details — please try again, or email us and we&apos;ll sort it out.
+        </p>
+      ) : null}
       <p className="text-xs leading-relaxed text-text-subtle">
         We&apos;ll only use this to talk about your application. No spam — and you can ask us to delete it anytime.
       </p>
