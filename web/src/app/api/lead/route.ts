@@ -5,7 +5,8 @@ import { submitLeadToHubSpot } from "@/lib/hubspot";
 export async function POST(request: Request) {
   try {
     const form = await request.formData();
-    const honeypot = String(form.get("company_url") ?? "");
+    // mt_hp is the current honeypot; company_url covers clients on cached HTML.
+    const honeypot = String(form.get("mt_hp") ?? "") || String(form.get("company_url") ?? "");
     if (honeypot) return NextResponse.json({ ok: true });
 
     const payload = {
