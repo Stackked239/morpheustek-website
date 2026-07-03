@@ -66,7 +66,7 @@ pnpm scan:gen         # regenerate the home-2 LiDAR point cloud + scene spec (pu
 ### Routing notes
 
 - The **8 category pillar pages are top-level routes** whose folder name equals the `CategorySlug` (e.g. `/safety-lidar`, `/3d-cameras-for-robotics`) — SEO keyword pillars, *not* nested under `/products`.
-- **Forms are client-side only — there are no `/api` routes yet.** `LeadForm`, `book-a-meeting`, and `contact` don't post anywhere; Phase 2 wires them to HubSpot. Don't assume a backend exists.
+- **Lead forms post to `/api/lead`**, which logs every submission to the Supabase `submissions` table (durable log) and then submits to HubSpot via the Forms Submission API — per-intent form GUIDs live in `src/lib/hubspot.ts`, token in `HUBSPOT_ACCESS_TOKEN` (set in `web/.env.local` and Vercel). A HubSpot failure never fails the visitor's request.
 - `app/robots.ts` allows AI crawlers by default (intentional GEO strategy) — confirm with the client before launch.
 - `app/(drafts)/` holds the homepage-variant shootout (`/home-1`…`/home-10`, hub at `/home-drafts`) — noindex, never linked from nav. Austin (austin@stackked.tech) builds variants 3–10; home-1/home-2 are John's. Hero experiments go behind a top-of-file boolean flag + a draft PR, never straight to main.
 

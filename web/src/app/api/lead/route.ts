@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { submitLeadToHubSpot } from "@/lib/hubspot";
 
 export async function POST(request: Request) {
   try {
@@ -30,7 +31,20 @@ export async function POST(request: Request) {
       });
     }
 
-    // HubSpot wiring lands here in a follow-up — submissions table is the durable log.
+    if (process.env.HUBSPOT_ACCESS_TOKEN) {
+      try {
+        const cookies = request.headers.get("cookie") ?? "";
+        const hutk = cookies.match(/(?:^|;\s*)hubspotutk=([^;]+)/)?.[1];
+        await submitLeadToHubSpot(payload, {
+          pageUri: request.headers.get("referer") ?? undefined,
+          hutk,
+        });
+      } catch (err) {
+        // Lead is already in Supabase — never fail the visitor on a HubSpot error.
+        console.error("HubSpot lead sync failed:", err);
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error(err);
