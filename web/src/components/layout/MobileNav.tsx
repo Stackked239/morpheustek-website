@@ -79,7 +79,12 @@ export function MobileNav({ nav, categories, resources }: { nav: Item[]; categor
       </button>
 
       <div
-        className={cn("fixed inset-0 z-[60] transition-opacity duration-200", open ? "visible opacity-100" : "invisible opacity-0")}
+        className={cn(
+          // overflow-hidden clips the closed panel (translate-x-full parks it past the
+          // right edge) so it can never widen the page's horizontal scroll on mobile.
+          "fixed inset-0 z-[60] overflow-hidden transition-opacity duration-200",
+          open ? "visible opacity-100" : "invisible opacity-0",
+        )}
         aria-hidden={!open}
       >
         <div className="absolute inset-0 bg-mt-navy-900/60 backdrop-blur-sm" onClick={close} />
