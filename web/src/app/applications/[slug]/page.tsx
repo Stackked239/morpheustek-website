@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { ArrowRight, Crosshair, Layers } from "lucide-react";
-import { Container } from "@/components/ui/Container";
-import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageHero } from "@/components/marketing/PageHero";
 import { CtaBand } from "@/components/marketing/CtaBand";
-import { ProductCard } from "@/components/product/ProductCard";
-import { getApplication, getApplications, getProduct } from "@/lib/cms";
+import { AssemblyStack } from "@/components/home/AssemblyStack";
+import { APPLICATION_ASSEMBLIES } from "@/lib/cms/assemblies";
+import { getApplication, getApplications } from "@/lib/cms";
 
 const appImages: Record<string, string> = {
   amr: "/media/hero-warehouse.jpg",
@@ -38,9 +35,10 @@ export default async function ApplicationPage({ params }: { params: Promise<{ sl
   const { slug } = await params;
   const app = await getApplication(slug);
   if (!app) notFound();
-  const sensors = (await Promise.all(app.sensors.map((s) => getProduct(s)))).filter(
-    (p): p is NonNullable<typeof p> => Boolean(p),
-  );
+
+  // The application has a bespoke four-part build; if one isn't authored yet the
+  // assembly falls back to its first entry (AMR).
+  const hasAssembly = APPLICATION_ASSEMBLIES.some((a) => a.id === app.slug);
 
   return (
     <>
@@ -59,50 +57,35 @@ export default async function ApplicationPage({ params }: { params: Promise<{ sl
         </Button>
       </PageHero>
 
+      {/* Full scan render. The image carries its own aspect ratio (intrinsic
+          width/height + h-auto), so it always shows whole — no fixed-ratio box to
+          crop or letterbox against. Dark plate matches the render's backdrop. */}
       {appImages[app.slug] ? (
-        <div className="relative h-[34vh] min-h-[16rem] w-full overflow-hidden border-b border-border">
-          <Image src={appImages[app.slug]} alt={app.title} fill sizes="100vw" className="object-cover" priority />
+        <div className="border-b border-border bg-mt-navy-900">
+          <Image
+            src={appImages[app.slug]}
+            alt={app.title}
+            width={1376}
+            height={768}
+            sizes="100vw"
+            priority
+            className="mx-auto block h-auto w-full max-w-[1600px]"
+          />
         </div>
       ) : null}
 
-      <Section>
-        <Container>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="surface-card p-7">
-              <span className="grid size-11 place-items-center rounded-md bg-bg-muted text-brand-blue">
-                <Crosshair className="size-5" />
-              </span>
-              <h2 className="mt-4 font-display text-h4 font-bold text-text-strong">The challenge</h2>
-              <p className="mt-2 leading-relaxed text-text-muted">{app.pain}</p>
-            </div>
-            <div className="surface-card p-7">
-              <span className="grid size-11 place-items-center rounded-md bg-bg-muted text-brand-blue">
-                <Layers className="size-5" />
-              </span>
-              <h2 className="mt-4 font-display text-h4 font-bold text-text-strong">The sensor fit</h2>
-              <p className="mt-2 leading-relaxed text-text-muted">{app.fit}</p>
-            </div>
-          </div>
-        </Container>
-      </Section>
-
-      {sensors.length > 0 ? (
-        <Section tone="subtle">
-          <Container wide>
-            <Eyebrow>Recommended sensing</Eyebrow>
-            <h2 className="mt-3 font-display text-h2 font-extrabold text-text-strong">Where our stack fits</h2>
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {sensors.map((p) => (
-                <ProductCard key={p.slug} product={p} className="h-full" />
-              ))}
-            </div>
-            <div className="mt-8">
-              <Button href="/products" variant="quiet" size="md">
-                See the full line-up <ArrowRight className="size-4" />
-              </Button>
-            </div>
-          </Container>
-        </Section>
+      {/* The build, in four steps — the perception stack pre-configured for this
+          application, with the platform switcher to compare the others. */}
+      {hasAssembly ? (
+        <AssemblyStack
+          assemblies={APPLICATION_ASSEMBLIES}
+          defaultId={app.slug}
+          section={{
+            eyebrow: "The stack",
+            title: "Four steps to sight you can certify.",
+            body: "Protect, map, see, think — the same four-layer stack on every robot. This build is configured for the application above; the safety floor never changes, the parts above it do.",
+          }}
+        />
       ) : null}
 
       <CtaBand

@@ -9,6 +9,7 @@ import { CategoryBrowse } from "./CategoryBrowse";
 import { BuildToSpec } from "./BuildToSpec";
 import { getCategories, getContent, getProductImagesMap, getProducts, getSiteSettings } from "@/lib/cms";
 import { buildHomeCatalog } from "@/lib/cms/home-catalog";
+import { APPLICATION_ASSEMBLIES } from "@/lib/cms/assemblies";
 import {
   defaultAssemblyHeader,
   defaultBoothMode,
@@ -65,7 +66,7 @@ export async function HomeSeam() {
       <BoothModeBanner content={boothMode} />
       <HeroSeam distributor={settings.distributor} problem={settings.heroProblem} content={hero} />
       <RangeLedger catalog={catalog} section={rangeHeader} />
-      <AssemblyStack catalog={catalog} section={assemblyHeader} />
+      <AssemblyStack catalog={catalog} section={assemblyHeader} assemblies={APPLICATION_ASSEMBLIES} />
       <CertifyPlot catalog={catalog} content={certify} />
       <CategoryBrowse catalog={catalog} content={categoryBrowse} />
       <TrustBand catalog={catalog} content={trustBand} />

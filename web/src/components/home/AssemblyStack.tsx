@@ -13,6 +13,7 @@ import type { HomeCatalog } from "@/lib/cms/home-catalog";
 import type { SectionHeaderContent } from "@/lib/cms/home-defaults";
 import { defaultAssemblyHeader } from "@/lib/cms/home-defaults";
 import { homeImage, homeProduct } from "@/lib/cms/home-catalog";
+import { PLATFORM_ASSEMBLIES, type Assembly, type StepFrame } from "@/lib/cms/assemblies";
 import { cn } from "@/lib/cn";
 
 /**
@@ -35,26 +36,10 @@ import { cn } from "@/lib/cn";
 
 type StepRole = "Protect" | "Map" | "See" | "Think";
 
-interface StepFrame {
-  /** catalog slug — drives name + image + the /products link */
-  slug: string;
-  /** one real spec line, lifted from catalog.ts keySpecs (never invented) */
-  spec: string;
-}
-
 interface StepCopy {
   role: StepRole;
   /** the verbatim, loved per-step claim */
   claim: string;
-}
-
-interface Assembly {
-  id: string;
-  label: string;
-  /** the robot in one engineer-credible line */
-  blurb: string;
-  /** four parts, indexed to the four steps below */
-  parts: [StepFrame, StepFrame, StepFrame, StepFrame];
 }
 
 // The four-step spine — copy is fixed across every assembly (the part beneath it
@@ -75,58 +60,6 @@ const STEP_BODY: Record<StepRole, string> = {
   Think:
     "Every sensor above lands here and leaves as one feed your software already understands — every room you just walked through, in one box.",
 };
-
-// ── The pre-configured assemblies ───────────────────────────────────────────
-// Every slug + spec below is a real catalog record (verified against catalog.ts).
-// GS1-5 is the shared safety floor on every build; the rest re-pick to the robot.
-const ASSEMBLIES: readonly Assembly[] = [
-  {
-    id: "amr",
-    label: "AMR",
-    blurb: "Indoor autonomous mobile robot — aisles, docks, and people, all day.",
-    parts: [
-      { slug: "gs1-5-safety-lidar", spec: "270° · Type 3 / SIL2 / PL d · 5 m protective" },
-      { slug: "lr-16f-100-3d-lidar", spec: "16 ch · 360° × 30° · 100 m · IP66" },
-      { slug: "mrdvs-s10-rgbd-camera", spec: "dToF RGBD · 0.3–8 m · 120° × 80° · ≤ 3 cm" },
-      { slug: "sintrones-ibox-602p-edge-ai", spec: "Jetson Orin NX · 2× PoE + 2× GMSL-2 · IP66" },
-    ],
-  },
-  {
-    id: "agv",
-    label: "AGV",
-    blurb: "Fixed-route guided vehicle — path-following at fleet scale, cost down.",
-    parts: [
-      { slug: "gs1-5-safety-lidar", spec: "270° · Type 3 / SIL2 / PL d · 5 m protective" },
-      { slug: "lr-1f-2d-lidar", spec: "360° FOV · 50 m · 10–25 Hz · 2D point cloud" },
-      { slug: "lr-f240-solid-state-lidar", spec: "Solid-state · 72° × 58° · 10 m forward avoidance" },
-      { slug: "sintrones-ibox-602p-edge-ai", spec: "Jetson Orin NX · 9–60 V DC · IP66 fanless" },
-    ],
-  },
-  {
-    id: "humanoid",
-    label: "Humanoid",
-    blurb: "Legged platform — stairs, terrain, and close-quarters human spaces.",
-    parts: [
-      { slug: "gs1-5-safety-lidar", spec: "270° · Type 3 / SIL2 / PL d · 5 m protective" },
-      { slug: "lr-16f-100-3d-lidar", spec: "16 ch · 360° × 30° · 100 m · IP66" },
-      { slug: "mrdvs-s11-rgbd-camera", spec: "dToF RGBD · 140° × 56° · 0.1–6 m · ±1 cm @ 2 m" },
-      { slug: "sintrones-ibox-602p-edge-ai", spec: "Jetson Orin NX · 2× PoE + 2× GMSL-2 · IP66" },
-    ],
-  },
-  {
-    id: "mining",
-    label: "Mining",
-    blurb: "Heavy outdoor autonomy — direct sun, dust, and long sightlines.",
-    parts: [
-      { slug: "gs1-5-safety-lidar", spec: "270° · Type 3 / SIL2 / PL d · 5 m protective" },
-      { slug: "vss-50-solid-state-3d-lidar", spec: "120° × 50° · 540k pts/s · 100,000 lux · IP67" },
-      { slug: "mrdvs-s10-ultra-rgbd-camera", spec: "dToF RGBD + 200 Hz IMU · 0.2–42 m · IP67" },
-      { slug: "sintrones-ibox-602p-edge-ai", spec: "Jetson Orin NX · 9–60 V DC · IP66 fanless" },
-    ],
-  },
-] as const;
-
-const DEFAULT_ID = ASSEMBLIES[0].id; // AMR — the no-JS / SSR state
 
 function runAssemblyBuildIn(parts: HTMLElement[]) {
   if (!parts.length) return;
@@ -256,18 +189,26 @@ function StepCard({
 export function AssemblyStack({
   catalog,
   section = defaultAssemblyHeader,
+  assemblies = PLATFORM_ASSEMBLIES,
+  defaultId,
 }: {
   catalog?: HomeCatalog;
   section?: SectionHeaderContent;
+  /** which pre-configured builds the selector offers (default: homepage platforms) */
+  assemblies?: readonly Assembly[];
+  /** which build is active on load / for no-JS + crawlers (default: first) */
+  defaultId?: string;
 }) {
   // gsap scope lives on an inner div (Container is a plain wrapper and doesn't
   // forward a ref) — it still encloses every [data-part] in the stack.
   const scope = useRef<HTMLDivElement>(null);
   const stackRef = useRef<HTMLOListElement>(null);
-  const [activeId, setActiveId] = useState<string>(DEFAULT_ID);
+  const initialId =
+    defaultId && assemblies.some((a) => a.id === defaultId) ? defaultId : assemblies[0].id;
+  const [activeId, setActiveId] = useState<string>(initialId);
   const [revealKey, setRevealKey] = useState(0); // bumped on viewport re-entry → replays the build-in
 
-  const active = ASSEMBLIES.find((a) => a.id === activeId) ?? ASSEMBLIES[0];
+  const active = assemblies.find((a) => a.id === activeId) ?? assemblies[0];
 
   // Replay-on-scroll: re-fire the build-in each time the section re-enters.
   useEffect(() => {
@@ -327,7 +268,7 @@ export function AssemblyStack({
           aria-label="Choose a robot platform"
           className="sticky top-20 z-30 mt-9 inline-flex flex-wrap gap-1.5 rounded-xl border border-border bg-bg p-1.5 shadow-md"
         >
-          {ASSEMBLIES.map((a) => {
+          {assemblies.map((a) => {
             const selected = a.id === activeId;
             return (
               <button

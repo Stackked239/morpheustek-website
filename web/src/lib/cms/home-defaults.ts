@@ -26,7 +26,7 @@ export const defaultRangeLedgerHeader: SectionHeaderContent = {
 export const defaultAssemblyHeader: SectionHeaderContent = {
   eyebrow: "The assembly",
   title: "Four steps to sight you can certify.",
-  body: "Protect, map, see, think — the same four-layer stack on every robot. Pick the platform and the parts re-pick themselves. It's always going to be different; the safety floor never is.",
+  body: "Protect, map, see, think — the same four-layer stack on every robot. Pick the application and the parts re-pick themselves. It's always going to be different; the safety floor never is.",
 };
 
 export const defaultCertifyContent = {
