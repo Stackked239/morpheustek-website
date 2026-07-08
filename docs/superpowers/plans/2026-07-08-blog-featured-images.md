@@ -684,3 +684,8 @@ Expected: PR URL printed. John reviews and merges; merge deploys to production a
 - **Spec coverage:** meta keys (Task 1), bucket + route (Task 2), header (Task 3), index (Task 4), OG (Task 5), editor (Task 6), `remotePatterns` — already present in `next.config.ts` (`*.supabase.co`), verified during planning, no task needed; five generated images (Task 8); build-only verification + PR flow (Tasks 7, 9). ✔
 - **Types:** `BlogMeta.image`/`imageAlt` defined in Task 1 and used with those exact names in Tasks 3–6, 8. `BlogArticleFormEditor` gains `slug: string` (Task 6 Steps 2–3 agree). ✔
 - **No test runner exists** in this repo; TDD steps are replaced by build + rendered-output checks per `CLAUDE.md`. ✔
+
+## Errata (found in code review during execution)
+
+- Task 6's `BlogFeaturedImageField` `onChange` contract was changed to a partial patch (`{ image?, imageAlt? }`) applied via a functional `setArticle` update, because the plan's original code let an in-flight upload completion clobber concurrent form edits (stale closure). `BlogArticleFormEditor.onChange` is now typed `React.Dispatch<React.SetStateAction<BlogArticleForm>>`.
+- The upload size cap is 4 MB end-to-end (client pre-check + route `MAX_BYTES`), not the plan's 10 MB — Vercel's request-body limit (~4.5 MB) rejects larger uploads with a non-JSON 413 before the route runs. The client also parses non-JSON error responses defensively.

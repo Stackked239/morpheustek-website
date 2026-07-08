@@ -238,7 +238,7 @@ export function BlogArticleFormEditor({
   slug,
 }: {
   form: BlogArticleForm;
-  onChange: (form: BlogArticleForm) => void;
+  onChange: React.Dispatch<React.SetStateAction<BlogArticleForm>>;
   slug: string;
 }) {
   function patch<K extends keyof BlogArticleForm>(key: K, value: BlogArticleForm[K]) {
@@ -305,7 +305,7 @@ export function BlogArticleFormEditor({
           slug={slug}
           image={form.meta.image}
           imageAlt={form.meta.imageAlt}
-          onChange={({ image, imageAlt }) => patch("meta", { ...form.meta, image, imageAlt })}
+          onChange={(imagePatch) => onChange((prev) => ({ ...prev, meta: { ...prev.meta, ...imagePatch } }))}
         />
       </AdminSection>
 

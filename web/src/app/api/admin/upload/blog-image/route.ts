@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/admin-api";
 import { createServiceClient } from "@/lib/supabase/server";
 
 const BUCKET = "blog-images";
-const MAX_BYTES = 10 * 1024 * 1024;
+const MAX_BYTES = 4 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 export async function POST(request: Request) {
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   if (!/^[a-z0-9-]+$/.test(slug)) return NextResponse.json({ error: "Invalid post slug" }, { status: 400 });
   if (!(file instanceof File)) return NextResponse.json({ error: "Missing image file" }, { status: 400 });
   if (!ALLOWED.has(file.type)) return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
-  if (file.size > MAX_BYTES) return NextResponse.json({ error: "File too large (max 10 MB)" }, { status: 400 });
+  if (file.size > MAX_BYTES) return NextResponse.json({ error: "File too large (max 4 MB)" }, { status: 400 });
 
   const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : file.type === "image/gif" ? "gif" : "jpg";
   const storagePath = `${slug}.${ext}`;

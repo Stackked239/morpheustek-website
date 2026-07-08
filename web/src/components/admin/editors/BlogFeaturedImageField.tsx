@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { AdminField, AdminInput } from "@/components/admin/forms/AdminField";
 
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+
 export function BlogFeaturedImageField({
   slug,
   image,
@@ -13,7 +15,7 @@ export function BlogFeaturedImageField({
   slug: string;
   image: string;
   imageAlt: string;
-  onChange: (v: { image: string; imageAlt: string }) => void;
+  onChange: (patch: { image?: string; imageAlt?: string }) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -22,6 +24,11 @@ export function BlogFeaturedImageField({
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError("Image is over 4 MB — please compress it first.");
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
     setError(null);
     setUploading(true);
     try {
@@ -29,10 +36,11 @@ export function BlogFeaturedImageField({
       form.append("slug", slug);
       form.append("file", file);
       const res = await fetch("/api/admin/upload/blog-image", { method: "POST", body: form });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error ?? `Upload failed (${res.status})`);
+      if (!data?.path) throw new Error("Upload failed");
       // Cache-bust: the bucket path is per-slug, so replacing an image keeps the same URL.
-      onChange({ image: `${data.path}?v=${Date.now()}`, imageAlt });
+      onChange({ image: `${data.path}?v=${Date.now()}` });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -64,12 +72,12 @@ export function BlogFeaturedImageField({
         <AdminField label="Image description (alt text)" hint="Describes the image for screen readers and SEO.">
           <AdminInput
             value={imageAlt}
-            onChange={(e) => onChange({ image, imageAlt: e.target.value })}
+            onChange={(e) => onChange({ imageAlt: e.target.value })}
             placeholder="LiDAR point cloud sweeping a warehouse aisle"
           />
         </AdminField>
-        {uploading ? <p className="text-sm text-text-muted">Uploading…</p> : null}
-        {error ? <p className="text-sm text-danger">{error}</p> : null}
+        {uploading ? <p role="status" className="text-sm text-text-muted">Uploading…</p> : null}
+        {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
         {image ? (
           <button type="button" onClick={() => onChange({ image: "", imageAlt: "" })} className="text-xs font-medium text-danger hover:underline">
             Remove image
