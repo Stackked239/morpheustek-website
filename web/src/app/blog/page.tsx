@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { getPublishedBlogPosts } from "@/lib/cms/blog";
+import { isRenderableImageUrl, parseBlogMeta } from "@/lib/cms/blog-template";
 
 export const metadata: Metadata = {
   title: "Eyes at the Edge — Robotics Perception Insights",
@@ -41,22 +43,39 @@ export default async function BlogIndexPage() {
             <p className="text-text-muted">First posts are in the pipeline. Grab a guide from our resources in the meantime.</p>
           ) : (
             <ul className="divide-y divide-border">
-              {posts.map((post) => (
-                <li key={post.slug}>
-                  <Link href={`/blog/${post.slug}`} className="group block py-8">
-                    <time className="font-mono text-[11px] uppercase tracking-[0.14em] text-text-subtle">
-                      {formatDate(post.published_at)}
-                    </time>
-                    <h2 className="mt-2 font-display text-h3 font-bold uppercase text-text-strong transition group-hover:text-brand-blue">
-                      {post.title}
-                    </h2>
-                    {post.excerpt ? <p className="mt-3 max-w-2xl text-text-muted">{post.excerpt}</p> : null}
-                    <span className="mt-4 inline-block font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-brand-blue">
-                      Read article →
-                    </span>
-                  </Link>
-                </li>
-              ))}
+              {posts.map((post) => {
+                const meta = parseBlogMeta(post.body);
+                const image = meta.image && isRenderableImageUrl(meta.image) ? meta.image : "";
+                return (
+                  <li key={post.slug}>
+                    <Link href={`/blog/${post.slug}`} className="group flex items-start gap-8 py-8">
+                      <div className="min-w-0 flex-1">
+                        <time className="font-mono text-[11px] uppercase tracking-[0.14em] text-text-subtle">
+                          {formatDate(post.published_at)}
+                        </time>
+                        <h2 className="mt-2 font-display text-h3 font-bold uppercase text-text-strong transition group-hover:text-brand-blue">
+                          {post.title}
+                        </h2>
+                        {post.excerpt ? <p className="mt-3 max-w-2xl text-text-muted">{post.excerpt}</p> : null}
+                        <span className="mt-4 inline-block font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-brand-blue">
+                          Read article →
+                        </span>
+                      </div>
+                      {image ? (
+                        <div className="relative hidden aspect-[16/10] w-56 shrink-0 overflow-hidden rounded-lg border border-border sm:block">
+                          <Image
+                            src={image}
+                            alt={meta.imageAlt || post.title}
+                            fill
+                            className="object-cover transition duration-300 group-hover:scale-[1.03]"
+                            sizes="14rem"
+                          />
+                        </div>
+                      ) : null}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Container>

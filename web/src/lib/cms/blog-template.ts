@@ -7,7 +7,15 @@ export type BlogMeta = {
   category: string;
   readTime: string;
   series: string;
+  /** Featured image public URL (Supabase storage). Empty string = no image. */
+  image: string;
+  imageAlt: string;
 };
+
+/** True when the meta image value is a URL next/image can render (absolute https or site-relative). */
+export function isRenderableImageUrl(url: string) {
+  return url.startsWith("https://") || url.startsWith("/");
+}
 
 export type BlogCta = {
   primary: { label: string; href: string };
@@ -89,6 +97,8 @@ export function defaultNewArticleForm(): BlogArticleForm {
       category: "",
       readTime: "8 min",
       series: "Eyes at the Edge",
+      image: "",
+      imageAlt: "",
     },
     lede: "",
     sections: [createSection("paragraph")],
@@ -246,13 +256,15 @@ function parseBlocks(body: string): ParsedBlock[] {
 
 export function parseBlogMeta(body: string): BlogMeta {
   const match = body.match(/::meta::\n([\s\S]*?)\n::end::/);
-  const meta = { category: "", readTime: "", series: "" };
+  const meta = { category: "", readTime: "", series: "", image: "", imageAlt: "" };
   if (!match) return meta;
   for (const line of match[1].split("\n")) {
     const [key, ...rest] = line.split(":");
     if (key === "category") meta.category = rest.join(":").trim();
     if (key === "readTime") meta.readTime = rest.join(":").trim();
     if (key === "series") meta.series = rest.join(":").trim();
+    if (key === "image") meta.image = rest.join(":").trim();
+    if (key === "imageAlt") meta.imageAlt = rest.join(":").trim();
   }
   return meta;
 }
@@ -378,9 +390,10 @@ export function serializeFormToBody(form: BlogArticleForm): string {
     `category:${form.meta.category.trim()}`,
     `readTime:${form.meta.readTime.trim()}`,
     `series:${form.meta.series.trim()}`,
-    "::end::",
-    "",
   ];
+  if (form.meta.image.trim()) parts.push(`image:${form.meta.image.trim()}`);
+  if (form.meta.imageAlt.trim()) parts.push(`imageAlt:${form.meta.imageAlt.trim()}`);
+  parts.push("::end::", "");
 
   if (form.lede.trim()) {
     parts.push("::lede::", form.lede.trim(), "::end::", "");

@@ -81,7 +81,7 @@ export function BlogPostEditor({ initial, isNew }: { initial: BlogPost; isNew?: 
         </AdminField>
       </AdminSection>
 
-      <BlogArticleFormEditor form={article} onChange={setArticle} />
+      <BlogArticleFormEditor form={article} onChange={setArticle} slug={post.slug} />
     </div>
   );
 

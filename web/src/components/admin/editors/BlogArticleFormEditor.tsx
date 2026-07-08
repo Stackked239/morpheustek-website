@@ -5,6 +5,7 @@ import { AdminField, AdminInput, AdminSection, AdminSelect, AdminTextarea } from
 import { RichTextField } from "@/components/admin/forms/RichTextField";
 import { KeyValueListEditor, StringListEditor } from "@/components/admin/forms/LinkListEditor";
 import { PageLinkPicker } from "@/components/admin/forms/PageLinkPicker";
+import { BlogFeaturedImageField } from "@/components/admin/editors/BlogFeaturedImageField";
 import {
   BLOG_SECTION_LABELS,
   createSection,
@@ -234,9 +235,11 @@ function SectionCard({
 export function BlogArticleFormEditor({
   form,
   onChange,
+  slug,
 }: {
   form: BlogArticleForm;
-  onChange: (form: BlogArticleForm) => void;
+  onChange: React.Dispatch<React.SetStateAction<BlogArticleForm>>;
+  slug: string;
 }) {
   function patch<K extends keyof BlogArticleForm>(key: K, value: BlogArticleForm[K]) {
     onChange({ ...form, [key]: value });
@@ -292,6 +295,18 @@ export function BlogArticleFormEditor({
             />
           </AdminField>
         </div>
+      </AdminSection>
+
+      <AdminSection
+        title="Featured image"
+        description="Shown large in the article header, as the thumbnail on the blog index, and as the social-share image. Optional — posts without one render text-only."
+      >
+        <BlogFeaturedImageField
+          slug={slug}
+          image={form.meta.image}
+          imageAlt={form.meta.imageAlt}
+          onChange={(imagePatch) => onChange((prev) => ({ ...prev, meta: { ...prev.meta, ...imagePatch } }))}
+        />
       </AdminSection>
 
       <AdminSection
