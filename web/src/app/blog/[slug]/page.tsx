@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BlogArticle } from "@/components/blog/BlogArticle";
 import { getBlogPost } from "@/lib/cms/blog";
 import { parseBlogMeta } from "@/lib/cms/blog-template";
+import { site } from "@/lib/site";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -17,8 +18,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     alternates: { canonical: `/blog/${slug}` },
     ...(meta.image
       ? {
-          openGraph: { images: [{ url: meta.image, alt: meta.imageAlt || post.title }] },
-          twitter: { card: "summary_large_image" as const, images: [meta.image] },
+          openGraph: {
+            type: "article" as const,
+            siteName: site.name,
+            url: `/blog/${slug}`,
+            images: [{ url: meta.image, alt: meta.imageAlt || post.title }],
+          },
+          twitter: {
+            card: "summary_large_image" as const,
+            images: [{ url: meta.image, alt: meta.imageAlt || post.title }],
+          },
         }
       : {}),
   };
