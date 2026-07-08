@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BlogArticle } from "@/components/blog/BlogArticle";
 import { getBlogPost } from "@/lib/cms/blog";
-import { parseBlogMeta } from "@/lib/cms/blog-template";
+import { isRenderableImageUrl, parseBlogMeta } from "@/lib/cms/blog-template";
 import { site } from "@/lib/site";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -12,21 +12,22 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const post = await getBlogPost(slug);
   if (!post) return { title: "Article not found" };
   const meta = parseBlogMeta(post.body);
+  const image = meta.image && isRenderableImageUrl(meta.image) ? meta.image : "";
   return {
     title: post.title,
     description: post.excerpt ?? undefined,
     alternates: { canonical: `/blog/${slug}` },
-    ...(meta.image
+    ...(image
       ? {
           openGraph: {
             type: "article" as const,
             siteName: site.name,
             url: `/blog/${slug}`,
-            images: [{ url: meta.image, alt: meta.imageAlt || post.title }],
+            images: [{ url: image, alt: meta.imageAlt || post.title }],
           },
           twitter: {
             card: "summary_large_image" as const,
-            images: [{ url: meta.image, alt: meta.imageAlt || post.title }],
+            images: [{ url: image, alt: meta.imageAlt || post.title }],
           },
         }
       : {}),

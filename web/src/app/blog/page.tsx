@@ -5,7 +5,7 @@ import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { getPublishedBlogPosts } from "@/lib/cms/blog";
-import { parseBlogMeta } from "@/lib/cms/blog-template";
+import { isRenderableImageUrl, parseBlogMeta } from "@/lib/cms/blog-template";
 
 export const metadata: Metadata = {
   title: "Eyes at the Edge — Robotics Perception Insights",
@@ -45,6 +45,7 @@ export default async function BlogIndexPage() {
             <ul className="divide-y divide-border">
               {posts.map((post) => {
                 const meta = parseBlogMeta(post.body);
+                const image = meta.image && isRenderableImageUrl(meta.image) ? meta.image : "";
                 return (
                   <li key={post.slug}>
                     <Link href={`/blog/${post.slug}`} className="group flex items-start gap-8 py-8">
@@ -60,10 +61,10 @@ export default async function BlogIndexPage() {
                           Read article →
                         </span>
                       </div>
-                      {meta.image ? (
+                      {image ? (
                         <div className="relative hidden aspect-[16/10] w-56 shrink-0 overflow-hidden rounded-lg border border-border sm:block">
                           <Image
-                            src={meta.image}
+                            src={image}
                             alt={meta.imageAlt || post.title}
                             fill
                             className="object-cover transition duration-300 group-hover:scale-[1.03]"

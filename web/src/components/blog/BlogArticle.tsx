@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { BlogBody } from "@/components/blog/BlogBody";
-import { parseBlogMeta, stripBlogMeta } from "@/lib/cms/blog-template";
+import { isRenderableImageUrl, parseBlogMeta, stripBlogMeta } from "@/lib/cms/blog-template";
 import type { BlogPost } from "@/lib/cms/blog";
 
 function formatDate(iso: string | null) {
@@ -23,6 +23,7 @@ export function BlogArticle({
   const meta = parseBlogMeta(post.body);
   const body = stripBlogMeta(post.body);
   const date = formatDate(post.published_at);
+  const image = meta.image && isRenderableImageUrl(meta.image) ? meta.image : "";
 
   return (
     <>
@@ -45,7 +46,7 @@ export function BlogArticle({
         <div className="pointcloud-texture pointer-events-none absolute inset-0 opacity-[0.22]" aria-hidden />
         <div className="draft-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden />
         <Container className="relative py-14 md:py-20 lg:py-24">
-          <div className={meta.image ? "grid gap-10 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-center" : undefined}>
+          <div className={image ? "grid gap-10 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-center" : undefined}>
             <div>
               <Eyebrow>
                 <Link href="/blog" className="transition hover:text-brand-blue">
@@ -71,10 +72,10 @@ export function BlogArticle({
               ) : null}
             </div>
 
-            {meta.image ? (
+            {image ? (
               <div className="relative mt-10 aspect-[16/10] overflow-hidden rounded-lg border border-border lg:mt-0">
                 <Image
-                  src={meta.image}
+                  src={image}
                   alt={meta.imageAlt || post.title}
                   fill
                   priority

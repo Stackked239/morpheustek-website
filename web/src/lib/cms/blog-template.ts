@@ -12,6 +12,11 @@ export type BlogMeta = {
   imageAlt: string;
 };
 
+/** True when the meta image value is a URL next/image can render (absolute https or site-relative). */
+export function isRenderableImageUrl(url: string) {
+  return url.startsWith("https://") || url.startsWith("/");
+}
+
 export type BlogCta = {
   primary: { label: string; href: string };
   secondary: { label: string; href: string };
