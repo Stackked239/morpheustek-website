@@ -15,6 +15,7 @@ export async function POST(request: Request) {
   const file = form.get("file");
 
   if (!slug) return NextResponse.json({ error: "Missing post slug" }, { status: 400 });
+  if (!/^[a-z0-9-]+$/.test(slug)) return NextResponse.json({ error: "Invalid post slug" }, { status: 400 });
   if (!(file instanceof File)) return NextResponse.json({ error: "Missing image file" }, { status: 400 });
   if (!ALLOWED.has(file.type)) return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
   if (file.size > MAX_BYTES) return NextResponse.json({ error: "File too large (max 10 MB)" }, { status: 400 });
