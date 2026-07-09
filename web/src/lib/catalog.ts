@@ -72,6 +72,12 @@ export interface Product {
   specs: Spec[];
   bestFor: string[];
   compare?: CompareRow[];
+  /** Official manufacturer spec PDF (Supabase Storage public URL). */
+  specSheetPath?: string;
+  /** Uploaded software package URL or external download link. */
+  softwarePath?: string;
+  /** When true, `softwarePath` is an external URL opened in a new tab after gating. */
+  softwareIsExternal?: boolean;
 }
 
 export const categories: Category[] = [
