@@ -80,6 +80,8 @@ pnpm scan:gen         # regenerate the home-2 LiDAR point cloud + scene spec (pu
 
 - **Synthetic pointer events bypass hit-testing.** `dispatchEvent(new PointerEvent(...))` on a canvas proves nothing about real mice — verify pointer paths with `document.elementFromPoint`. (A full-width z-10 hero Container silently ate all panel drags below ~1900px for a whole session.)
 - **Changing a `public/` image in place serves stale pixels** — next/image and browsers cache by URL. Rename the file (`-v2`) when pixels change.
+- **`catalog.ts` edits can vanish behind `unstable_cache`** — `.next/cache/fetch-cache` persists across builds, so a rebuilt page can prerender with the *previous* product list (page 404s while its `.html` exists, sitemap misses new slugs). `rm -rf .next` before the build when catalog/CMS data changes. In production the equivalent is the CMS tag cache: after DB changes, save any record in /admin to `revalidateTag`.
+- **Adding a product needs a Supabase row in prod, not just `catalog.ts`** — the live site reads the DB (`getProducts`); seed data is only the fallback. Use `pnpm cms:seed-product <slug>` (targeted upsert; full `cms:seed` clobbers admin edits).
 - The brand eye PNGs are `morpheustek-eye-v2.png` / `morpheustek-eye-white-v2.png` (left tip reconstructed; originals were cropped at the canvas edge). Always render them via `EyeMark`; its aspect constant (0.66) matches the repaired art.
 - The chrome-devtools MCP browser window is on John's desktop — he interacts with it live during sessions. Unexplained pointer events / moved cameras are usually him, not a bug.
 

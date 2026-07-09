@@ -305,6 +305,32 @@ export const products: Product[] = [
   },
   // ---------- 3D LiDAR ----------
   {
+    slug: "vf48-50-3d-lidar",
+    model: "VF48-50",
+    brand: "OLEI",
+    name: "OLEI VF48-50",
+    category: "3d-lidar-for-robotics",
+    tagline: "360° surround-view 3D LiDAR that erases the blind spots around a robot.",
+    availability: "in-stock",
+    trial: true,
+    summary:
+      "OLEI's latest high-line-count surround-view and blind-spot LiDAR — laser scanning and ranging across a full 360° horizontal and 50° vertical field of view, covering up to 50 m in radius and 7,500 m². Generates 3D point clouds with angle and depth information for fast, accurate perception of the surrounding environment, in a compact, lightweight housing built for robotics, logistics and delivery, AGVs in smart warehouses, and drone mapping.",
+    keySpecs: [
+      { label: "FOV", value: "360° × 50°" },
+      { label: "Range", value: "50 m radius" },
+      { label: "Coverage", value: "7,500 m²" },
+      { label: "Output", value: "3D point cloud" },
+    ],
+    specs: [
+      { label: "FOV horizontal", value: "360°" },
+      { label: "FOV vertical", value: "50°" },
+      { label: "Range", value: "Up to 50 m radius" },
+      { label: "Coverage area", value: "7,500 m²" },
+      { label: "Output", value: "3D point cloud with angle + depth" },
+    ],
+    bestFor: ["360° surround-view and blind-spot perception", "AGVs and AMRs in smart warehouses", "Logistics, delivery, and drone mapping"],
+  },
+  {
     slug: "lr-16f-100-3d-lidar",
     model: "LR-16F-100",
     brand: "OLEI",
@@ -718,7 +744,7 @@ export const applications: Application[] = [
     title: "Autonomous mobile robots (AMR)",
     pain: "Navigation, aisle movement, obstacle avoidance, docking, and fleet efficiency in dynamic facilities.",
     fit: "2D LiDAR for navigation and safety fields; 3D LiDAR for richer obstacle geometry; 3D cameras for pallet, dock, and object detection.",
-    sensors: ["lr-1f-2d-lidar", "gs1-5-safety-lidar", "lr-16f-100-3d-lidar", "mrdvs-s10-rgbd-camera"],
+    sensors: ["lr-1f-2d-lidar", "gs1-5-safety-lidar", "vf48-50-3d-lidar", "mrdvs-s10-rgbd-camera"],
   },
   {
     slug: "agv",
@@ -732,7 +758,7 @@ export const applications: Application[] = [
     title: "Autonomous forklifts",
     pain: "Pallet-pocket detection, rack approach, people detection, load handling, and docking.",
     fit: "3D cameras for close-range pallet geometry and RGB-D; LiDAR for navigation and obstacle zones; safety LiDAR where a stop function is required.",
-    sensors: ["mrdvs-s11-rgbd-camera", "gs1-5-safety-lidar", "lr-16f-100-3d-lidar"],
+    sensors: ["mrdvs-s11-rgbd-camera", "gs1-5-safety-lidar", "vf48-50-3d-lidar"],
   },
   {
     slug: "robotic-cleaning",
@@ -746,7 +772,7 @@ export const applications: Application[] = [
     title: "Warehouse & logistics automation",
     pain: "Throughput, safe human-robot collaboration, docking accuracy, and uptime at scale.",
     fit: "A full stack — 2D navigation LiDAR, GS1-5 safety zones, 3D LiDAR for geometry, and depth cameras for parcel and pallet handling.",
-    sensors: ["lr-1f-2d-lidar", "gs1-5-safety-lidar", "lr-16f-100-3d-lidar", "mrdvs-s10-rgbd-camera"],
+    sensors: ["lr-1f-2d-lidar", "gs1-5-safety-lidar", "vf48-50-3d-lidar", "mrdvs-s10-rgbd-camera"],
   },
   {
     slug: "outdoor-mobile",
@@ -767,7 +793,7 @@ export const applications: Application[] = [
     title: "Inspection robots",
     pain: "Detecting defects, inventory, assets, conditions, or hazards — with reliable navigation around the facility.",
     fit: "Cameras for visual evidence; LiDAR/depth for geometry, location, distance, and navigation; edge compute for on-board inference.",
-    sensors: ["mrdvs-s10-rgbd-camera", "lr-16f-100-3d-lidar", "sintrones-ibox-602p-edge-ai"],
+    sensors: ["mrdvs-s10-rgbd-camera", "vf48-50-3d-lidar", "sintrones-ibox-602p-edge-ai"],
   },
 ];
 
@@ -850,6 +876,7 @@ export const productImages: Record<string, string> = {
   "thermal-camera": "/products/thermal-camera-v2.png",
   "vbd1-10-2d-lidar": "/products/vbd1-10-2d-lidar-v2.png",
   "gs1-5-safety-lidar": "/products/gs1-5-safety-lidar-v2.png",
+  "vf48-50-3d-lidar": "/products/vf48-50-3d-lidar.png",
   "lr-16f-100-3d-lidar": "/products/lr-16f-100-3d-lidar-v2.png",
   "lr-16fis-explosion-proof-3d-lidar": "/products/lr-16fis-explosion-proof-3d-lidar-v2.png",
   "lr-f240-solid-state-lidar": "/products/lr-f240-solid-state-lidar-v2.png",
