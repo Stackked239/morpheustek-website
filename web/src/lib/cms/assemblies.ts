@@ -34,7 +34,7 @@ export interface Assembly {
 const SPEC = {
   gs15: "270° · Type 3 / SIL2 / PL d · 5 m protective",
   lr16f: "16 ch · 360° × 30° · 100 m · IP66",
-  vf48: "360° × 50° · 50 m radius · 7,500 m² surround view",
+  vf48: "48 ch · 360° × 50° · 50 m · IP67",
   lr1f: "360° FOV · 50 m · 10–25 Hz · 2D point cloud",
   lrf240: "Solid-state · 72° × 58° · 10 m forward avoidance",
   vss50: "120° × 50° · 540k pts/s · 100,000 lux · IP67",
