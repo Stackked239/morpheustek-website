@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Check, Download, ShieldCheck } from "lucide-react";
+import { ArrowRight, BadgeCheck, Check, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { ProductMedia } from "@/components/product/ProductMedia";
+import { ProductDownloadActions } from "@/components/product/ProductDownloadActions";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SpecTable } from "@/components/product/SpecTable";
 import { CtaBand } from "@/components/marketing/CtaBand";
@@ -16,6 +17,7 @@ import {
   getCategory,
   getProduct,
   getProducts,
+  getRobotTypes,
   productImage,
   productsInCategory,
   visibleSpecs,
@@ -42,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = await getProduct(slug);
+  const [product, robotTypes] = await Promise.all([getProduct(slug), getRobotTypes()]);
   if (!product) notFound();
   const cat = await getCategory(product.category);
   const isSafety = (product.certifications?.length ?? 0) > 0;
@@ -145,12 +147,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     Start a 90-day trial
                   </Button>
                 ) : null}
-                <Button href="/resources" variant="ghost" size="lg">
-                  <Download className="size-4" /> Spec sheet
-                </Button>
-                <Button href="/resources" variant="ghost" size="lg">
-                  <Download className="size-4" /> Software
-                </Button>
+                <ProductDownloadActions product={product} robotTypes={robotTypes} />
               </div>
             </div>
           </div>

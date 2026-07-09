@@ -15,6 +15,7 @@ const FORM_GUIDS = {
 } as const;
 
 // Intent strings from LeadForm: "contact", "booth", "download:<resource-slug>",
+// "download:spec:<product-slug>", "download:software:<product-slug>",
 // and the book-a-meeting family "meeting" | "trial" | "engineer" | "quote",
 // optionally suffixed ":<product-slug>".
 function formGuidForIntent(intent: string): string {

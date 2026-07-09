@@ -9,7 +9,9 @@
     "lint": "eslint",
     "scan:gen": "node scripts/generate-scan.mjs",
     "cms:seed": "node --env-file=.env.local ./node_modules/tsx/dist/cli.mjs scripts/seed-cms.ts",
-    "cms:seed-blog": "node --env-file=.env.local ./node_modules/tsx/dist/cli.mjs scripts/seed-sample-blog.ts"
+    "cms:seed-blog": "node --env-file=.env.local ./node_modules/tsx/dist/cli.mjs scripts/seed-sample-blog.ts",
+    "import:spec-pdfs": "node --env-file=.env.local scripts/import-spec-pdfs.mjs",
+    "import:software": "node --env-file=.env.local scripts/import-software.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

@@ -28,12 +28,17 @@ export function LeadForm({
   submitLabel = "Book a meeting",
   mode = "meeting",
   downloadUrl,
+  openUrl,
+  openLabel = "Open link",
   robotTypes = defaultRobotTypes,
 }: {
   intent?: string;
   submitLabel?: string;
   mode?: "meeting" | "download";
   downloadUrl?: string;
+  /** Open in a new tab after submit (spec sheet template, external software URL). */
+  openUrl?: string;
+  openLabel?: string;
   robotTypes?: string[];
 }) {
   const [status, setStatus] = useState<"idle" | "submitting" | "error" | "done">("idle");
@@ -61,22 +66,27 @@ export function LeadForm({
       return;
     }
     setStatus("done");
-    // Instant access: trigger the download immediately (no waiting on email).
-    if (mode === "download" && downloadUrl) {
-      const a = document.createElement("a");
-      // The download attribute is ignored cross-origin; Supabase storage
-      // honors ?download= by serving Content-Disposition: attachment.
-      a.href = downloadUrl.includes("/storage/") && !downloadUrl.includes("?")
-        ? `${downloadUrl}?download=`
-        : downloadUrl;
-      a.setAttribute("download", "");
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+    // Instant access: trigger the download or open the asset immediately (no waiting on email).
+    if (mode === "download") {
+      if (downloadUrl) {
+        const a = document.createElement("a");
+        // The download attribute is ignored cross-origin; Supabase storage
+        // honors ?download= by serving Content-Disposition: attachment.
+        a.href = downloadUrl.includes("/storage/") && !downloadUrl.includes("?")
+          ? `${downloadUrl}?download=`
+          : downloadUrl;
+        a.setAttribute("download", "");
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else if (openUrl) {
+        window.open(openUrl, "_blank", "noopener,noreferrer");
+      }
     }
   }
 
   if (status === "done" && mode === "download") {
+    const hasAsset = Boolean(downloadUrl || openUrl);
     return (
       <div className="surface-card flex flex-col items-start gap-4 p-7">
         <span className="grid size-12 place-items-center rounded-full bg-success-soft text-success">
@@ -85,11 +95,18 @@ export function LeadForm({
         <h3 className="font-display text-h4 font-bold text-text-strong">Your download is ready.</h3>
         <p className="text-sm leading-relaxed text-text-muted">
           Instant access — no waiting on an email.{" "}
-          {downloadUrl ? "It should start automatically; if not, use the button below." : "A copy is on its way to your inbox too."}
+          {hasAsset
+            ? "It should start automatically; if not, use the button below."
+            : "A copy is on its way to your inbox too."}
         </p>
         {downloadUrl ? (
           <Button href={downloadUrl} variant="primary" size="md">
             Download again
+          </Button>
+        ) : null}
+        {!downloadUrl && openUrl ? (
+          <Button href={openUrl} variant="primary" size="md" target="_blank" rel="noopener noreferrer">
+            {openLabel}
           </Button>
         ) : null}
         <Button href="/book-a-meeting?intent=engineer" variant="ghost" size="md">

@@ -6,6 +6,8 @@ import { AdminField, AdminInput, AdminSection, AdminSelect, AdminTextarea } from
 import { SpecListEditor, StringListEditor } from "@/components/admin/forms/LinkListEditor";
 import { RichTextField } from "@/components/admin/forms/RichTextField";
 import { ProductImageUpload } from "@/components/admin/ProductImageUpload";
+import { ProductSpecSheetUpload } from "@/components/admin/ProductSpecSheetUpload";
+import { ProductSoftwareUpload } from "@/components/admin/ProductSoftwareUpload";
 import { AdminSplitLayout } from "@/components/admin/AdminSplitLayout";
 import { ProductLivePreview } from "@/components/admin/previews/ProductLivePreview";
 import { SaveBar, useAdminSave } from "@/components/admin/forms/SaveBar";
@@ -159,6 +161,8 @@ export function ProductEditor({
       ) : null}
 
       <ProductImageUpload slug={slug} currentPath={imagePath} />
+      <ProductSpecSheetUpload slug={slug} currentPath={product.specSheetPath} />
+      <ProductSoftwareUpload slug={slug} currentPath={product.softwarePath} isExternal={product.softwareIsExternal} />
           </>
         }
         preview={<ProductLivePreview product={product} />}
