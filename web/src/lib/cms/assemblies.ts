@@ -34,6 +34,7 @@ export interface Assembly {
 const SPEC = {
   gs15: "270° · Type 3 / SIL2 / PL d · 5 m protective",
   lr16f: "16 ch · 360° × 30° · 100 m · IP66",
+  vf48: "360° × 50° · 50 m radius · 7,500 m² surround view",
   lr1f: "360° FOV · 50 m · 10–25 Hz · 2D point cloud",
   lrf240: "Solid-state · 72° × 58° · 10 m forward avoidance",
   vss50: "120° × 50° · 540k pts/s · 100,000 lux · IP67",
@@ -57,7 +58,7 @@ export const PLATFORM_ASSEMBLIES: readonly Assembly[] = [
     blurb: "Indoor autonomous mobile robot — aisles, docks, and people, all day.",
     parts: [
       { slug: "gs1-5-safety-lidar", spec: SPEC.gs15 },
-      { slug: "lr-16f-100-3d-lidar", spec: SPEC.lr16f },
+      { slug: "vf48-50-3d-lidar", spec: SPEC.vf48 },
       { slug: "mrdvs-s10-rgbd-camera", spec: SPEC.s10 },
       { slug: "sintrones-ibox-602p-edge-ai", spec: SPEC.ibox },
     ],
@@ -79,7 +80,7 @@ export const PLATFORM_ASSEMBLIES: readonly Assembly[] = [
     blurb: "Legged platform — stairs, terrain, and close-quarters human spaces.",
     parts: [
       { slug: "gs1-5-safety-lidar", spec: SPEC.gs15 },
-      { slug: "lr-16f-100-3d-lidar", spec: SPEC.lr16f },
+      { slug: "vf48-50-3d-lidar", spec: SPEC.vf48 },
       { slug: "mrdvs-s11-rgbd-camera", spec: SPEC.s11 },
       { slug: "sintrones-ibox-602p-edge-ai", spec: SPEC.ibox },
     ],
@@ -107,7 +108,7 @@ export const APPLICATION_ASSEMBLIES: readonly Assembly[] = [
     blurb: "Indoor autonomous mobile robot — aisles, docks, and people, all day.",
     parts: [
       { slug: "gs1-5-safety-lidar", spec: SPEC.gs15 },
-      { slug: "lr-16f-100-3d-lidar", spec: SPEC.lr16f },
+      { slug: "vf48-50-3d-lidar", spec: SPEC.vf48 },
       { slug: "mrdvs-s10-rgbd-camera", spec: SPEC.s10 },
       { slug: "sintrones-ibox-602p-edge-ai", spec: SPEC.ibox },
     ],
@@ -129,7 +130,7 @@ export const APPLICATION_ASSEMBLIES: readonly Assembly[] = [
     blurb: "Automated forklift — pallets, racking, and shared human aisles.",
     parts: [
       { slug: "gs1-5-safety-lidar", spec: SPEC.gs15 },
-      { slug: "lr-16f-100-3d-lidar", spec: SPEC.lr16f },
+      { slug: "vf48-50-3d-lidar", spec: SPEC.vf48 },
       { slug: "mrdvs-s11-rgbd-camera", spec: SPEC.s11 },
       { slug: "sintrones-ibox-602p-edge-ai", spec: SPEC.ibox },
     ],
@@ -151,7 +152,7 @@ export const APPLICATION_ASSEMBLIES: readonly Assembly[] = [
     blurb: "Fleet logistics — high-throughput aisles, dock doors, mixed traffic.",
     parts: [
       { slug: "gs1-5-safety-lidar", spec: SPEC.gs15 },
-      { slug: "lr-16f-100-3d-lidar", spec: SPEC.lr16f },
+      { slug: "vf48-50-3d-lidar", spec: SPEC.vf48 },
       { slug: "mrdvs-s10-rgbd-camera", spec: SPEC.s10 },
       { slug: "sintrones-ibox-602p-edge-ai", spec: SPEC.ibox },
     ],
@@ -184,7 +185,7 @@ export const APPLICATION_ASSEMBLIES: readonly Assembly[] = [
     blurb: "Autonomous inspection — repeatable routes, fine detail, edge decisions.",
     parts: [
       { slug: "gs1-5-safety-lidar", spec: SPEC.gs15 },
-      { slug: "lr-16f-100-3d-lidar", spec: SPEC.lr16f },
+      { slug: "vf48-50-3d-lidar", spec: SPEC.vf48 },
       { slug: "mrdvs-s10-rgbd-camera", spec: SPEC.s10 },
       { slug: "sintrones-ibox-602p-edge-ai", spec: SPEC.ibox },
     ],
