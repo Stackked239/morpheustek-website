@@ -7,6 +7,7 @@ import { getContent } from "@/lib/cms";
 import { defaultLayoutMetadata } from "@/lib/cms/home-defaults";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 const robotoCondensed = Roboto_Condensed({
   subsets: ["latin"],
@@ -79,6 +80,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="font-body antialiased">
         <script src="/theme-init.js" />
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: site.name,
+            url: site.url,
+            logo: `${site.url}/brand/morpheustek-logo.png`,
+            description: site.oneLiner,
+            email: site.email,
+            telephone: site.phoneHref,
+            sameAs: ["https://www.linkedin.com/company/morpheustek"],
+          }}
+        />
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: site.name,
+            url: site.url,
+          }}
+        />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:font-semibold focus:text-accent-text"
@@ -103,6 +125,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           src="https://js.hs-scripts.com/22485651.js"
           strategy="afterInteractive"
         />
+        {/* Google tag (GA4) — same GT container the previous WordPress site used, so
+            analytics history continues across the relaunch. */}
+        <Script
+          id="gtag-js"
+          src="https://www.googletagmanager.com/gtag/js?id=GT-NFJ9PT8"
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag("set", "linker", {"domains": ["morpheustek.com"]});
+            gtag("js", new Date());
+            gtag("config", "GT-NFJ9PT8");`}
+        </Script>
       </body>
     </html>
   );
