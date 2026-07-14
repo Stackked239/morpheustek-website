@@ -22,6 +22,8 @@ import {
   productsInCategory,
   visibleSpecs,
 } from "@/lib/cms";
+import { site } from "@/lib/site";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { cn } from "@/lib/cn";
 
 export async function generateStaticParams() {
@@ -55,6 +57,38 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.name,
+          model: product.model,
+          description: product.summary,
+          url: `${site.url}/products/${product.slug}`,
+          brand: { "@type": "Brand", name: product.brand },
+          ...(imageSrc ? { image: `${site.url}${imageSrc}` } : {}),
+          ...(cat ? { category: cat.label } : {}),
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: site.url },
+            { "@type": "ListItem", position: 2, name: "Products", item: `${site.url}/products` },
+            ...(cat
+              ? [{ "@type": "ListItem", position: 3, name: cat.label, item: `${site.url}/${product.category}` }]
+              : []),
+            {
+              "@type": "ListItem",
+              position: cat ? 4 : 3,
+              name: product.name,
+              item: `${site.url}/products/${product.slug}`,
+            },
+          ],
+        }}
+      />
       {/* ---------- ABOVE THE FOLD ---------- */}
       <section className="dark relative overflow-hidden bg-bg">
         <div className="circuit-motif pointer-events-none absolute inset-x-0 top-0 h-full opacity-60" aria-hidden />
