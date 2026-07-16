@@ -313,7 +313,11 @@ export function ShowsForm({ initial, blockKey, label, group }: FormProps<ShowsDa
   });
 
   function updateShow(i: number, patch: Partial<ShowItem>) {
-    setData({ ...data, shows: data.shows.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
+    setData({
+      ...data,
+      // Only one show can be "Next up" — marking one clears the flag on the rest.
+      shows: data.shows.map((s, idx) => (idx === i ? { ...s, ...patch } : patch.next ? { ...s, next: false } : s)),
+    });
   }
 
   return (
@@ -330,7 +334,10 @@ export function ShowsForm({ initial, blockKey, label, group }: FormProps<ShowsDa
         </AdminField>
       </AdminSection>
 
-      <AdminSection title="Trade shows" description="List each show MorpheusTEK will attend.">
+      <AdminSection
+        title="Trade shows"
+        description="List each show MorpheusTEK will attend. Marking a show as “Next up” also rewrites the yellow announcement bar at the top of every page when you save."
+      >
         {data.shows.map((show, i) => (
           <div key={i} className="mb-4 rounded-lg border border-border p-4">
             <div className="grid gap-3 sm:grid-cols-2">
