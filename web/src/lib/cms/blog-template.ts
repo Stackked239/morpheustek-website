@@ -30,8 +30,15 @@ export type BlogSectionType =
   | "divider"
   | "bullets"
   | "specs"
+  | "table"
   | "callout"
   | "steps";
+
+export type BlogTableData = {
+  caption: string;
+  headers: string[];
+  rows: string[][];
+};
 
 export type BlogSection =
   | { id: string; type: "paragraph"; text: string }
@@ -41,6 +48,7 @@ export type BlogSection =
   | { id: string; type: "divider" }
   | { id: string; type: "bullets"; items: string[] }
   | { id: string; type: "specs"; rows: { label: string; value: string }[] }
+  | { id: string; type: "table"; caption: string; headers: string[]; rows: string[][] }
   | { id: string; type: "callout"; title: string; body: string }
   | { id: string; type: "steps"; items: { num: string; title: string; body: string }[] };
 
@@ -60,9 +68,66 @@ export const BLOG_SECTION_LABELS: Record<BlogSectionType, string> = {
   divider: "Section divider",
   bullets: "Bullet list",
   specs: "Spec table",
+  table: "Data table",
   callout: "Highlight box",
   steps: "Numbered steps",
 };
+
+export function isFigureCaption(text: string) {
+  return /^(?:figure|fig\.?|table)\s*\d+\b/i.test(text.trim());
+}
+
+export function parsePipeRow(line: string): string[] {
+  let s = line.trim();
+  if (s.startsWith("|")) s = s.slice(1);
+  if (s.endsWith("|")) s = s.slice(0, -1);
+  return s.split("|").map((cell) => cell.replace(/\\\|/g, "|").trim());
+}
+
+export function isMarkdownDividerRow(cells: string[]) {
+  return cells.length > 0 && cells.every((c) => /^:?-+:?$/.test(c.replace(/\s/g, "")) && c.includes("-"));
+}
+
+export function tableFromRows(rawRows: string[][], caption = ""): BlogTableData | null {
+  const rows = rawRows.map((r) => r.map((c) => c.trim())).filter((r) => r.some(Boolean));
+  if (!rows.length) return null;
+
+  let cap = caption.trim();
+  if (!cap && rows[0].length === 1 && rows.length > 1 && (isFigureCaption(rows[0][0]) || rows[1].length > 1)) {
+    cap = rows[0][0];
+    rows.shift();
+  }
+  if (!rows.length) return null;
+
+  const width = Math.max(...rows.map((r) => r.length), 1);
+  const padded = rows.map((r) => Array.from({ length: width }, (_, i) => r[i] ?? ""));
+  const [headers, ...body] = padded;
+  return {
+    caption: cap,
+    headers,
+    rows: body.length ? body : [Array.from({ length: width }, () => "")],
+  };
+}
+
+/** Word-import leftovers: bullets like "A | B | C" that were flattened tables. */
+export function tableFromPipeBullets(items: string[]): BlogTableData | null {
+  const piped = items.map((item) => item.trim()).filter((item) => item.includes("|"));
+  if (piped.length < 2 || piped.length < items.length) return null;
+  const rows = piped.map(parsePipeRow);
+  const width = Math.max(...rows.map((r) => r.length));
+  if (width < 2) return null;
+  const aligned = rows.filter((r) => r.length === width).length >= Math.ceil(rows.length * 0.8);
+  if (!aligned) return null;
+  return tableFromRows(rows);
+}
+
+export function serializeTableLines(table: BlogTableData): string {
+  const escape = (cell: string) => cell.replace(/\|/g, "\\|");
+  const all = [table.headers, ...table.rows].filter((r) => r.some((c) => c.trim()));
+  if (!all.length) return "";
+  const tag = table.caption.trim() ? `::table|${table.caption.trim()}::` : "::table::";
+  return `${tag}\n${all.map((r) => r.map(escape).join(" | ")).join("\n")}\n::end::\n\n`;
+}
 
 export function newSectionId() {
   return `sec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -84,6 +149,8 @@ export function createSection(type: BlogSectionType): BlogSection {
       return { id, type, items: [""] };
     case "specs":
       return { id, type, rows: [{ label: "", value: "" }] };
+    case "table":
+      return { id, type, caption: "", headers: ["", ""], rows: [["", ""]] };
     case "callout":
       return { id, type, title: "", body: "" };
     case "steps":
@@ -120,6 +187,7 @@ type ParsedBlock =
   | { type: "lede"; text: string }
   | { type: "callout"; title: string; body: string }
   | { type: "specs"; rows: { label: string; value: string }[] }
+  | { type: "table"; caption: string; headers: string[]; rows: string[][] }
   | { type: "steps"; items: { num: string; title: string; body: string }[] }
   | { type: "takeaways"; items: string[] }
   | { type: "cta"; primary: { label: string; href: string }; secondary?: { label: string; href: string } };
@@ -170,8 +238,35 @@ function parseBlocks(body: string): ParsedBlock[] {
         items.push(lines[i].trim().slice(2));
         i++;
       }
-      blocks.push({ type: "ul", items });
+      const recovered = tableFromPipeBullets(items);
+      if (recovered) {
+        blocks.push({ type: "table", ...recovered });
+      } else {
+        blocks.push({ type: "ul", items });
+      }
       continue;
+    }
+
+    if (looksLikeMarkdownTable(lines, i)) {
+      const raw: string[][] = [];
+      while (i < lines.length) {
+        const t = lines[i].trim();
+        if (!t || !t.includes("|")) break;
+        if (t.startsWith("## ") || t.startsWith("### ") || t.startsWith("> ") || t.startsWith("- ") || t === "---") break;
+        if (t.startsWith("::") && t.endsWith("::")) break;
+        const cells = parsePipeRow(t);
+        if (isMarkdownDividerRow(cells)) {
+          i++;
+          continue;
+        }
+        raw.push(cells);
+        i++;
+      }
+      const table = tableFromRows(raw);
+      if (table) {
+        blocks.push({ type: "table", ...table });
+        continue;
+      }
     }
 
     if (trimmed.startsWith("::") && trimmed.endsWith("::")) {
@@ -203,6 +298,15 @@ function parseBlocks(body: string): ParsedBlock[] {
               return { label: label.trim(), value: rest.join("|").trim() };
             }),
         });
+        continue;
+      }
+      if (tag === "table" || tag.startsWith("table|")) {
+        const caption = tag.startsWith("table|") ? tag.slice("table|".length) : "";
+        const table = tableFromRows(
+          inner.map((l) => l.trim()).filter(Boolean).map(parsePipeRow),
+          caption,
+        );
+        if (table) blocks.push({ type: "table", ...table });
         continue;
       }
       if (tag === "steps") {
@@ -244,14 +348,57 @@ function parseBlocks(body: string): ParsedBlock[] {
     const para: string[] = [];
     while (i < lines.length) {
       const t = lines[i].trim();
-      if (!t || t.startsWith("## ") || t.startsWith("### ") || t.startsWith("> ") || t.startsWith("- ") || t === "---" || (t.startsWith("::") && t.endsWith("::"))) break;
+      if (!t || t.startsWith("## ") || t.startsWith("### ") || t.startsWith("> ") || t.startsWith("- ") || t === "---" || (t.startsWith("::") && t.endsWith("::")) || looksLikeMarkdownTable(lines, i)) break;
       para.push(lines[i]);
       i++;
     }
     if (para.length) blocks.push({ type: "p", text: para.join(" ").trim() });
   }
 
-  return blocks;
+  return attachTableCaptions(blocks);
+}
+
+function looksLikeMarkdownTable(lines: string[], i: number) {
+  const firstLine = lines[i].trim();
+  if (!firstLine.includes("|") || firstLine.startsWith("- ")) return false;
+  const first = parsePipeRow(firstLine);
+  if (first.length < 2) return false;
+  let j = i + 1;
+  while (j < lines.length && !lines[j].trim()) j++;
+  if (j >= lines.length) return false;
+  const nextLine = lines[j].trim();
+  if (!nextLine.includes("|")) return false;
+  const next = parsePipeRow(nextLine);
+  if (isMarkdownDividerRow(next)) {
+    let k = j + 1;
+    while (k < lines.length && !lines[k].trim()) k++;
+    return k < lines.length && lines[k].includes("|") && parsePipeRow(lines[k].trim()).length >= 2;
+  }
+  return next.length >= 2;
+}
+
+function attachTableCaptions<T extends ParsedBlock>(blocks: T[]): T[] {
+  const out: T[] = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    const before = blocks[i - 1];
+    const after = blocks[i + 1];
+
+    if (block.type === "p" && isFigureCaption(block.text) && after?.type === "table" && !after.caption) {
+      continue;
+    }
+    if (block.type === "table" && !block.caption && before?.type === "p" && isFigureCaption(before.text)) {
+      out.push({ ...block, caption: before.text });
+      continue;
+    }
+    if (block.type === "table" && !block.caption && after?.type === "p" && isFigureCaption(after.text)) {
+      out.push({ ...block, caption: after.text });
+      i++;
+      continue;
+    }
+    out.push(block);
+  }
+  return out;
 }
 
 export function parseBlogMeta(body: string): BlogMeta {
@@ -296,6 +443,14 @@ function blockToSection(block: ParsedBlock): BlogSection | null {
       return { id, type: "callout", title: block.title, body: block.body };
     case "specs":
       return { id, type: "specs", rows: block.rows.length ? block.rows : [{ label: "", value: "" }] };
+    case "table":
+      return {
+        id,
+        type: "table",
+        caption: block.caption,
+        headers: block.headers.length ? block.headers : [""],
+        rows: block.rows.length ? block.rows : [block.headers.map(() => "")],
+      };
     case "steps":
       return { id, type: "steps", items: block.items.length ? block.items : [{ num: "01", title: "", body: "" }] };
     default:
@@ -375,6 +530,8 @@ function serializeSection(section: BlogSection): string {
       const rows = section.rows.filter((r) => r.label.trim() || r.value.trim());
       return rows.length ? `::specs::\n${rows.map((r) => `${r.label.trim()} | ${r.value.trim()}`).join("\n")}\n::end::\n\n` : "";
     }
+    case "table":
+      return serializeTableLines(section);
     case "steps": {
       const items = section.items.filter((s) => s.title.trim() || s.body.trim());
       return items.length

@@ -14,6 +14,120 @@ import {
   type BlogSectionType,
 } from "@/lib/cms/blog-template";
 
+function padRow(row: string[], width: number) {
+  return Array.from({ length: width }, (_, i) => row[i] ?? "");
+}
+
+function BlogTableEditor({
+  caption,
+  headers,
+  rows,
+  onChange,
+}: {
+  caption: string;
+  headers: string[];
+  rows: string[][];
+  onChange: (next: { caption: string; headers: string[]; rows: string[][] }) => void;
+}) {
+  const width = Math.max(headers.length, ...rows.map((r) => r.length), 2);
+  const headerRow = padRow(headers, width);
+  const body = (rows.length ? rows : [padRow([], width)]).map((r) => padRow(r, width));
+
+  function setHeader(i: number, value: string) {
+    const next = headerRow.map((cell, idx) => (idx === i ? value : cell));
+    onChange({ caption, headers: next, rows: body });
+  }
+
+  function setCell(ri: number, ci: number, value: string) {
+    onChange({
+      caption,
+      headers: headerRow,
+      rows: body.map((row, idx) => (idx === ri ? row.map((cell, j) => (j === ci ? value : cell)) : row)),
+    });
+  }
+
+  function addRow() {
+    onChange({ caption, headers: headerRow, rows: [...body, padRow([], width)] });
+  }
+
+  function removeRow(i: number) {
+    const next = body.filter((_, idx) => idx !== i);
+    onChange({ caption, headers: headerRow, rows: next.length ? next : [padRow([], width)] });
+  }
+
+  function addColumn() {
+    onChange({
+      caption,
+      headers: [...headerRow, ""],
+      rows: body.map((row) => [...row, ""]),
+    });
+  }
+
+  function removeColumn(i: number) {
+    if (width <= 2) return;
+    onChange({
+      caption,
+      headers: headerRow.filter((_, idx) => idx !== i),
+      rows: body.map((row) => row.filter((_, idx) => idx !== i)),
+    });
+  }
+
+  return (
+    <div className="space-y-4">
+      <AdminField label="Caption" hint="Shown above the table — e.g. Figure 1. Protective field comparison.">
+        <AdminInput
+          value={caption}
+          onChange={(e) => onChange({ caption: e.target.value, headers: headerRow, rows: body })}
+          placeholder="Figure 1. Comparison by vehicle class"
+        />
+      </AdminField>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[28rem] border-collapse text-sm">
+          <thead>
+            <tr>
+              {headerRow.map((cell, i) => (
+                <th key={i} className="border border-border bg-bg-muted p-1.5">
+                  <AdminInput value={cell} onChange={(e) => setHeader(i, e.target.value)} placeholder={`Column ${i + 1}`} />
+                </th>
+              ))}
+              <th className="w-20 p-1.5" />
+            </tr>
+          </thead>
+          <tbody>
+            {body.map((row, ri) => (
+              <tr key={ri}>
+                {row.map((cell, ci) => (
+                  <td key={ci} className="border border-border p-1.5">
+                    <AdminInput value={cell} onChange={(e) => setCell(ri, ci, e.target.value)} />
+                  </td>
+                ))}
+                <td className="p-1.5">
+                  <button type="button" onClick={() => removeRow(ri)} className="text-xs text-danger hover:underline">
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex flex-wrap gap-3">
+        <button type="button" onClick={addRow} className="text-sm font-medium text-brand-blue hover:underline">
+          + Add row
+        </button>
+        <button type="button" onClick={addColumn} className="text-sm font-medium text-brand-blue hover:underline">
+          + Add column
+        </button>
+        {width > 2 ? (
+          <button type="button" onClick={() => removeColumn(width - 1)} className="text-sm font-medium text-danger hover:underline">
+            Remove last column
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function CtaPair({
   primary,
   secondary,
@@ -146,6 +260,15 @@ function SectionCard({
             label="Spec rows"
             items={section.rows}
             onChange={(rows) => onChange({ ...section, rows: rows.length ? rows : [{ label: "", value: "" }] })}
+          />
+        ) : null}
+
+        {section.type === "table" ? (
+          <BlogTableEditor
+            caption={section.caption}
+            headers={section.headers}
+            rows={section.rows}
+            onChange={(next) => onChange({ ...section, ...next })}
           />
         ) : null}
 
