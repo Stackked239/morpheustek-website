@@ -3,18 +3,21 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AdminField, AdminInput, AdminSection, AdminSelect, AdminTextarea } from "@/components/admin/forms/AdminField";
+import { AdminField, AdminInput, AdminSection, AdminSelect } from "@/components/admin/forms/AdminField";
 import { RichTextField } from "@/components/admin/forms/RichTextField";
 import { useAdminSave } from "@/components/admin/forms/SaveBar";
 import { AdminSplitLayout } from "@/components/admin/AdminSplitLayout";
 import { BlogLivePreview } from "@/components/admin/previews/BlogLivePreview";
 import { BlogArticleFormEditor } from "@/components/admin/editors/BlogArticleFormEditor";
+import { BlogDocumentImport } from "@/components/admin/editors/BlogDocumentImport";
 import type { BlogPost } from "@/lib/cms/blog";
 import { defaultNewArticleForm, parseBodyToForm, serializeFormToBody } from "@/lib/cms/blog-template";
+import { slugifyTitle } from "@/lib/cms/import-article";
 
 export function BlogPostEditor({ initial, isNew }: { initial: BlogPost; isNew?: boolean }) {
   const router = useRouter();
   const [post, setPost] = useState(initial);
+  const [slugTouched, setSlugTouched] = useState(() => Boolean(initial.slug));
   const [article, setArticle] = useState(() =>
     initial.body.trim() ? parseBodyToForm(initial.body) : defaultNewArticleForm(),
   );
@@ -50,15 +53,45 @@ export function BlogPostEditor({ initial, isNew }: { initial: BlogPost; isNew?: 
     setPost(published);
   });
 
+  function applyImportedDoc(data: { title: string; excerpt: string; slug: string; body: string }) {
+    const imported = parseBodyToForm(data.body);
+    setArticle((prev) => ({
+      ...imported,
+      meta: {
+        ...imported.meta,
+        image: prev.meta.image,
+        imageAlt: prev.meta.imageAlt,
+        series: imported.meta.series || prev.meta.series,
+        category: imported.meta.category || prev.meta.category,
+      },
+      cta: prev.cta,
+    }));
+    setPost((prev) => ({
+      ...prev,
+      title: data.title || prev.title,
+      excerpt: data.excerpt || prev.excerpt,
+      slug: isNew && !slugTouched && data.slug ? data.slug : prev.slug,
+    }));
+    if (isNew && !slugTouched && data.slug) setSlugTouched(true);
+  }
+
   const editor = (
     <div className="space-y-6">
+      <BlogDocumentImport
+        confirmReplace={Boolean(post.title.trim() || post.body.trim() || article.lede.trim())}
+        onImported={applyImportedDoc}
+      />
+
       <AdminSection title="Post settings" description="Basic page info — title, URL, and status.">
         <div className="grid gap-4 sm:grid-cols-2">
-          <AdminField label="URL slug" hint="Lowercase words separated by hyphens. Cannot change after publishing.">
+          <AdminField label="URL slug" hint="Lowercase words separated by hyphens. Fills in from the title. Cannot change after publishing.">
             <AdminInput
               value={post.slug}
               disabled={!isNew}
-              onChange={(e) => setPost({ ...post, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })}
+              onChange={(e) => {
+                setSlugTouched(true);
+                setPost({ ...post, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") });
+              }}
               placeholder="choosing-safety-lidar-for-amrs"
             />
           </AdminField>
@@ -74,7 +107,17 @@ export function BlogPostEditor({ initial, isNew }: { initial: BlogPost; isNew?: 
           </AdminField>
         </div>
         <AdminField label="Article title" hint="Large headline at the top of the article.">
-          <AdminInput value={post.title} onChange={(e) => setPost({ ...post, title: e.target.value })} />
+          <AdminInput
+            value={post.title}
+            onChange={(e) => {
+              const title = e.target.value;
+              setPost((prev) => ({
+                ...prev,
+                title,
+                slug: isNew && !slugTouched ? slugifyTitle(title) : prev.slug,
+              }));
+            }}
+          />
         </AdminField>
         <AdminField label="Short summary" hint="Shown under the title and on the blog index page.">
           <RichTextField rows={2} value={post.excerpt ?? ""} onChange={(excerpt) => setPost({ ...post, excerpt })} />

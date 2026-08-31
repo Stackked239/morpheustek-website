@@ -15,7 +15,9 @@ export default function AdminBlogNewPage() {
     <div className="space-y-4">
       <div>
         <h2 className="font-display text-h3 font-bold uppercase text-text-strong">New blog post</h2>
-        <p className="mt-1 text-sm text-text-muted">Fill in each section below — no code or formatting tags needed.</p>
+        <p className="mt-1 text-sm text-text-muted">
+          Upload a Word or Markdown draft, or fill in each section below — no code or formatting tags needed.
+        </p>
       </div>
       <BlogPostEditor initial={draft} isNew />
     </div>
