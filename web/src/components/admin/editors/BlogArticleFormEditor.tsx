@@ -82,11 +82,11 @@ function BlogTableEditor({
         />
       </AdminField>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[28rem] border-collapse text-sm">
+        <table className="w-max min-w-full border-collapse text-sm">
           <thead>
             <tr>
               {headerRow.map((cell, i) => (
-                <th key={i} className="border border-border bg-bg-muted p-1.5">
+                <th key={i} className="min-w-[9rem] border border-border bg-bg-muted p-1.5">
                   <AdminInput value={cell} onChange={(e) => setHeader(i, e.target.value)} placeholder={`Column ${i + 1}`} />
                 </th>
               ))}
@@ -97,7 +97,7 @@ function BlogTableEditor({
             {body.map((row, ri) => (
               <tr key={ri}>
                 {row.map((cell, ci) => (
-                  <td key={ci} className="border border-border p-1.5">
+                  <td key={ci} className="min-w-[9rem] border border-border p-1.5">
                     <AdminInput value={cell} onChange={(e) => setCell(ri, ci, e.target.value)} />
                   </td>
                 ))}
