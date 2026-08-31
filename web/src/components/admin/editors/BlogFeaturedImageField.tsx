@@ -33,7 +33,7 @@ export function BlogFeaturedImageField({
     setUploading(true);
     try {
       const form = new FormData();
-      form.append("slug", slug);
+      form.append("slug", slug || `draft-${Date.now().toString(36)}`);
       form.append("file", file);
       const res = await fetch("/api/admin/upload/blog-image", { method: "POST", body: form });
       const data = await res.json().catch(() => null);
@@ -59,12 +59,15 @@ export function BlogFeaturedImageField({
         )}
       </div>
       <div className="flex-1 space-y-3">
-        <AdminField label="Choose file" hint={slug ? "JPEG, PNG, WebP, or GIF — keep under 4 MB (host request limit). Uploads immediately; save the post to keep it." : "Set the URL slug first, then upload."}>
+        <AdminField
+          label="Image file"
+          hint="JPEG, PNG, WebP, or GIF — keep under 4 MB. Uploads immediately; save the post to keep it."
+        >
           <input
             ref={inputRef}
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif"
-            disabled={!slug || uploading}
+            disabled={uploading}
             onChange={onPick}
             className="block w-full text-sm text-text file:mr-3 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-2 file:font-mono file:text-xs file:font-bold file:uppercase file:text-accent-text disabled:opacity-50"
           />
