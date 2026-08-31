@@ -1,6 +1,13 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { stripBlogMeta } from "@/lib/cms/blog-template";
+import {
+  isFigureCaption,
+  isMarkdownDividerRow,
+  parsePipeRow,
+  stripBlogMeta,
+  tableFromPipeBullets,
+  tableFromRows,
+} from "@/lib/cms/blog-template";
 
 type Block =
   | { type: "p"; text: string }
@@ -12,6 +19,7 @@ type Block =
   | { type: "lede"; text: string }
   | { type: "callout"; title: string; body: string }
   | { type: "specs"; rows: { label: string; value: string }[] }
+  | { type: "table"; caption: string; headers: string[]; rows: string[][] }
   | { type: "steps"; items: { num: string; title: string; body: string }[] }
   | { type: "takeaways"; items: string[] }
   | { type: "cta"; primary: { label: string; href: string }; secondary?: { label: string; href: string } };
@@ -78,8 +86,37 @@ function parseBlocks(body: string): Block[] {
         items.push(lines[i].trim().slice(2));
         i++;
       }
-      blocks.push({ type: "ul", items });
+      const recovered = tableFromPipeBullets(items);
+      if (recovered) {
+        blocks.push({ type: "table", ...recovered });
+      } else {
+        blocks.push({ type: "ul", items });
+      }
       continue;
+    }
+
+    if (trimmed.includes("|") && !trimmed.startsWith("- ") && parsePipeRow(trimmed).length >= 2) {
+      const start = i;
+      const raw: string[][] = [];
+      while (i < lines.length) {
+        const t = lines[i].trim();
+        if (!t || !t.includes("|")) break;
+        if (t.startsWith("## ") || t.startsWith("### ") || t.startsWith("> ") || t.startsWith("- ") || t === "---") break;
+        if (t.startsWith("::") && t.endsWith("::")) break;
+        const cells = parsePipeRow(t);
+        if (isMarkdownDividerRow(cells)) {
+          i++;
+          continue;
+        }
+        raw.push(cells);
+        i++;
+      }
+      const table = tableFromRows(raw);
+      if (table && raw.length >= 2) {
+        blocks.push({ type: "table", ...table });
+        continue;
+      }
+      i = start;
     }
 
     if (trimmed.startsWith("::") && trimmed.endsWith("::")) {
@@ -112,6 +149,16 @@ function parseBlocks(body: string): Block[] {
             return { label: label.trim(), value: rest.join("|").trim() };
           });
         blocks.push({ type: "specs", rows });
+        continue;
+      }
+
+      if (tag === "table" || tag.startsWith("table|")) {
+        const caption = tag.startsWith("table|") ? tag.slice("table|".length) : "";
+        const table = tableFromRows(
+          inner.map((l) => l.trim()).filter(Boolean).map(parsePipeRow),
+          caption,
+        );
+        if (table) blocks.push({ type: "table", ...table });
         continue;
       }
 
@@ -153,14 +200,41 @@ function parseBlocks(body: string): Block[] {
     const para: string[] = [];
     while (i < lines.length) {
       const t = lines[i].trim();
-      if (!t || t.startsWith("## ") || t.startsWith("### ") || t.startsWith("> ") || t.startsWith("- ") || t === "---" || (t.startsWith("::") && t.endsWith("::"))) break;
+      if (
+        !t ||
+        t.startsWith("## ") ||
+        t.startsWith("### ") ||
+        t.startsWith("> ") ||
+        t.startsWith("- ") ||
+        t === "---" ||
+        (t.startsWith("::") && t.endsWith("::")) ||
+        (t.includes("|") && parsePipeRow(t).length >= 2)
+      )
+        break;
       para.push(lines[i]);
       i++;
     }
     if (para.length) blocks.push({ type: "p", text: para.join(" ").trim() });
   }
 
-  return blocks;
+  const out: Block[] = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    const before = blocks[i - 1];
+    const after = blocks[i + 1];
+    if (block.type === "p" && isFigureCaption(block.text) && after?.type === "table" && !after.caption) continue;
+    if (block.type === "table" && !block.caption && before?.type === "p" && isFigureCaption(before.text)) {
+      out.push({ ...block, caption: before.text });
+      continue;
+    }
+    if (block.type === "table" && !block.caption && after?.type === "p" && isFigureCaption(after.text)) {
+      out.push({ ...block, caption: after.text });
+      i++;
+      continue;
+    }
+    out.push(block);
+  }
+  return out;
 }
 
 export function BlogBody({ body }: { body: string }) {
@@ -231,6 +305,36 @@ export function BlogBody({ body }: { body: string }) {
                   </div>
                 ))}
               </dl>
+            );
+          case "table":
+            return (
+              <figure key={i} className="blog-table-wrap">
+                {block.caption ? <figcaption className="blog-table-caption">{block.caption}</figcaption> : null}
+                <div className="blog-table-scroll">
+                  <table className="blog-table">
+                    <thead>
+                      <tr>
+                        {block.headers.map((cell, ci) => (
+                          <th key={ci} scope="col">
+                            {parseInline(cell)}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {block.rows.map((row, ri) => (
+                        <tr key={ri}>
+                          {row.map((cell, ci) => (
+                            <td key={ci} className="tnum">
+                              {parseInline(cell)}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </figure>
             );
           case "steps":
             return (

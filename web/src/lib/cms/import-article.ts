@@ -8,6 +8,8 @@ import {
   defaultNewArticleForm,
   parseBodyToForm,
   serializeFormToBody,
+  serializeTableLines,
+  tableFromRows,
   type BlogArticleForm,
 } from "@/lib/cms/blog-template";
 
@@ -54,6 +56,16 @@ function normalizeListMarkers(markdown: string): string {
     .replace(/^\s*\d+[.)]\s+/gm, "- ");
 }
 
+function htmlTableToBlock(tableHtml: string): string {
+  const captionMatch = tableHtml.match(/<caption\b[^>]*>([\s\S]*?)<\/caption>/i);
+  const caption = captionMatch ? stripTags(captionMatch[1]) : "";
+  const rows = [...tableHtml.matchAll(/<tr\b[\s\S]*?<\/tr>/gi)]
+    .map((m) => [...m[0].matchAll(/<t[hd]\b[\s\S]*?<\/t[hd]>/gi)].map((c) => stripTags(c[0])))
+    .filter((row) => row.some(Boolean));
+  const table = tableFromRows(rows, caption);
+  return table ? `\n\n${serializeTableLines(table).trim()}\n\n` : "\n\n";
+}
+
 /** Best-effort HTML → Markdown the existing blog parser can read. */
 export function htmlToMarkdown(html: string): string {
   let s = html
@@ -63,6 +75,8 @@ export function htmlToMarkdown(html: string): string {
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<!--[\s\S]*?-->/g, "");
+
+  s = s.replace(/<table\b[\s\S]*?<\/table>/gi, (tableHtml) => htmlTableToBlock(tableHtml));
 
   s = s.replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, (_, t) => `\n\n# ${stripTags(t)}\n\n`);
   s = s.replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, (_, t) => `\n\n## ${stripTags(t)}\n\n`);
@@ -74,11 +88,6 @@ export function htmlToMarkdown(html: string): string {
   s = s.replace(/<(ul|ol)[^>]*>([\s\S]*?)<\/\1>/gi, (_, _tag, inner: string) => {
     const items = [...inner.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => `- ${stripTags(m[1])}`);
     return `\n\n${items.join("\n")}\n\n`;
-  });
-
-  s = s.replace(/<tr[^>]*>([\s\S]*?)<\/tr>/gi, (_, inner: string) => {
-    const cells = [...inner.matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi)].map((m) => stripTags(m[1]));
-    return cells.length ? `\n- ${cells.join(" | ")}\n` : "\n";
   });
 
   s = s.replace(/<(strong|b)[^>]*>([\s\S]*?)<\/\1>/gi, (_, _t, inner) => `*${stripTags(inner)}*`);
@@ -137,6 +146,9 @@ function formWordCount(form: BlogArticleForm): string {
         if (typeof item === "string") chunks.push(item);
         else chunks.push(item.title, item.body);
       }
+    }
+    if (section.type === "table") {
+      chunks.push(section.caption, ...section.headers, ...section.rows.flat());
     }
   }
   return estimateReadTime(chunks.join(" "));
