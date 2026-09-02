@@ -16,27 +16,48 @@ async function isAuthed(request: NextRequest) {
   }
 }
 
+/**
+ * Keep non-canonical hosts out of search indexes. The production site is
+ * www.morpheustek.com, but the Vercel deployment is also reachable at
+ * *.vercel.app (production alias + preview builds). Serving those hosts with
+ * `X-Robots-Tag: noindex` prevents duplicate indexing while keeping preview
+ * deployments fully accessible for review (a blanket redirect would break them).
+ */
+function isNonCanonicalHost(request: NextRequest): boolean {
+  const host = (request.headers.get("host") ?? "").toLowerCase();
+  return host.endsWith(".vercel.app");
+}
+
+function withNoindex(request: NextRequest, response: NextResponse): NextResponse {
+  if (isNonCanonicalHost(request)) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === "/admin/login") {
     if (await isAuthed(request)) {
-      return NextResponse.redirect(new URL("/admin", request.url));
+      return withNoindex(request, NextResponse.redirect(new URL("/admin", request.url)));
     }
-    return NextResponse.next();
+    return withNoindex(request, NextResponse.next());
   }
 
   if (pathname.startsWith("/admin")) {
     if (!(await isAuthed(request))) {
       const login = new URL("/admin/login", request.url);
       login.searchParams.set("next", pathname);
-      return NextResponse.redirect(login);
+      return withNoindex(request, NextResponse.redirect(login));
     }
   }
 
-  return NextResponse.next();
+  return withNoindex(request, NextResponse.next());
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  // Run on all pages so non-canonical hosts get noindex, but skip Next internals
+  // and static assets to keep the middleware cheap.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
