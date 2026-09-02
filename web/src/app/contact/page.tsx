@@ -5,12 +5,14 @@ import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { LeadForm } from "@/components/forms/LeadForm";
 import { getRobotTypes, getSiteSettings } from "@/lib/cms";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact MorpheusTEK",
-  description: "Talk to MorpheusTEK about LiDAR, 3D cameras, safety sensing, and edge compute for your robotics application.",
-  alternates: { canonical: "/contact" },
-};
+  description:
+    "Talk to MorpheusTEK about LiDAR, 3D cameras, safety sensing, and edge compute for your robotics application.",
+  path: "/contact",
+});
 
 export default async function ContactPage() {
   const [site, robotTypes] = await Promise.all([getSiteSettings(), getRobotTypes()]);

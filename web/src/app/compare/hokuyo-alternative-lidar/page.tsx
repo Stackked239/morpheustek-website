@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { PlaceholderPage } from "@/components/marketing/PlaceholderPage";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "The LiDAR Alternative to Hokuyo",
   description:
     "A lower-cost, full-stack alternative to Hokuyo navigation and safety scanners — with 3D LiDAR and RGBD cameras Hokuyo's 2D line can't match, plus a 90-day trial.",
-  alternates: { canonical: "/compare/hokuyo-alternative-lidar" },
-};
+  path: "/compare/hokuyo-alternative-lidar",
+});
 
 export default function Page() {
   return (
