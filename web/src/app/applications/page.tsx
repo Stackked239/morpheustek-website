@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/Button";
 import { PageHero } from "@/components/marketing/PageHero";
 import { CtaBand } from "@/components/marketing/CtaBand";
 import { getApplications } from "@/lib/cms";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Applications — Robot Perception by Use Case",
   description:
     "How MorpheusTEK LiDAR, 3D cameras, safety sensing, and edge compute fit AMRs, AGVs, autonomous forklifts, robotic cleaning, warehouse automation, outdoor robots, mapping, and inspection.",
-  alternates: { canonical: "/applications" },
-};
+  path: "/applications",
+});
 
 export default async function ApplicationsPage() {
   const applications = await getApplications();

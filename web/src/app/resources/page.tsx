@@ -8,13 +8,14 @@ import { Badge } from "@/components/ui/Badge";
 import { PageHero } from "@/components/marketing/PageHero";
 import { CtaBand } from "@/components/marketing/CtaBand";
 import { getLeadMagnets } from "@/lib/cms";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Technical Resource Library — Guides, Checklists & Worksheets",
   description:
     "Free technical resources for robotics engineers and buyers: the SICK / Hokuyo Alternative Comparison Checklist, LiDAR selection and safety buyer's guides, a custom requirements worksheet, and sample point-cloud packs.",
-  alternates: { canonical: "/resources" },
-};
+  path: "/resources",
+});
 
 export default async function ResourcesPage() {
   const leadMagnets = await getLeadMagnets();

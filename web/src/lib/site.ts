@@ -8,7 +8,9 @@ export const site = {
   name: "MorpheusTEK",
   tagline: "Giving Sight to Robotics",
   domain: "morpheustek.com",
-  url: "https://morpheustek.com",
+  // Canonical host is www — the apex 308-redirects to www at the platform.
+  // This value flows to canonical/OG/JSON-LD (layout), sitemap, and robots.
+  url: "https://www.morpheustek.com",
   email: "sales@morpheusTEK.com",
   // Per the official brand guide (06/26). NOTE: the flyer listed (302) 803-5357 — confirm with Phil/Tom.
   phone: "(302) 789-0421",

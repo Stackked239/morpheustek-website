@@ -8,16 +8,17 @@ import { PageHero } from "@/components/marketing/PageHero";
 import { CtaBand } from "@/components/marketing/CtaBand";
 import { getContent, getSiteSettings } from "@/lib/cms";
 import { compareSickPageDefaults } from "@/lib/cms/page-defaults";
+import { pageMetadata } from "@/lib/seo";
 
 const pillarIcons = [ShieldCheck, Check, BadgeCheck] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getContent("page.compare.sick", compareSickPageDefaults);
-  return {
+  return pageMetadata({
     title: page.meta.title,
     description: page.meta.description,
-    alternates: { canonical: "/compare/sick-alternative-lidar" },
-  };
+    path: "/compare/sick-alternative-lidar",
+  });
 }
 
 export default async function SickAlternativePage() {

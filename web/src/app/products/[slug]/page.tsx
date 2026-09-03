@@ -36,11 +36,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const p = await getProduct(slug);
   if (!p) return {};
   const cat = await getCategory(p.category);
+  const title = `${p.name} — ${cat?.label ?? "Sensor"}`;
+  const path = `/products/${p.slug}`;
+  const imageSrc = await productImage(p.slug);
+  // Absolute so scrapers that ignore <base>/metadataBase still resolve it.
+  const image = imageSrc ? `${site.url}${imageSrc}` : undefined;
   return {
-    title: `${p.name} — ${cat?.label ?? "Sensor"}`,
+    title,
     description: p.summary,
-    alternates: { canonical: `/products/${p.slug}` },
-    openGraph: { title: `${p.name} — ${cat?.label ?? "Sensor"}`, description: p.summary },
+    alternates: { canonical: path },
+    openGraph: {
+      type: "website",
+      title,
+      description: p.summary,
+      url: path,
+      ...(image ? { images: [{ url: image, alt: `${p.name} — ${p.brand} ${cat?.label ?? "sensor"}` }] } : {}),
+    },
+    ...(image ? { twitter: { card: "summary_large_image", title, description: p.summary, images: [image] } } : {}),
   };
 }
 
