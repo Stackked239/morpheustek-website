@@ -14,6 +14,13 @@ import type { BlogPost } from "@/lib/cms/blog";
 import { defaultNewArticleForm, parseBodyToForm, serializeFormToBody } from "@/lib/cms/blog-template";
 import { slugifyTitle } from "@/lib/cms/import-article";
 
+function toDateInputValue(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+}
+
 export function BlogPostEditor({ initial, isNew }: { initial: BlogPost; isNew?: boolean }) {
   const router = useRouter();
   const [post, setPost] = useState(initial);
@@ -104,6 +111,22 @@ export function BlogPostEditor({ initial, isNew }: { initial: BlogPost; isNew?: 
               <option value="published">Published — live on /blog</option>
               <option value="archived">Archived — hidden</option>
             </AdminSelect>
+          </AdminField>
+          <AdminField
+            label="Published date"
+            hint="Controls the date shown on the article and its sort order on /blog. Only applied while status is Published — saving as Draft clears it, and Archived keeps the last value."
+          >
+            <AdminInput
+              type="date"
+              value={toDateInputValue(post.published_at)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setPost({
+                  ...post,
+                  published_at: value ? new Date(`${value}T00:00:00.000Z`).toISOString() : null,
+                });
+              }}
+            />
           </AdminField>
         </div>
         <AdminField label="Article title" hint="Large headline at the top of the article.">
