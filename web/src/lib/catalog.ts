@@ -721,7 +721,7 @@ export const products: Product[] = [
       { label: "Build", value: "IP66 rugged, fanless" },
     ],
     bestFor: ["On-vehicle perception / inference", "LiDAR + camera fusion at the edge", "Harsh-environment mobile compute"],
-    // Sheet uploaded through /admin, so it lives in Storage rather than the repo.
+    specSheetPath: "/spec-sheets/sintrones-ibox-602p-edge-ai.pdf",
     specSheetDirect: true,
   },
   {
@@ -749,7 +749,7 @@ export const products: Product[] = [
       { label: "Certification", value: "EN 50155 (rail)" },
     ],
     bestFor: ["Rail and transit compute (EN 50155)", "Multi-camera PoE aggregation", "Industrial HMI / display systems"],
-    // Sheet uploaded through /admin, so it lives in Storage rather than the repo.
+    specSheetPath: "/spec-sheets/sintrones-sbox-2624p-embedded.pdf",
     specSheetDirect: true,
   },
 ];
