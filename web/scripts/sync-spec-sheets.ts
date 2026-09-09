@@ -4,12 +4,13 @@
  *
  * A sheet reaches a product one of two ways, and the script handles both:
  *
- *   repo-hosted   catalog.ts carries a `/spec-sheets/…` path (MRDVS S10 /
- *                 S10 Ultra / S11). The row is repointed at that path and the
- *                 superseded Storage object is deleted.
- *   Storage       the sheet was uploaded through /admin (Sintrones iBOX-602P,
- *                 SBOX-2624P). Only the flag is written — the row keeps its
- *                 bucket URL and the uploaded PDF is left alone.
+ *   repo-hosted   catalog.ts carries a `/spec-sheets/…` path. The row is
+ *                 repointed at that path and the superseded Storage object is
+ *                 deleted. All five current sheets work this way.
+ *   Storage       no path in catalog.ts — the sheet was uploaded through
+ *                 /admin. Only the flag is written: the row keeps its bucket
+ *                 URL and the uploaded PDF is left alone, since that object
+ *                 IS the live sheet.
  *
  * Unlike `cms:seed-product`, this patches ONLY the spec-sheet fields — every
  * other field on the row keeps whatever the admin UI last saved.

@@ -59,8 +59,7 @@ const sb = createClient(SUPABASE_URL, SERVICE_KEY);
  *   - MRDVS S10 Ultra      no PDF at all
  *   - Sintrones iBOX-602P  the product manual, not a datasheet
  *   - Sintrones SBOX-2624P an older datasheet revision
- * The MRDVS sheets are committed under `public/spec-sheets/`; the Sintrones ones
- * were uploaded through /admin and live in the `product-spec-sheets` bucket.
+ * All five now ship from `public/spec-sheets/` in this repo.
  */
 const SPEC_MAP = [
   {
