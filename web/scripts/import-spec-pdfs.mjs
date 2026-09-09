@@ -52,10 +52,15 @@ const sb = createClient(SUPABASE_URL, SERVICE_KEY);
 /**
  * new catalog slug → best spec PDF on the live WordPress site
  *
- * The MRDVS S10 / S10 Ultra / S11 are deliberately absent: they now ship with
- * official MorpheusTEK spec sheets committed under `public/spec-sheets/`. The
- * old site only had stand-in Percipio flyers (GM461/GM465) for the S10 and S11,
- * so re-scraping them here would overwrite the real sheets with the stand-ins.
+ * The MRDVS and Sintrones SKUs are deliberately absent — they now carry official
+ * MorpheusTEK spec sheets, and re-scraping would overwrite them with what the old
+ * WordPress site happened to have:
+ *   - MRDVS S10 / S11      stand-in Percipio flyers (GM461 / GM465)
+ *   - MRDVS S10 Ultra      no PDF at all
+ *   - Sintrones iBOX-602P  the product manual, not a datasheet
+ *   - Sintrones SBOX-2624P an older datasheet revision
+ * The MRDVS sheets are committed under `public/spec-sheets/`; the Sintrones ones
+ * were uploaded through /admin and live in the `product-spec-sheets` bucket.
  */
 const SPEC_MAP = [
   {
@@ -105,15 +110,6 @@ const SPEC_MAP = [
   {
     slug: "vss-50-solid-state-3d-lidar",
     url: "https://morpheustek.com/wp-content/uploads/dlm_uploads/2026/01/VSS-50-EN-2025.12.pdf",
-  },
-  {
-    slug: "sintrones-ibox-602p-edge-ai",
-    url: "https://morpheustek.com/wp-content/uploads/2025/12/IBOX-602P-IP66_Manual_20260302.pdf",
-    note: "Live site links manual (no separate datasheet for 602P)",
-  },
-  {
-    slug: "sintrones-sbox-2624p-embedded",
-    url: "https://morpheustek.com/wp-content/uploads/dlm_uploads/2026/01/SBOX-2624P_Datasheet_20251231.pdf",
   },
   {
     slug: "thermal-camera",
