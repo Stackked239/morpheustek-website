@@ -1,15 +1,22 @@
 /**
- * Points the Supabase `products` rows at the repo-hosted spec sheets in
- * `public/spec-sheets/`, and permanently deletes the Storage PDFs they
- * replace — for the MRDVS S10 and S11 those are the stand-in Percipio
- * flyers (GM461 / GM465) scraped from the old WordPress site.
+ * Syncs the `specSheetDirect` flag (ungated download) from catalog.ts onto the
+ * Supabase `products` rows, for every product flagged for it.
+ *
+ * A sheet reaches a product one of two ways, and the script handles both:
+ *
+ *   repo-hosted   catalog.ts carries a `/spec-sheets/…` path (MRDVS S10 /
+ *                 S10 Ultra / S11). The row is repointed at that path and the
+ *                 superseded Storage object is deleted.
+ *   Storage       the sheet was uploaded through /admin (Sintrones iBOX-602P,
+ *                 SBOX-2624P). Only the flag is written — the row keeps its
+ *                 bucket URL and the uploaded PDF is left alone.
  *
  * Unlike `cms:seed-product`, this patches ONLY the spec-sheet fields — every
  * other field on the row keeps whatever the admin UI last saved.
  *
  * Run: pnpm cms:sync-spec-sheets [--dry-run] [--keep-storage]
  *   --dry-run       report what would change, write nothing
- *   --keep-storage  update the rows but leave the old PDFs in the bucket
+ *   --keep-storage  update the rows but never delete anything from the bucket
  *
  * After running, open /admin and save any record to trigger CMS cache
  * revalidation — the public site reads through unstable_cache.
@@ -21,8 +28,11 @@ const BUCKET = "product-spec-sheets";
 const dryRun = process.argv.includes("--dry-run");
 const keepStorage = process.argv.includes("--keep-storage");
 
-/** Products whose spec sheet ships with the repo rather than Storage. */
-const repoHosted = products.filter((p) => p.specSheetPath?.startsWith("/"));
+/** Every product opted in to an ungated spec-sheet download. */
+const direct = products.filter((p) => p.specSheetDirect);
+
+/** True when catalog.ts owns the PDF, rather than the Storage bucket. */
+const isRepoHosted = (path?: string) => Boolean(path?.startsWith("/"));
 
 type StorageClient = ReturnType<typeof createServiceClient>;
 
@@ -61,16 +71,17 @@ async function purgeStorage(sb: StorageClient, slug: string) {
 }
 
 async function main() {
-  if (repoHosted.length === 0) {
-    console.log("No repo-hosted spec sheets in catalog.ts — nothing to sync.");
+  if (direct.length === 0) {
+    console.log("No products flagged specSheetDirect in catalog.ts — nothing to sync.");
     return;
   }
 
   const sb = createServiceClient();
   console.log(dryRun ? "DRY RUN — no writes\n" : "Syncing spec sheets…\n");
 
-  for (const product of repoHosted) {
-    const { slug, specSheetPath, specSheetDirect } = product;
+  for (const product of direct) {
+    const { slug, specSheetPath } = product;
+    const repoHosted = isRepoHosted(specSheetPath);
     process.stdout.write(`• ${slug} … `);
 
     const { data: existing, error: readError } = await sb
@@ -85,26 +96,34 @@ async function main() {
     } else {
       const current = existing.data as Record<string, unknown>;
       const previous = current.specSheetPath as string | undefined;
-      const was = previous ? ` (was ${previous})` : "";
+
+      // Only repo-hosted sheets repoint the row. For an /admin upload the row
+      // already holds the right bucket URL, and overwriting it with catalog.ts
+      // (which has no path for those) would blank the sheet entirely.
+      const merged: Record<string, unknown> = { ...current, specSheetDirect: true };
+      if (repoHosted) merged.specSheetPath = specSheetPath;
+
+      const change = repoHosted
+        ? `direct + ${specSheetPath}${previous && previous !== specSheetPath ? ` (was ${previous})` : ""}`
+        : `direct only — keeping uploaded ${previous ?? "(none — upload one in /admin)"}`;
 
       if (dryRun) {
-        console.log(`would set ${specSheetPath}${was}`);
+        console.log(`would set ${change}`);
       } else {
-        const merged = { ...current, specSheetPath, specSheetDirect };
         const { error } = await sb
           .from("products")
           .upsert({ slug, data: merged, status: "published" }, { onConflict: "slug" });
         if (error) throw new Error(error.message);
-        console.log(`set ${specSheetPath}${was}`);
+        console.log(`set ${change}`);
       }
     }
 
-    // The repo now owns this product's sheet, so any object still sitting at
-    // `<slug>.pdf` in Storage is superseded by definition. Delete it whatever
-    // the row happened to point at — the bucket is public, so a stale object
-    // keeps serving the old PDF to anyone holding the link long after nothing
-    // in the site references it.
-    if (!keepStorage) await purgeStorage(sb, slug);
+    // Purge ONLY when the repo owns the sheet: any object left at `<slug>.pdf`
+    // is superseded by definition, and the bucket is public, so a stale one
+    // keeps serving the old PDF to anyone holding the link. When the sheet came
+    // from /admin that same object IS the live sheet — deleting it would break
+    // the product page.
+    if (repoHosted && !keepStorage) await purgeStorage(sb, slug);
   }
 
   console.log(
