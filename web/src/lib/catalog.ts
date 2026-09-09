@@ -72,8 +72,13 @@ export interface Product {
   specs: Spec[];
   bestFor: string[];
   compare?: CompareRow[];
-  /** Official manufacturer spec PDF (Supabase Storage public URL). */
+  /** Official spec PDF — a Supabase Storage public URL, or a repo-hosted `/spec-sheets/…` path. */
   specSheetPath?: string;
+  /**
+   * When true, the spec sheet downloads straight from the product page with no
+   * lead-capture gate. Off by default, so gating stays the norm (see docs P5).
+   */
+  specSheetDirect?: boolean;
   /** Uploaded software package URL or external download link. */
   softwarePath?: string;
   /** When true, `softwarePath` is an external URL opened in a new tab after gating. */
@@ -482,6 +487,8 @@ export const products: Product[] = [
       { label: "SDK", value: "C/C++/ROS1/ROS2" },
     ],
     bestFor: ["AGV/AMR and humanoid obstacle avoidance", "Last-mile delivery robots (outdoor)", "Passenger-flow counting / parcel DWS"],
+    specSheetPath: "/spec-sheets/mrdvs-s10-rgbd-camera.pdf",
+    specSheetDirect: true,
   },
   {
     slug: "mrdvs-s10-ultra-rgbd-camera",
@@ -513,6 +520,8 @@ export const products: Product[] = [
       { label: "Operating temp", value: "−20 to 75 °C" },
     ],
     bestFor: ["Robotic lawn mowers & large-area outdoor mapping", "UAV SLAM and terrain following", "Outdoor SLAM and semantic obstacle recognition"],
+    specSheetPath: "/spec-sheets/mrdvs-s10-ultra-rgbd-camera.pdf",
+    specSheetDirect: true,
   },
   {
     slug: "mrdvs-s11-rgbd-camera",
@@ -551,6 +560,8 @@ export const products: Product[] = [
       { spec: "Black / textureless", mt: "Every pixel valid", competitor: "Holes on dark/reflective", competitorName: "Intel RealSense D435" },
       { spec: "Ambient light", mt: "Up to 100 kLux (sunlight OK)", competitor: "Degrades in direct sun", competitorName: "Intel RealSense D435" },
     ],
+    specSheetPath: "/spec-sheets/mrdvs-s11-rgbd-camera.pdf",
+    specSheetDirect: true,
   },
   {
     slug: "mrdvs-v2-pro-fusion-slam-rtls",

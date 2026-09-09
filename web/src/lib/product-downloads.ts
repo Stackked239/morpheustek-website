@@ -18,6 +18,23 @@ export function specSheetAccess(product: Pick<Product, "slug" | "specSheetPath">
   return { downloadUrl: undefined as string | undefined, openUrl: `/templates/spec-sheet/${product.slug}` };
 }
 
+/**
+ * Ungated spec sheets — the PDF downloads on click, no lead form. Only for
+ * products explicitly opted in *and* carrying a real PDF; the auto-generated
+ * template has nothing to hand over, so it always keeps the gate.
+ */
+export function specSheetDirectHref(
+  product: Pick<Product, "specSheetPath" | "specSheetDirect">,
+): string | null {
+  if (!product.specSheetDirect || !product.specSheetPath) return null;
+  return storageDownloadHref(product.specSheetPath);
+}
+
+/** Filename the browser saves as, rather than the slug-shaped path. */
+export function specSheetFilename(product: Pick<Product, "brand" | "model">) {
+  return `${[product.brand, product.model, "Spec Sheet"].join(" ").replace(/\s+/g, "-")}.pdf`;
+}
+
 export function softwareAccess(product: Pick<Product, "softwarePath" | "softwareIsExternal">) {
   if (!product.softwarePath) return null;
   if (product.softwareIsExternal) {

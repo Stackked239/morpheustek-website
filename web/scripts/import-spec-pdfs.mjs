@@ -49,7 +49,14 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
 
 const sb = createClient(SUPABASE_URL, SERVICE_KEY);
 
-/** new catalog slug → best spec PDF on the live WordPress site */
+/**
+ * new catalog slug → best spec PDF on the live WordPress site
+ *
+ * The MRDVS S10 / S10 Ultra / S11 are deliberately absent: they now ship with
+ * official MorpheusTEK spec sheets committed under `public/spec-sheets/`. The
+ * old site only had stand-in Percipio flyers (GM461/GM465) for the S10 and S11,
+ * so re-scraping them here would overwrite the real sheets with the stand-ins.
+ */
 const SPEC_MAP = [
   {
     slug: "lr-16f-100-3d-lidar",
@@ -98,16 +105,6 @@ const SPEC_MAP = [
   {
     slug: "vss-50-solid-state-3d-lidar",
     url: "https://morpheustek.com/wp-content/uploads/dlm_uploads/2026/01/VSS-50-EN-2025.12.pdf",
-  },
-  {
-    slug: "mrdvs-s10-rgbd-camera",
-    url: "https://morpheustek.com/wp-content/uploads/dlm_uploads/2026/01/Flyer_GM461_EN.pdf",
-    note: "Old site Percipio GM461-E1 → closest new SKU MRDVS S10",
-  },
-  {
-    slug: "mrdvs-s11-rgbd-camera",
-    url: "https://morpheustek.com/wp-content/uploads/dlm_uploads/2026/01/Flyer_GM465_EN.pdf",
-    note: "Old site Percipio GM465-E1 → closest new SKU MRDVS S11",
   },
   {
     slug: "sintrones-ibox-602p-edge-ai",
@@ -195,10 +192,7 @@ async function main() {
   const fail = results.filter((r) => r.status === "error").length;
   console.log(`\nDone: ${ok} ok, ${fail} failed, ${SPEC_MAP.length} total.`);
 
-  const noPdf = [
-    "mrdvs-s10-ultra-rgbd-camera",
-    "mrdvs-v2-pro-fusion-slam-rtls",
-  ];
+  const noPdf = ["mrdvs-v2-pro-fusion-slam-rtls"];
   if (noPdf.length) {
     console.log("\nNo matching PDF on live site (auto-generated spec sheet fallback):");
     for (const s of noPdf) console.log(`  - ${s}`);

@@ -6,7 +6,15 @@ import { FileText } from "lucide-react";
 import { AdminField, AdminSection } from "@/components/admin/forms/AdminField";
 import { SaveBar, useAdminSave } from "@/components/admin/forms/SaveBar";
 
-export function ProductSpecSheetUpload({ slug, currentPath }: { slug: string; currentPath?: string }) {
+export function ProductSpecSheetUpload({
+  slug,
+  currentPath,
+  direct,
+}: {
+  slug: string;
+  currentPath?: string;
+  direct?: boolean;
+}) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [path, setPath] = useState(currentPath ?? "");
@@ -49,12 +57,19 @@ export function ProductSpecSheetUpload({ slug, currentPath }: { slug: string; cu
             />
           </AdminField>
           {path ? (
-            <p className="text-xs text-text-muted">
-              Current:{" "}
-              <a href={path} target="_blank" rel="noopener noreferrer" className="font-mono text-brand-blue hover:underline">
-                {path}
-              </a>
-            </p>
+            <>
+              <p className="text-xs text-text-muted">
+                Current:{" "}
+                <a href={path} target="_blank" rel="noopener noreferrer" className="font-mono text-brand-blue hover:underline">
+                  {path}
+                </a>
+              </p>
+              <p className="text-xs text-text-muted">
+                {direct
+                  ? "Downloads directly from the product page — no lead form, so these visits are not captured."
+                  : "Released after the lead-capture form."}
+              </p>
+            </>
           ) : (
             <p className="text-xs text-text-muted">
               No official PDF — visitors receive the{" "}
