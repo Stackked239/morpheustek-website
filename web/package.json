@@ -11,6 +11,7 @@
     "cms:seed": "node --env-file=.env.local ./node_modules/tsx/dist/cli.mjs scripts/seed-cms.ts",
     "cms:seed-blog": "node --env-file=.env.local ./node_modules/tsx/dist/cli.mjs scripts/seed-sample-blog.ts",
     "cms:seed-product": "node --env-file=.env.local ./node_modules/tsx/dist/cli.mjs scripts/seed-one-product.ts",
+    "cms:sync-spec-sheets": "node --env-file=.env.local ./node_modules/tsx/dist/cli.mjs scripts/sync-spec-sheets.ts",
     "import:spec-pdfs": "node --env-file=.env.local scripts/import-spec-pdfs.mjs",
     "import:software": "node --env-file=.env.local scripts/import-software.mjs"
   },

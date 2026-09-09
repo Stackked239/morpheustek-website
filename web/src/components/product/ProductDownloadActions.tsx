@@ -5,6 +5,8 @@ import { Download, X } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import {
   specSheetAccess,
+  specSheetDirectHref,
+  specSheetFilename,
   specSheetIntent,
   softwareAccess,
   softwareIntent,
@@ -64,6 +66,7 @@ export function ProductDownloadActions({
   const panelRef = useRef<HTMLDivElement>(null);
   const openerRef = useRef<HTMLButtonElement | null>(null);
   const hasSoftware = Boolean(softwareAccess(product));
+  const directSpecSheet = specSheetDirectHref(product);
 
   const close = useCallback(() => {
     setGate(null);
@@ -116,14 +119,25 @@ export function ProductDownloadActions({
 
   return (
     <>
-      <Button
-        type="button"
-        variant="ghost"
-        size="lg"
-        onClick={(e) => open("spec", e.currentTarget)}
-      >
-        <Download className="size-4" /> Spec sheet
-      </Button>
+      {directSpecSheet ? (
+        <Button
+          variant="ghost"
+          size="lg"
+          href={directSpecSheet}
+          download={specSheetFilename(product)}
+        >
+          <Download className="size-4" /> Spec sheet
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          variant="ghost"
+          size="lg"
+          onClick={(e) => open("spec", e.currentTarget)}
+        >
+          <Download className="size-4" /> Spec sheet
+        </Button>
+      )}
       {hasSoftware ? (
         <Button
           type="button"

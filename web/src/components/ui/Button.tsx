@@ -33,6 +33,8 @@ type Props = {
   rel?: string;
   ariaLabel?: string;
   disabled?: boolean;
+  /** Save the `href` instead of navigating to it; the string sets the filename. */
+  download?: boolean | string;
 };
 
 export function Button({
@@ -47,8 +49,24 @@ export function Button({
   rel,
   ariaLabel,
   disabled,
+  download,
 }: Props) {
   const cls = cn(base, variantCls[variant], sizeCls[size], className);
+  if (href && download !== undefined) {
+    // A plain anchor, not next/link: this saves a file rather than navigating.
+    return (
+      <a
+        href={href}
+        download={download}
+        className={cls}
+        target={target}
+        rel={rel}
+        aria-label={ariaLabel}
+      >
+        {children}
+      </a>
+    );
+  }
   if (href) {
     return (
       <Link href={href} className={cls} target={target} rel={rel} aria-label={ariaLabel}>
