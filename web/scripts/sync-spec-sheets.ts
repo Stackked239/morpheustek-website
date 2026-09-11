@@ -90,7 +90,13 @@ async function main() {
 
   for (const product of targets) {
     const { slug, specSheetPath, specSheetNote, specSheets, specSheetDirect } = product;
-    const repoHosted = isRepoHosted(specSheetPath);
+    // A series page may carry only variant sheets (the LR-1BS5 has no base-model
+    // sheet). The repo still owns the product's sheets in that case, so the row's
+    // old primary — a superseded Storage PDF — must go, or the picker would offer
+    // it alongside the real variants.
+    const repoHosted =
+      isRepoHosted(specSheetPath) ||
+      (!specSheetPath && (specSheets ?? []).some((s) => isRepoHosted(s.path)));
     process.stdout.write(`• ${slug} … `);
 
     const { data: existing, error: readError } = await sb
@@ -112,8 +118,13 @@ async function main() {
       // already holds the right bucket URL, and overwriting it with catalog.ts
       // (which has no path for those) would blank the sheet entirely.
       if (repoHosted) {
-        merged.specSheetPath = specSheetPath;
-        changes.push(`${specSheetPath}${previous && previous !== specSheetPath ? ` (was ${previous})` : ""}`);
+        if (specSheetPath) {
+          merged.specSheetPath = specSheetPath;
+          changes.push(`${specSheetPath}${previous && previous !== specSheetPath ? ` (was ${previous})` : ""}`);
+        } else {
+          delete merged.specSheetPath;
+          changes.push(`variants only${previous ? ` (dropped ${previous})` : ""}`);
+        }
         if (specSheetNote) merged.specSheetNote = specSheetNote;
         else delete merged.specSheetNote;
       }
