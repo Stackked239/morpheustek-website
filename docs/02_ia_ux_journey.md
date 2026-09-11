@@ -134,7 +134,7 @@ morpheustek.com
 │   └── /about/manufacturing-strength    …… ★ "Manufacturing Strength Behind the Sensing Stack"
 │                                              (HUADA / Great Star proof — credibility, NOT lead; P1)
 │
-├── /contact                             ……… CONTACT (sales@morpheusTEK.com · (302) 803-5357 · LocalBusiness schema)
+├── /contact                             ……… CONTACT (sales@morpheusTEK.com · (302) 416-5989 · LocalBusiness schema)
 │
 ├── /book-a-meeting                      ……… BOOK A MEETING / DISCOVERY CALL  (A+ conversion; calendar embed)
 │
@@ -255,7 +255,7 @@ Five-column footer + utility row, circuit-board line motif as the divider (brand
 │ 3D LiDAR           │ Forklift       │ SICK Alternative  │ Insights / Blog   │ Request a Quote    │
 │ Solid-State LiDAR  │ Cleaning       │ Hokuyo Alternative│ Glossary          │ Talk to an Engineer│
 │ 3D Cameras         │ Warehouse      │ Manufacturing     │ FAQ               │ sales@morpheusTEK  │
-│ 1D Rangefinders    │ Outdoor        │   Strength        │ Shows We'll Be At │ (302) 803-5357     │
+│ 1D Rangefinders    │ Outdoor        │   Strength        │ Shows We'll Be At │ (302) 416-5989     │
 │ 3D Mapping         │ Mapping/Twin   │ Product of Month  │ What's New        │ [LinkedIn]         │
 │ Edge Compute       │ Inspection     │ About             │                   │                    │
 │                    │ Safety Field   │                   │                   │                    │

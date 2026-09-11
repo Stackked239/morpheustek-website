@@ -12,9 +12,9 @@ export const site = {
   // This value flows to canonical/OG/JSON-LD (layout), sitemap, and robots.
   url: "https://www.morpheustek.com",
   email: "sales@morpheusTEK.com",
-  // Per the official brand guide (06/26). NOTE: the flyer listed (302) 803-5357 — confirm with Phil/Tom.
-  phone: "(302) 789-0421",
-  phoneHref: "+13027890421",
+  // Confirmed with the client (09/26) — this is the one number used everywhere on the site.
+  phone: "(302) 416-5989",
+  phoneHref: "+13024165989",
   address: "Morpheus Tek, Inc. · PO Box 1988 · Silverton, OR 97381",
   // The full-stack one-liner (Phil's words, web version)
   oneLiner:

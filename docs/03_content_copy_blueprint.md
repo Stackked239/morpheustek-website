@@ -29,7 +29,7 @@ I now have the complete ground truth. Phil's actual phrases ("we're scrappy," "f
 - **Logo:** morpheusTEK wordmark (lowercase "morpheus" + uppercase "TEK", blue) with the eye motif.
 - **Nav items:** Products ▾ (mega menu) · Solutions ▾ (by application) · Compare ▾ · Resources ▾ · About · Shows We'll Be At
 - **Utility, top-right:** Light/Dark toggle · **LiDAR View toggle** (the sensor-view flip) · **Primary CTA button: "Start Your 90-Day Trial"**
-- **Microcopy under phone in header (PROPOSED):** "Talk to an engineer: (302) 803-5357"
+- **Microcopy under phone in header (PROPOSED):** "Talk to an engineer: (302) 416-5989"
 
 ---
 
@@ -284,7 +284,7 @@ Our GS1-5 carries the **same safety class — Type 3 / SIL2 / PL d** — at roug
 **Secondary CTA:** Book a Discovery Call
 **Low-commitment CTA (text link, for browsers):** Not ready to talk? Download the SICK/Hokuyo Alternative Checklist →
 
-**Footer essentials:** sales@morpheusTEK.com · (302) 803-5357 · North America · circuit-board line motif · Light/Dark + LiDAR-View toggles repeated.
+**Footer essentials:** sales@morpheusTEK.com · (302) 416-5989 · North America · circuit-board line motif · Light/Dark + LiDAR-View toggles repeated.
 
 ---
 

@@ -197,7 +197,7 @@ Conventions: `snake_case` columns, UUID PKs, `created_at`/`updated_at` timestamp
 
 **`submissions`** — durable log of every form/CTA (see §6.3): `id, form_type, payload jsonb, resource_id nullable, hubspot_contact_id, hubspot_deal_id, lead_source, icp_guess, status, error nullable, created_at`. This is our **audit trail** — if HubSpot sync ever fails, the lead is never lost; we replay from here.
 
-**`site_settings`** — global toggles and editable strings (hero copy variants for A/B testing, contact `sales@morpheustek.com` / `(302) 803-5357`, social links, **LiDAR-view toggle on/off**, feature flags).
+**`site_settings`** — global toggles and editable strings (hero copy variants for A/B testing, contact `sales@morpheustek.com` / `(302) 416-5989`, social links, **LiDAR-view toggle on/off**, feature flags).
 
 ### 6.2.3 Gated-asset storage & access control
 

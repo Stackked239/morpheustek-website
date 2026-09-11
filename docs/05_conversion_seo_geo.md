@@ -282,7 +282,7 @@ Every priority and secondary keyword from §8 of the brief is assigned to exactl
 | ROS 2 LiDAR / 3D camera | Integration/Resource page | "Works with ROS 2" content block |
 
 **Geographic SEO (US/Canada + metros) — without faking locations.** MorpheusTEK is a *national* distributor with no regional offices to fabricate. So:
-- Establish entity geography honestly via **Organization schema** `areaServed: ["United States","Canada"]`, a real `address`/`contactPoint`, and consistent NAP (name/address/phone `(302) 803-5357`, `sales@morpheustek.com`) everywhere.
+- Establish entity geography honestly via **Organization schema** `areaServed: ["United States","Canada"]`, a real `address`/`contactPoint`, and consistent NAP (name/address/phone `(302) 416-5989`, `sales@morpheustek.com`) everywhere.
 - **Do not** build fake city landing pages. Instead, win the named robotics/automation hubs through **application + trade-show content** that legitimately references those metros: e.g., a Resource/blog cluster like *"LiDAR for AMRs at [Automate / ProMat] in [Detroit/Chicago]"*, *"Robotics perception for Pittsburgh's autonomy ecosystem"*, *"Serving robotics builders in Boston, Silicon Valley, Austin, Atlanta, and North Carolina."* These are editorial/proof pages tied to real shows and real ecosystems — not doorway pages.
 - A single **`/locations` or `/coverage` page (PROPOSED)** stating "We ship and support robotics builders across the US and Canada" with the served-metro list — honest national coverage, good for "LiDAR supplier North America."
 
@@ -355,7 +355,7 @@ Five schema types, deployed site-wide via the template system. Examples below ar
   ],
   "contactPoint": {
     "@type": "ContactPoint",
-    "telephone": "+1-302-803-5357",
+    "telephone": "+1-302-416-5989",
     "email": "sales@morpheustek.com",
     "contactType": "sales",
     "areaServed": ["US", "CA"],
@@ -535,7 +535,7 @@ Commercial robotics and industrial automation across the United States and Canad
 AMRs, AGVs, autonomous forklifts, cleaning robots, service robots.
 
 ## Contact
-sales@morpheustek.com · +1-302-803-5357
+sales@morpheustek.com · +1-302-416-5989
 ```
 
 ### 5.5.5 Entity consistency

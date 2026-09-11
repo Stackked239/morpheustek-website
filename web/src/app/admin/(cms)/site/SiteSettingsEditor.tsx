@@ -42,7 +42,7 @@ export function SiteSettingsEditor({ initial }: { initial: EditableSiteSettings 
           <AdminField label="Phone (display)">
             <AdminInput value={data.phone} onChange={(e) => patch("phone", e.target.value)} />
           </AdminField>
-          <AdminField label="Phone (for click-to-call)" hint="Digits only with country code, e.g. +13027890421">
+          <AdminField label="Phone (for click-to-call)" hint="Digits only with country code, e.g. +13024165989">
             <AdminInput value={data.phoneHref} onChange={(e) => patch("phoneHref", e.target.value)} />
           </AdminField>
           <AdminField label="Website domain">

@@ -126,7 +126,7 @@
 
 ## I. Contact info & legal (fix discrepancies)
 
-- 🟡 **I1. Phone** — brand guide says **1 (302) 789-0421**; my site uses **(302) 803-5357** (from the flyer). → **confirm which is correct** and update `site.ts`.
+- ✅ **I1. Phone** — RESOLVED (09/26): the one correct number is **(302) 416-5989**. Supersedes both the brand-guide number (789-0421) and the flyer number (803-5357). Live in `site.ts` and in the CMS `site.settings` block.
 - ⬜ **I2. Mailing address** — add **Morpheus Tek, Inc., PO Box 1988, Silverton, OR 97381** (from brand guide).
 - 🟡 **I3. Email/domain** — brand guide: **sales@morpheustek.com**; meeting said "morpheustech.com" (likely a slip). Confirm the canonical domain (morpheustek.com) and sales address.
 
@@ -166,7 +166,7 @@
 ## K. Open decisions to confirm with Phil/Tom
 
 1. Final **blog name** — "Eyes at the Edge"? ("The Edge" / "Sight at the Edge")
-2. **Phone number** — 789-0421 (brand guide) vs 803-5357 (flyer)?
+2. ~~**Phone number** — 789-0421 (brand guide) vs 803-5357 (flyer)?~~ → **Answered: (302) 416-5989.**
 3. **Roboto Condensed for body copy** as-specified, or regular Roboto for dense spec tables?
 4. Which **homepage design option** (of the 3–4) to adopt site-wide.
 5. Hero point-cloud — mimic **VSS-50** output specifically?
