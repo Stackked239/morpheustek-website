@@ -1,19 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { Download, X } from "lucide-react";
+import { ChevronDown, Download, X } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import {
+  directSpecSheets,
   specSheetAccess,
-  specSheetDirectHref,
-  specSheetFilename,
   specSheetIntent,
+  specSheetOptions,
   softwareAccess,
   softwareIntent,
   type ProductDownloadKind,
+  type SpecSheetOption,
 } from "@/lib/product-downloads";
 import { Button } from "@/components/ui/Button";
-import { LeadForm } from "@/components/forms/LeadForm";
+import { LeadForm, type DownloadOption } from "@/components/forms/LeadForm";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
@@ -24,6 +25,7 @@ type GateConfig = {
   intent: string;
   submitLabel: string;
   downloadUrl?: string;
+  downloadOptions?: DownloadOption[];
   openUrl?: string;
   openLabel?: string;
 };
@@ -31,12 +33,17 @@ type GateConfig = {
 function gateFor(product: Product, kind: ProductDownloadKind): GateConfig {
   if (kind === "spec") {
     const access = specSheetAccess(product);
+    const sheets = specSheetOptions(product);
     return {
       kind,
-      title: `${product.model} spec sheet`,
+      title: `${product.model} spec sheet${sheets.length > 1 ? "s" : ""}`,
       intent: specSheetIntent(product.slug),
       submitLabel: "Download spec sheet",
       downloadUrl: access.downloadUrl,
+      downloadOptions:
+        sheets.length > 1
+          ? sheets.map((o) => ({ label: o.model, note: o.note, url: o.path, filename: o.filename }))
+          : undefined,
       openUrl: access.openUrl,
       openLabel: "Open spec sheet",
     };
@@ -54,6 +61,68 @@ function gateFor(product: Product, kind: ProductDownloadKind): GateConfig {
   };
 }
 
+/**
+ * Ungated series page: one button, a menu of per-variant PDFs. Plain anchors
+ * with `download`, so each sheet saves under its own model name.
+ */
+function DirectSpecSheetMenu({ sheets }: { sheets: SpecSheetOption[] }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const menuId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <Button
+        type="button"
+        variant="ghost"
+        size="lg"
+        onClick={() => setOpen((v) => !v)}
+        ariaLabel={open ? "Close spec sheet menu" : "Choose a spec sheet"}
+      >
+        <Download className="size-4" /> Spec sheet <ChevronDown className="size-4" aria-hidden />
+      </Button>
+      {open ? (
+        <ul
+          id={menuId}
+          role="menu"
+          className="absolute left-0 top-full z-20 mt-2 min-w-64 max-w-[calc(100vw-2rem)] rounded-md border border-border bg-bg p-1.5 shadow-lg"
+        >
+          {sheets.map((o) => (
+            <li key={o.path} role="none">
+              <a
+                role="menuitem"
+                href={o.path}
+                download={o.filename}
+                onClick={() => setOpen(false)}
+                className="block rounded px-3 py-2 hover:bg-bg-muted focus-visible:outline-2"
+              >
+                <span className="block font-display text-sm font-bold text-text-strong">{o.model}</span>
+                {o.note ? <span className="block text-xs leading-relaxed text-text-muted">{o.note}</span> : null}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
 export function ProductDownloadActions({
   product,
   robotTypes,
@@ -66,7 +135,7 @@ export function ProductDownloadActions({
   const panelRef = useRef<HTMLDivElement>(null);
   const openerRef = useRef<HTMLButtonElement | null>(null);
   const hasSoftware = Boolean(softwareAccess(product));
-  const directSpecSheet = specSheetDirectHref(product);
+  const direct = directSpecSheets(product);
 
   const close = useCallback(() => {
     setGate(null);
@@ -119,13 +188,10 @@ export function ProductDownloadActions({
 
   return (
     <>
-      {directSpecSheet ? (
-        <Button
-          variant="ghost"
-          size="lg"
-          href={directSpecSheet}
-          download={specSheetFilename(product)}
-        >
+      {direct.length > 1 ? (
+        <DirectSpecSheetMenu sheets={direct} />
+      ) : direct.length === 1 ? (
+        <Button variant="ghost" size="lg" href={direct[0].path} download={direct[0].filename}>
           <Download className="size-4" /> Spec sheet
         </Button>
       ) : (
@@ -179,7 +245,9 @@ export function ProductDownloadActions({
             </div>
             <div className="p-5">
               <p className="mb-4 text-sm text-text-muted">
-                Quick details, then instant access — no waiting on an email.
+                {gate.downloadOptions
+                  ? "Pick the model, add quick details, then instant access — no waiting on an email."
+                  : "Quick details, then instant access — no waiting on an email."}
               </p>
               <LeadForm
                 key={gate.intent}
@@ -187,6 +255,7 @@ export function ProductDownloadActions({
                 submitLabel={gate.submitLabel}
                 mode="download"
                 downloadUrl={gate.downloadUrl}
+                downloadOptions={gate.downloadOptions}
                 openUrl={gate.openUrl}
                 openLabel={gate.openLabel}
                 robotTypes={robotTypes}

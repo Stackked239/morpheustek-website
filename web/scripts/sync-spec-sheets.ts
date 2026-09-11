@@ -1,16 +1,21 @@
 /**
- * Syncs the `specSheetDirect` flag (ungated download) from catalog.ts onto the
- * Supabase `products` rows, for every product flagged for it.
+ * Syncs the repo-hosted spec sheets in catalog.ts onto the Supabase `products`
+ * rows — the live site reads product JSON wholesale from the DB, so a sheet
+ * committed under public/spec-sheets/ is invisible in prod until its row points
+ * at it.
  *
  * A sheet reaches a product one of two ways, and the script handles both:
  *
- *   repo-hosted   catalog.ts carries a `/spec-sheets/…` path. The row is
- *                 repointed at that path and the superseded Storage object is
- *                 deleted. All five current sheets work this way.
- *   Storage       no path in catalog.ts — the sheet was uploaded through
- *                 /admin. Only the flag is written: the row keeps its bucket
- *                 URL and the uploaded PDF is left alone, since that object
- *                 IS the live sheet.
+ *   repo-hosted   catalog.ts carries a `/spec-sheets/…` path (`specSheetPath`
+ *                 and/or `specSheets[]`). The row is repointed at those paths
+ *                 and the superseded Storage object is deleted.
+ *   Storage       no repo path in catalog.ts — the sheet was uploaded through
+ *                 /admin. The row keeps its bucket URL and the uploaded PDF is
+ *                 left alone, since that object IS the live sheet.
+ *
+ * `specSheetDirect` (ungated download) is mirrored from catalog.ts on every
+ * row touched — set when catalog.ts says so, cleared otherwise — so every
+ * sheet requires the lead form unless the code explicitly opts a product out.
  *
  * Unlike `cms:seed-product`, this patches ONLY the spec-sheet fields — every
  * other field on the row keeps whatever the admin UI last saved.
@@ -22,18 +27,21 @@
  * After running, open /admin and save any record to trigger CMS cache
  * revalidation — the public site reads through unstable_cache.
  */
-import { products } from "../src/lib/catalog";
+import { products, type Product } from "../src/lib/catalog";
 import { createServiceClient } from "../src/lib/supabase/server";
 
 const BUCKET = "product-spec-sheets";
 const dryRun = process.argv.includes("--dry-run");
 const keepStorage = process.argv.includes("--keep-storage");
 
-/** Every product opted in to an ungated spec-sheet download. */
-const direct = products.filter((p) => p.specSheetDirect);
-
 /** True when catalog.ts owns the PDF, rather than the Storage bucket. */
 const isRepoHosted = (path?: string) => Boolean(path?.startsWith("/"));
+
+const hasRepoSheets = (p: Product) =>
+  isRepoHosted(p.specSheetPath) || (p.specSheets ?? []).some((s) => isRepoHosted(s.path));
+
+/** Every product with a repo-hosted sheet; the ungated flag rides along with it. */
+const targets = products.filter(hasRepoSheets);
 
 type StorageClient = ReturnType<typeof createServiceClient>;
 
@@ -72,16 +80,16 @@ async function purgeStorage(sb: StorageClient, slug: string) {
 }
 
 async function main() {
-  if (direct.length === 0) {
-    console.log("No products flagged specSheetDirect in catalog.ts — nothing to sync.");
+  if (targets.length === 0) {
+    console.log("No products with repo-hosted or ungated spec sheets in catalog.ts — nothing to sync.");
     return;
   }
 
   const sb = createServiceClient();
   console.log(dryRun ? "DRY RUN — no writes\n" : "Syncing spec sheets…\n");
 
-  for (const product of direct) {
-    const { slug, specSheetPath } = product;
+  for (const product of targets) {
+    const { slug, specSheetPath, specSheetNote, specSheets, specSheetDirect } = product;
     const repoHosted = isRepoHosted(specSheetPath);
     process.stdout.write(`• ${slug} … `);
 
@@ -97,17 +105,43 @@ async function main() {
     } else {
       const current = existing.data as Record<string, unknown>;
       const previous = current.specSheetPath as string | undefined;
+      const merged: Record<string, unknown> = { ...current };
+      const changes: string[] = [];
 
       // Only repo-hosted sheets repoint the row. For an /admin upload the row
       // already holds the right bucket URL, and overwriting it with catalog.ts
       // (which has no path for those) would blank the sheet entirely.
-      const merged: Record<string, unknown> = { ...current, specSheetDirect: true };
-      if (repoHosted) merged.specSheetPath = specSheetPath;
+      if (repoHosted) {
+        merged.specSheetPath = specSheetPath;
+        changes.push(`${specSheetPath}${previous && previous !== specSheetPath ? ` (was ${previous})` : ""}`);
+        if (specSheetNote) merged.specSheetNote = specSheetNote;
+        else delete merged.specSheetNote;
+      }
+      // The variant list is authored in catalog.ts only, so it is always the
+      // source of truth: replaced when present, cleared when removed.
+      if (specSheets?.length) {
+        merged.specSheets = specSheets;
+        changes.push(`${specSheets.length} variant sheet${specSheets.length === 1 ? "" : "s"}`);
+      } else if (current.specSheets) {
+        delete merged.specSheets;
+        changes.push("cleared variant sheets");
+      }
+      // Gating is the rule: the flag is written from catalog.ts on every sync,
+      // so a row that was once ungated goes back behind the form.
+      if (specSheetDirect) {
+        merged.specSheetDirect = true;
+        changes.unshift("direct (ungated)");
+      } else if (current.specSheetDirect) {
+        delete merged.specSheetDirect;
+        changes.unshift("gated again (was direct)");
+      } else {
+        changes.unshift("gated");
+      }
+      if (!repoHosted && !specSheets?.length) {
+        changes.push(`keeping uploaded ${previous ?? "(none — upload one in /admin)"}`);
+      }
 
-      const change = repoHosted
-        ? `direct + ${specSheetPath}${previous && previous !== specSheetPath ? ` (was ${previous})` : ""}`
-        : `direct only — keeping uploaded ${previous ?? "(none — upload one in /admin)"}`;
-
+      const change = changes.join(" + ");
       if (dryRun) {
         console.log(`would set ${change}`);
       } else {
@@ -119,11 +153,11 @@ async function main() {
       }
     }
 
-    // Purge ONLY when the repo owns the sheet: any object left at `<slug>.pdf`
-    // is superseded by definition, and the bucket is public, so a stale one
-    // keeps serving the old PDF to anyone holding the link. When the sheet came
-    // from /admin that same object IS the live sheet — deleting it would break
-    // the product page.
+    // Purge ONLY when the repo owns the primary sheet: any object left at
+    // `<slug>.pdf` is superseded by definition, and the bucket is public, so a
+    // stale one keeps serving the old PDF to anyone holding the link. When the
+    // sheet came from /admin that same object IS the live sheet — deleting it
+    // would break the product page.
     if (repoHosted && !keepStorage) await purgeStorage(sb, slug);
   }
 

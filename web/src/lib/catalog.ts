@@ -51,6 +51,16 @@ export interface CompareRow {
   competitorName: string;
 }
 
+/** One official PDF for a specific model in a product series. */
+export interface SpecSheet {
+  /** Model the sheet covers, as printed on it — "LR-1BS5H", "VFD1-10". */
+  model: string;
+  /** One-line differentiator shown next to the model in the picker. */
+  note?: string;
+  /** Repo-hosted `/spec-sheets/…` path or a Supabase Storage public URL. */
+  path: string;
+}
+
 export interface Product {
   slug: string;
   model: string;
@@ -74,9 +84,19 @@ export interface Product {
   compare?: CompareRow[];
   /** Official spec PDF — a Supabase Storage public URL, or a repo-hosted `/spec-sheets/…` path. */
   specSheetPath?: string;
+  /** One-line label for `specSheetPath` in the variant picker, e.g. "Base model, M8 leads". */
+  specSheetNote?: string;
+  /**
+   * Additional per-variant sheets for series pages (LR-1BS2 / LR-1BS2H / LR-1BS2-V2, …).
+   * `specSheetPath` stays the series or base-model sheet and is offered first; these
+   * follow it in order. Any product with more than one sheet gets a variant picker.
+   */
+  specSheets?: SpecSheet[];
   /**
    * When true, the spec sheet downloads straight from the product page with no
-   * lead-capture gate. Off by default, so gating stays the norm (see docs P5).
+   * lead-capture gate. Every sheet is gated today (docs P5) — no product sets
+   * this, and `cms:sync-spec-sheets` clears it on the live rows so an old
+   * ungated setting cannot survive in the database.
    */
   specSheetDirect?: boolean;
   /** Uploaded software package URL or external download link. */
@@ -188,6 +208,7 @@ export const products: Product[] = [
       { label: "Output", value: "2D point cloud" },
     ],
     bestFor: ["AGV / AMR navigation and SLAM", "Obstacle detection and area monitoring", "Cost-sensitive integrators replacing premium 360° scanners"],
+    specSheetPath: "/spec-sheets/lr-1f-2d-lidar.pdf",
     compare: [
       { spec: "Field of view", mt: "360°", competitor: "270° (TiM) / 190°–270° (LMS)", competitorName: "SICK TiM / LMS" },
       { spec: "Range", mt: "50 m", competitor: "~10–25 m (TiM), up to 80 m (LMS)", competitorName: "SICK TiM / LMS" },
@@ -219,6 +240,12 @@ export const products: Product[] = [
       { label: "Rating", value: "IP65" },
     ],
     bestFor: ["Zone / presence detection", "Simple anti-collision on slow vehicles", "Space-constrained mounting"],
+    specSheetPath: "/spec-sheets/lr-1bs2-mini-zone-lidar.pdf",
+    specSheetNote: "Base model — 16 × 3 zone banks, 4 in / 4 out, M8 leads",
+    specSheets: [
+      { model: "LR-1BS2H", note: "Single switching output, separate M8 power and LAN leads", path: "/spec-sheets/lr-1bs2-mini-zone-lidar-h.pdf" },
+      { model: "LR-1BS2-V2", note: "Same zone scanner on an M12 Ethernet connector", path: "/spec-sheets/lr-1bs2-mini-zone-lidar-v2.pdf" },
+    ],
   },
   {
     slug: "lr-1bs5-mini-lidar",
@@ -244,6 +271,12 @@ export const products: Product[] = [
       { label: "Rating", value: "IP65" },
     ],
     bestFor: ["Zone / presence detection", "Anti-collision on slow vehicles", "Space-constrained mounting"],
+    specSheets: [
+      { model: "LR-1BS5+", note: "30 m range, 15 m at 10% reflectivity", path: "/spec-sheets/lr-1bs5-mini-lidar-plus.pdf" },
+      { model: "LR-1BS5-V2", note: "25 m range with 16 × 3 zone banks, 4 in / 4 out", path: "/spec-sheets/lr-1bs5-mini-lidar-v2.pdf" },
+      { model: "LR-1BS5H", note: "25 m SLAM variant, one switching output, M12 leads", path: "/spec-sheets/lr-1bs5-mini-lidar-h.pdf" },
+      { model: "LR-1BS5D-C1", note: "Cost-down 25 m navigation variant", path: "/spec-sheets/lr-1bs5-mini-lidar-dc1.pdf" },
+    ],
   },
   {
     slug: "vbd1-10-2d-lidar",
@@ -269,6 +302,52 @@ export const products: Product[] = [
       { label: "Rating", value: "IP65" },
     ],
     bestFor: ["High-update-rate navigation", "Indoor AMR obstacle detection", "Integrators needing fast refresh in a compact unit"],
+    specSheetPath: "/spec-sheets/vbd1-10-2d-lidar.pdf",
+  },
+  {
+    slug: "vf-series-360-2d-lidar",
+    model: "VF Series",
+    brand: "OLEI",
+    name: "OLEI VF Series",
+    category: "lidar-for-robotics",
+    tagline: "Two 360° 2D scanners on one 65 × 65 mm footprint — zone logic or long-range point cloud.",
+    availability: "contact",
+    trial: true,
+    summary:
+      "A full-circle 2D LiDAR family sharing one 65 × 65 mm footprint, one sub-5 W power budget and one IP65 rating, so either model drops onto the same mount. The VFD1-10 carries the zone logic itself — 16 banks × 3 levels, 4 switching inputs and 4 outputs, ESD hardened and rain capable — for platforms that need a stop signal without a PLC. The VFH1-50 is the survey model: 100,000 points per second at 0.09° out to 50 m, with NTP time sync and a UDP or TCP stream for reflector and natural navigation from a single sensor.",
+    keySpecs: [
+      { label: "Field of view", value: "360°" },
+      { label: "Range", value: "10 m (VFD1-10) / 50 m (VFH1-50)" },
+      { label: "Point rate", value: "14.4K / 100K pts/s" },
+      { label: "Rating", value: "IP65" },
+    ],
+    specs: [
+      { label: "Models", value: "VFD1-10 (zone switching) · VFH1-50 (survey)" },
+      { label: "Field of view", value: "360°" },
+      { label: "Working range @ 80%", value: "0.1–10 m (VFD1-10) · 0.1–50 m (VFH1-50)" },
+      { label: "Working range @ 10%", value: "0.1–10 m (VFD1-10) · 0.1–15 m (VFH1-50)" },
+      { label: "Angle resolution", value: "0.25° @ 10 Hz (VFD1-10) · 0.09° (VFH1-50)" },
+      { label: "Scan frequency", value: "10 / 15 / 25 Hz (VFD1-10) · 15 / 20 / 25 Hz (VFH1-50)" },
+      { label: "Point rate", value: "14.4K @ 10 Hz (VFD1-10) · 100K @ 25 Hz (VFH1-50)" },
+      { label: "Absolute accuracy", value: "< ±30 mm (VFD1-10) · < ±20 mm (VFH1-50)" },
+      { label: "Zone banks", value: "16 banks × 3 levels, 4 in / 4 out (VFD1-10 only)" },
+      { label: "Output", value: "NPN / PNP switching (VFD1-10) · UDP / TCP, NTP sync (VFH1-50)" },
+      { label: "Wavelength", value: "905 nm, Class 1" },
+      { label: "Voltage", value: "12–26 V DC (VFD1-10) · 12–24 V DC (VFH1-50)" },
+      { label: "Power consumption", value: "< 5 W" },
+      { label: "Dimensions", value: "65 × 65 × 70 mm (VFD1-10) · 65 × 65 × 79.5 mm (VFH1-50)" },
+      { label: "Weight", value: "300 g (VFD1-10) · < 500 g (VFH1-50)" },
+      { label: "Ambient light", value: "80,000 lux" },
+      { label: "Operating temperature", value: "−10 °C to 50 °C" },
+      { label: "Rating", value: "IP65" },
+    ],
+    bestFor: ["Full-circle obstacle avoidance from one chassis mount", "Reflector and natural navigation from a single sensor", "360° survey and mapping at range"],
+    specSheetPath: "/spec-sheets/vf-series-360-2d-lidar.pdf",
+    specSheetNote: "Both models side by side",
+    specSheets: [
+      { model: "VFD1-10", note: "10 m, 16 × 3 zone banks, 4 in / 4 out, ESD Level 4, rain capable", path: "/spec-sheets/vf-series-360-2d-lidar-vfd1-10.pdf" },
+      { model: "VFH1-50", note: "50 m, 100K pts/s at 0.09°, NTP time sync, UDP / TCP", path: "/spec-sheets/vf-series-360-2d-lidar-vfh1-50.pdf" },
+    ],
   },
   // ---------- Safety LiDAR (FEATURED) ----------
   {
@@ -302,6 +381,7 @@ export const products: Product[] = [
       { label: "Rating", value: "IP65" },
     ],
     bestFor: ["AGV/AMR personnel-protection stop functions", "Hazardous-area and access guarding", "Integrators priced out of SICK safety scanners"],
+    specSheetPath: "/spec-sheets/gs1-5-safety-lidar.pdf",
     compare: [
       { spec: "Scanning angle", mt: "270°", competitor: "275°", competitorName: "SICK nanoScan3" },
       { spec: "Safety rating", mt: "Type 3 · SIL2 · PL d", competitor: "Type 3 · SIL2 · PL d", competitorName: "SICK nanoScan3" },
@@ -345,6 +425,7 @@ export const products: Product[] = [
       { label: "Data output", value: "UDP" },
     ],
     bestFor: ["360° surround-view and blind-spot perception", "AGVs and AMRs in smart warehouses", "Logistics, delivery, and drone mapping"],
+    specSheetPath: "/spec-sheets/vf48-50-3d-lidar.pdf",
   },
   {
     slug: "lr-16f-100-3d-lidar",
@@ -374,6 +455,7 @@ export const products: Product[] = [
       { label: "Rating", value: "IP66" },
     ],
     bestFor: ["Mobile robot 360° perception", "Outdoor AGV / yard automation", "Mapping and localization at range"],
+    specSheetPath: "/spec-sheets/lr-16f-100-3d-lidar.pdf",
   },
   {
     slug: "lr-16fis-explosion-proof-3d-lidar",
@@ -400,6 +482,7 @@ export const products: Product[] = [
       { label: "Rating", value: "IP66" },
     ],
     bestFor: ["Oil & gas, chemical, mining automation", "ATEX-style hazardous-area robotics", "Any 3D perception with explosive-atmosphere requirements"],
+    specSheetPath: "/spec-sheets/lr-16fis-explosion-proof-3d-lidar.pdf",
   },
   // ---------- Solid-State ----------
   {
@@ -454,6 +537,7 @@ export const products: Product[] = [
       { label: "Rating", value: "IP67" },
     ],
     bestFor: ["Outdoor autonomy in bright sunlight", "Smart-infrastructure / intersection sensing", "High-point-density forward perception"],
+    specSheetPath: "/spec-sheets/vss-50-solid-state-3d-lidar.pdf",
   },
   // ---------- 3D Cameras ----------
   {
@@ -488,7 +572,6 @@ export const products: Product[] = [
     ],
     bestFor: ["AGV/AMR and humanoid obstacle avoidance", "Last-mile delivery robots (outdoor)", "Passenger-flow counting / parcel DWS"],
     specSheetPath: "/spec-sheets/mrdvs-s10-rgbd-camera.pdf",
-    specSheetDirect: true,
   },
   {
     slug: "mrdvs-s10-ultra-rgbd-camera",
@@ -521,7 +604,6 @@ export const products: Product[] = [
     ],
     bestFor: ["Robotic lawn mowers & large-area outdoor mapping", "UAV SLAM and terrain following", "Outdoor SLAM and semantic obstacle recognition"],
     specSheetPath: "/spec-sheets/mrdvs-s10-ultra-rgbd-camera.pdf",
-    specSheetDirect: true,
   },
   {
     slug: "mrdvs-s11-rgbd-camera",
@@ -561,7 +643,6 @@ export const products: Product[] = [
       { spec: "Ambient light", mt: "Up to 100 kLux (sunlight OK)", competitor: "Degrades in direct sun", competitorName: "Intel RealSense D435" },
     ],
     specSheetPath: "/spec-sheets/mrdvs-s11-rgbd-camera.pdf",
-    specSheetDirect: true,
   },
   {
     slug: "mrdvs-v2-pro-fusion-slam-rtls",
@@ -616,6 +697,7 @@ export const products: Product[] = [
       { label: "Interface", value: "Ethernet" },
     ],
     bestFor: ["People & vehicle detection in low visibility", "Outdoor and night-time perception", "Fire / hot-spot and hazard detection"],
+    specSheetPath: "/spec-sheets/thermal-camera.pdf",
   },
   // ---------- 1D Rangefinder ----------
   {
@@ -722,7 +804,6 @@ export const products: Product[] = [
     ],
     bestFor: ["On-vehicle perception / inference", "LiDAR + camera fusion at the edge", "Harsh-environment mobile compute"],
     specSheetPath: "/spec-sheets/sintrones-ibox-602p-edge-ai.pdf",
-    specSheetDirect: true,
   },
   {
     slug: "sintrones-sbox-2624p-embedded",
@@ -750,7 +831,6 @@ export const products: Product[] = [
     ],
     bestFor: ["Rail and transit compute (EN 50155)", "Multi-camera PoE aggregation", "Industrial HMI / display systems"],
     specSheetPath: "/spec-sheets/sintrones-sbox-2624p-embedded.pdf",
-    specSheetDirect: true,
   },
 ];
 

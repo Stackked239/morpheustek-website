@@ -52,45 +52,23 @@ const sb = createClient(SUPABASE_URL, SERVICE_KEY);
 /**
  * new catalog slug → best spec PDF on the live WordPress site
  *
- * The MRDVS and Sintrones SKUs are deliberately absent — they now carry official
- * MorpheusTEK spec sheets, and re-scraping would overwrite them with what the old
- * WordPress site happened to have:
+ * Only the four products that still lack an official MorpheusTEK sheet are
+ * listed. Every other SKU is deliberately absent — re-scraping would overwrite
+ * a real sheet with whatever the old WordPress site happened to have:
  *   - MRDVS S10 / S11      stand-in Percipio flyers (GM461 / GM465)
  *   - MRDVS S10 Ultra      no PDF at all
  *   - Sintrones iBOX-602P  the product manual, not a datasheet
  *   - Sintrones SBOX-2624P an older datasheet revision
- * All five now ship from `public/spec-sheets/` in this repo.
+ *   - OLEI LR-1F, LR-1BS2, LR-1BS5, VBD1-10, GS1-5, VF48-50, LR-16F, LR-16FIS,
+ *     VSS-50, CBT-3C       OLEI factory datasheets, superseded by the 2026.09
+ *                          MorpheusTEK sheets (incl. per-variant LR-1BS sheets)
+ * All of those now ship from `public/spec-sheets/` in this repo; see
+ * `pnpm cms:sync-spec-sheets` for how the Supabase rows pick them up.
  */
 const SPEC_MAP = [
   {
-    slug: "lr-16f-100-3d-lidar",
-    url: "https://morpheustek.com/wp-content/uploads/2021/02/LR-16F-EN-2025.05｣ｨOnly-can-be-edited-in-PS｣ｩ.pdf",
-    note: "WP product page wrongly links LR-16FIS; media library has correct LR-16F EN 2025",
-  },
-  {
-    slug: "lr-1f-2d-lidar",
-    url: "https://morpheustek.com/wp-content/uploads/2023/06/LR-1F-EN-Update2.pdf",
-  },
-  {
     slug: "a090-laser-rangefinder",
     url: "https://morpheustek.com/wp-content/uploads/2023/06/A090-A200-EN.pdf",
-  },
-  {
-    slug: "gs1-5-safety-lidar",
-    url: "https://morpheustek.com/wp-content/uploads/2021/02/GS1-5-EN-2025.06｣ｨOnly-can-be-edited-in-PS｣ｩ.pdf",
-  },
-  {
-    slug: "lr-1bs2-mini-zone-lidar",
-    url: "https://morpheustek.com/wp-content/uploads/2021/02/LR-1BS2-V2-EN-2025.07｣ｨOnly-can-be-edited-in-PS｣ｩ.pdf",
-    note: "Live page links 57 MB PDF (over storage limit); using 2025 V2 EN datasheet from media library",
-  },
-  {
-    slug: "lr-1bs5-mini-lidar",
-    url: "https://morpheustek.com/wp-content/uploads/2021/02/LR-1BS5-V2-EN-2025.07｣ｨOnly-can-be-edited-in-PS｣ｩ.pdf",
-  },
-  {
-    slug: "lr-16fis-explosion-proof-3d-lidar",
-    url: "https://morpheustek.com/wp-content/uploads/2021/02/LR-16FIS-EN-2024｣ｨOnly-can-be-edited-in-PS｣ｩ.pdf",
   },
   {
     slug: "lr-dds-2-tripod-3d-mapper",
@@ -101,18 +79,6 @@ const SPEC_MAP = [
     slug: "lr-f240-solid-state-lidar",
     url: "https://morpheustek.com/wp-content/uploads/2024/04/LR-F240-EN-datasheet.pdf",
     note: "Gated on live site; found in WP media library",
-  },
-  {
-    slug: "vbd1-10-2d-lidar",
-    url: "https://morpheustek.com/wp-content/uploads/2025/12/VBD1-10-Olei-Datasheet.pdf",
-  },
-  {
-    slug: "vss-50-solid-state-3d-lidar",
-    url: "https://morpheustek.com/wp-content/uploads/dlm_uploads/2026/01/VSS-50-EN-2025.12.pdf",
-  },
-  {
-    slug: "thermal-camera",
-    url: "https://morpheustek.com/wp-content/uploads/2021/02/CBT-3C-EN-2023.11.pdf",
   },
   {
     slug: "lc-m50g-mobile-slam-mapper",

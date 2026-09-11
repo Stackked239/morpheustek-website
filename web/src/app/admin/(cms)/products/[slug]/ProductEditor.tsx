@@ -161,7 +161,12 @@ export function ProductEditor({
       ) : null}
 
       <ProductImageUpload slug={slug} currentPath={imagePath} />
-      <ProductSpecSheetUpload slug={slug} currentPath={product.specSheetPath} direct={product.specSheetDirect} />
+      <ProductSpecSheetUpload
+        slug={slug}
+        currentPath={product.specSheetPath}
+        direct={product.specSheetDirect}
+        variants={product.specSheets}
+      />
       <ProductSoftwareUpload slug={slug} currentPath={product.softwarePath} isExternal={product.softwareIsExternal} />
           </>
         }
