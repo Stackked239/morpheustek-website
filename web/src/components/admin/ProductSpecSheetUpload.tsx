@@ -5,15 +5,19 @@ import { useRouter } from "next/navigation";
 import { FileText } from "lucide-react";
 import { AdminField, AdminSection } from "@/components/admin/forms/AdminField";
 import { SaveBar, useAdminSave } from "@/components/admin/forms/SaveBar";
+import type { SpecSheet } from "@/lib/catalog";
 
 export function ProductSpecSheetUpload({
   slug,
   currentPath,
   direct,
+  variants,
 }: {
   slug: string;
   currentPath?: string;
   direct?: boolean;
+  /** Per-variant sheets from catalog.ts — listed here, edited in code. */
+  variants?: SpecSheet[];
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -70,7 +74,7 @@ export function ProductSpecSheetUpload({
                   : "Released after the lead-capture form."}
               </p>
             </>
-          ) : (
+          ) : variants?.length ? null : (
             <p className="text-xs text-text-muted">
               No official PDF — visitors receive the{" "}
               <a href={`/templates/spec-sheet/${slug}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue hover:underline">
@@ -79,6 +83,24 @@ export function ProductSpecSheetUpload({
               after the gate form.
             </p>
           )}
+          {variants?.length ? (
+            <div className="rounded-md border border-border bg-bg-muted/50 p-3">
+              <p className="text-xs font-medium text-text">
+                Variant sheets ({variants.length}) — visitors pick one{path ? " alongside the sheet above" : ""}.
+                Managed in <code className="font-mono">catalog.ts</code> (<code className="font-mono">specSheets</code>).
+              </p>
+              <ul className="mt-2 space-y-1 text-xs text-text-muted">
+                {variants.map((v) => (
+                  <li key={v.path} className="flex flex-wrap items-baseline gap-x-2">
+                    <a href={v.path} target="_blank" rel="noopener noreferrer" className="font-mono text-brand-blue hover:underline">
+                      {v.model}
+                    </a>
+                    {v.note ? <span>{v.note}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </div>
       <SaveBar onSave={save} status={status} error={error} />

@@ -18,16 +18,48 @@ const defaultRobotTypes = [
   "Other / not sure yet",
 ];
 
+/** One of several files the visitor can choose between behind a single gate. */
+export type DownloadOption = {
+  /** Picker label — the model the file covers. */
+  label: string;
+  /** One-line differentiator under the label. */
+  note?: string;
+  url: string;
+  /** Filename the browser saves as. */
+  filename?: string;
+};
+
+/** Suffix a variant label onto an intent: "download:spec:lr-1bs5-mini-lidar:lr-1bs5-plus". */
+function intentSuffix(label: string) {
+  return label
+    .toLowerCase()
+    .replace(/\+/g, "plus")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function triggerDownload(url: string, filename?: string) {
+  const a = document.createElement("a");
+  // The download attribute is ignored cross-origin; Supabase storage
+  // honors ?download= by serving Content-Disposition: attachment.
+  a.href = url.includes("/storage/") && !url.includes("?") ? `${url}?download=` : url;
+  a.setAttribute("download", filename ?? "");
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
 /**
  * Gated lead form. Required: name, company, business email, application/use case.
  * Phase 1: validates and shows a confirmation. Phase 2 wires the submit to the
  * /api/lead route -> HubSpot (contact + company + deal + nurture).
  */
 export function LeadForm({
-  intent = "meeting",
+  intent: baseIntent = "meeting",
   submitLabel = "Book a meeting",
   mode = "meeting",
-  downloadUrl,
+  downloadUrl: singleDownloadUrl,
+  downloadOptions,
   openUrl,
   openLabel = "Open link",
   robotTypes = defaultRobotTypes,
@@ -36,12 +68,24 @@ export function LeadForm({
   submitLabel?: string;
   mode?: "meeting" | "download";
   downloadUrl?: string;
+  /**
+   * Several files behind one gate (a series page with per-variant spec sheets).
+   * More than one renders a picker above the fields; the chosen one downloads
+   * on submit and every option is offered again on the confirmation.
+   */
+  downloadOptions?: DownloadOption[];
   /** Open in a new tab after submit (spec sheet template, external software URL). */
   openUrl?: string;
   openLabel?: string;
   robotTypes?: string[];
 }) {
   const [status, setStatus] = useState<"idle" | "submitting" | "error" | "done">("idle");
+  const [selected, setSelected] = useState(0);
+  const options = downloadOptions ?? [];
+  const chosen = options[selected] ?? options[0];
+  const hasPicker = options.length > 1;
+  const downloadUrl = chosen?.url ?? singleDownloadUrl;
+  const intent = hasPicker && chosen ? `${baseIntent}:${intentSuffix(chosen.label)}` : baseIntent;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -69,16 +113,7 @@ export function LeadForm({
     // Instant access: trigger the download or open the asset immediately (no waiting on email).
     if (mode === "download") {
       if (downloadUrl) {
-        const a = document.createElement("a");
-        // The download attribute is ignored cross-origin; Supabase storage
-        // honors ?download= by serving Content-Disposition: attachment.
-        a.href = downloadUrl.includes("/storage/") && !downloadUrl.includes("?")
-          ? `${downloadUrl}?download=`
-          : downloadUrl;
-        a.setAttribute("download", "");
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        triggerDownload(downloadUrl, chosen?.filename);
       } else if (openUrl) {
         window.open(openUrl, "_blank", "noopener,noreferrer");
       }
@@ -99,8 +134,23 @@ export function LeadForm({
             ? "It should start automatically; if not, use the button below."
             : "A copy is on its way to your inbox too."}
         </p>
-        {downloadUrl ? (
-          <Button href={downloadUrl} variant="primary" size="md">
+        {hasPicker ? (
+          // The lead is captured, so every sheet in the series is on offer now.
+          <div className="flex flex-wrap gap-2">
+            {options.map((o, i) => (
+              <Button
+                key={o.url}
+                href={o.url}
+                download={o.filename ?? ""}
+                variant={i === selected ? "primary" : "ghost"}
+                size="md"
+              >
+                {o.label}
+              </Button>
+            ))}
+          </div>
+        ) : downloadUrl ? (
+          <Button href={downloadUrl} download={chosen?.filename ?? ""} variant="primary" size="md">
             Download again
           </Button>
         ) : null}
@@ -137,6 +187,32 @@ export function LeadForm({
   return (
     <form onSubmit={handleSubmit} noValidate className="surface-card grid gap-4 p-6 sm:p-7">
       <input type="hidden" name="intent" value={intent} />
+      {hasPicker ? (
+        <fieldset>
+          <legend className={labelCls}>Which model?</legend>
+          <div className="grid gap-2">
+            {options.map((o, i) => (
+              <label
+                key={o.url}
+                className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-surface px-3.5 py-3 transition-colors has-[:checked]:border-border-strong has-[:checked]:bg-bg-muted"
+              >
+                <input
+                  type="radio"
+                  name="variant"
+                  value={o.label}
+                  checked={i === selected}
+                  onChange={() => setSelected(i)}
+                  className="mt-1 size-4 shrink-0 accent-brand-blue"
+                />
+                <span className="min-w-0">
+                  <span className="block font-display text-sm font-bold text-text-strong">{o.label}</span>
+                  {o.note ? <span className="block text-xs leading-relaxed text-text-muted">{o.note}</span> : null}
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
       {/* honeypot — meaningless name so browser autofill never touches it */}
       <input
         type="text"
