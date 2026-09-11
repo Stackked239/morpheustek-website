@@ -94,7 +94,9 @@ export interface Product {
   specSheets?: SpecSheet[];
   /**
    * When true, the spec sheet downloads straight from the product page with no
-   * lead-capture gate. Off by default, so gating stays the norm (see docs P5).
+   * lead-capture gate. Every sheet is gated today (docs P5) — no product sets
+   * this, and `cms:sync-spec-sheets` clears it on the live rows so an old
+   * ungated setting cannot survive in the database.
    */
   specSheetDirect?: boolean;
   /** Uploaded software package URL or external download link. */
@@ -570,7 +572,6 @@ export const products: Product[] = [
     ],
     bestFor: ["AGV/AMR and humanoid obstacle avoidance", "Last-mile delivery robots (outdoor)", "Passenger-flow counting / parcel DWS"],
     specSheetPath: "/spec-sheets/mrdvs-s10-rgbd-camera.pdf",
-    specSheetDirect: true,
   },
   {
     slug: "mrdvs-s10-ultra-rgbd-camera",
@@ -603,7 +604,6 @@ export const products: Product[] = [
     ],
     bestFor: ["Robotic lawn mowers & large-area outdoor mapping", "UAV SLAM and terrain following", "Outdoor SLAM and semantic obstacle recognition"],
     specSheetPath: "/spec-sheets/mrdvs-s10-ultra-rgbd-camera.pdf",
-    specSheetDirect: true,
   },
   {
     slug: "mrdvs-s11-rgbd-camera",
@@ -643,7 +643,6 @@ export const products: Product[] = [
       { spec: "Ambient light", mt: "Up to 100 kLux (sunlight OK)", competitor: "Degrades in direct sun", competitorName: "Intel RealSense D435" },
     ],
     specSheetPath: "/spec-sheets/mrdvs-s11-rgbd-camera.pdf",
-    specSheetDirect: true,
   },
   {
     slug: "mrdvs-v2-pro-fusion-slam-rtls",
@@ -805,7 +804,6 @@ export const products: Product[] = [
     ],
     bestFor: ["On-vehicle perception / inference", "LiDAR + camera fusion at the edge", "Harsh-environment mobile compute"],
     specSheetPath: "/spec-sheets/sintrones-ibox-602p-edge-ai.pdf",
-    specSheetDirect: true,
   },
   {
     slug: "sintrones-sbox-2624p-embedded",
@@ -833,7 +831,6 @@ export const products: Product[] = [
     ],
     bestFor: ["Rail and transit compute (EN 50155)", "Multi-camera PoE aggregation", "Industrial HMI / display systems"],
     specSheetPath: "/spec-sheets/sintrones-sbox-2624p-embedded.pdf",
-    specSheetDirect: true,
   },
 ];
 

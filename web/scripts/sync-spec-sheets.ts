@@ -11,8 +11,11 @@
  *                 and the superseded Storage object is deleted.
  *   Storage       no repo path in catalog.ts — the sheet was uploaded through
  *                 /admin. The row keeps its bucket URL and the uploaded PDF is
- *                 left alone, since that object IS the live sheet. Such rows
- *                 are only touched to carry a `specSheetDirect` flag.
+ *                 left alone, since that object IS the live sheet.
+ *
+ * `specSheetDirect` (ungated download) is mirrored from catalog.ts on every
+ * row touched — set when catalog.ts says so, cleared otherwise — so every
+ * sheet requires the lead form unless the code explicitly opts a product out.
  *
  * Unlike `cms:seed-product`, this patches ONLY the spec-sheet fields — every
  * other field on the row keeps whatever the admin UI last saved.
@@ -37,8 +40,8 @@ const isRepoHosted = (path?: string) => Boolean(path?.startsWith("/"));
 const hasRepoSheets = (p: Product) =>
   isRepoHosted(p.specSheetPath) || (p.specSheets ?? []).some((s) => isRepoHosted(s.path));
 
-/** Every product with something to sync: a repo-hosted sheet, or the ungated flag. */
-const targets = products.filter((p) => hasRepoSheets(p) || p.specSheetDirect);
+/** Every product with a repo-hosted sheet; the ungated flag rides along with it. */
+const targets = products.filter(hasRepoSheets);
 
 type StorageClient = ReturnType<typeof createServiceClient>;
 
@@ -123,9 +126,16 @@ async function main() {
         delete merged.specSheets;
         changes.push("cleared variant sheets");
       }
+      // Gating is the rule: the flag is written from catalog.ts on every sync,
+      // so a row that was once ungated goes back behind the form.
       if (specSheetDirect) {
         merged.specSheetDirect = true;
-        changes.unshift("direct");
+        changes.unshift("direct (ungated)");
+      } else if (current.specSheetDirect) {
+        delete merged.specSheetDirect;
+        changes.unshift("gated again (was direct)");
+      } else {
+        changes.unshift("gated");
       }
       if (!repoHosted && !specSheets?.length) {
         changes.push(`keeping uploaded ${previous ?? "(none — upload one in /admin)"}`);
