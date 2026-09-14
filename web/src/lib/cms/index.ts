@@ -50,6 +50,15 @@ export type EditableSiteSettings = {
 
 const CMS_TAG = "cms";
 
+/**
+ * Every CMS cache also expires on its own. Saving a record in /admin still
+ * revalidates the tag instantly; this is the safety net for rows changed any
+ * other way (a script, SQL, the sync tools) so the site never waits on a manual
+ * save to notice them. A static route that reads one of these adopts the
+ * period, so product and pillar pages regenerate at most this often.
+ */
+const CMS_REVALIDATE_SECONDS = 300;
+
 async function withCmsFallback<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await fn();
@@ -123,35 +132,35 @@ export const getProducts = unstable_cache(
   async () =>
     isCmsEnabled() ? withCmsFallback(fetchProductsFromDb, seedProducts) : seedProducts,
   ["cms-products"],
-  { tags: [CMS_TAG] },
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE_SECONDS },
 );
 
 export const getCategories = unstable_cache(
   async () =>
     isCmsEnabled() ? withCmsFallback(fetchCategoriesFromDb, seedCategories) : seedCategories,
   ["cms-categories"],
-  { tags: [CMS_TAG] },
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE_SECONDS },
 );
 
 export const getApplications = unstable_cache(
   async () =>
     isCmsEnabled() ? withCmsFallback(fetchApplicationsFromDb, seedApplications) : seedApplications,
   ["cms-applications"],
-  { tags: [CMS_TAG] },
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE_SECONDS },
 );
 
 export const getLeadMagnets = unstable_cache(
   async () =>
     isCmsEnabled() ? withCmsFallback(fetchResourcesFromDb, seedResources) : seedResources,
   ["cms-resources"],
-  { tags: [CMS_TAG] },
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE_SECONDS },
 );
 
 export const getProductImagesMap = unstable_cache(
   async () =>
     isCmsEnabled() ? withCmsFallback(fetchProductImagesFromDb, seedProductImages) : seedProductImages,
   ["cms-product-images"],
-  { tags: [CMS_TAG] },
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE_SECONDS },
 );
 
 export const getSiteSettings = unstable_cache(
@@ -187,7 +196,7 @@ export const getSiteSettings = unstable_cache(
     );
   },
   ["cms-site-settings"],
-  { tags: [CMS_TAG] },
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE_SECONDS },
 );
 
 /** Generic content block reader — homepage sections, page copy, glossary, shows, etc. */
@@ -196,7 +205,7 @@ export async function getContent<T>(key: string, fallback: T): Promise<T> {
   const cached = unstable_cache(
     async () => withCmsFallback(() => fetchContentBlock(key, fallback), fallback),
     [`cms-block-${key}`],
-    { tags: [CMS_TAG, `cms-block-${key}`] },
+    { tags: [CMS_TAG, `cms-block-${key}`], revalidate: CMS_REVALIDATE_SECONDS },
   );
   return cached();
 }
